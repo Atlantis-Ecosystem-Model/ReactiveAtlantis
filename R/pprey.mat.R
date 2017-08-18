@@ -8,7 +8,7 @@
 ##' @param bgm.file Bgm used for the Atlantis model
 ##' @param cum.depths Cumulative depths of the differente layers
 ##' @param quiet For debugging porpouses,  default TRUE
-##' @return Display in the browser the pPREY matriux,  the initial abundace on prey,  the overlap matrix and the predator preference
+##' @return Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 ##' @author Demiurgo
 feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
