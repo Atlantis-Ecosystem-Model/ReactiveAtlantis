@@ -9,7 +9,8 @@
 ##' @param cum.depths Cummulative depth of the Atlatnis model
 ##' @return A shiny output (reactive html)
 ##' @author Demiurgo
-compare<- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
+##' @export
+compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
     ## Libraries
     if (!require('shiny', quietly = TRUE)) {
         stop('The package shiny was not installed')
