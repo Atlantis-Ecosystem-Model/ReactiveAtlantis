@@ -225,16 +225,13 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     )
 }
 
-    ##' .. content for \description{} (no empty lines) ..
-    ##'
-    ##' .. content for \details{} ..
-    ##' @title Biomass for age groups
-    ##' @param age.grp Age groups
-    ##' @param nc.out ncdf atlantis' output file
-    ##' @param ctg category
-    ##' @return a dataframe with the biomass for all the functional groups with age classes
-    ##' @author Demiurgo
-    bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
+##' @title Biomass for age groups
+##' @param age.grp Age groups
+##' @param nc.out ncdf atlantis' output file
+##' @param ctg category
+##' @return a dataframe with the biomass for all the functional groups with age classes
+##' @author Demiurgo
+bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
         grp.bio <- NULL
         for(age in 1 : nrow(age.grp)){
             cohort <- NULL
@@ -250,7 +247,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         }
         return(grp.bio)
     }
-##' .. content for \details{} ..
 ##' @title Biomass for age groups
 ##' @param pol.grp Biomass pool groups
 ##' @param nc.out ncdf atlantis' output file
@@ -279,7 +275,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         }
         return(grp.bio)
     }
-##' .. content for \details{} ..
 ##' @title Biomass for age groups
 ##' @param pwn.grp Biomass pools with age classes
 ##' @param nc.out ncdf atlantis' output file
