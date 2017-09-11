@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Predation
 ##' @param biom.file Output biomass file from the Atlantis simulation. Usually this output has the name 'outputYOUR_Model_NAMEBiomIndx.txt',  were YOUR_Model_NAME is the name of your Atlatnis model.
 ##' @param groups.csv This file is the group csv file. Which is one of the compulsory inputs of Atlantis

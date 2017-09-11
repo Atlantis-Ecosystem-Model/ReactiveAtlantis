@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Atlantis feeding tool
 ##' @param prm.file Atlantis parameter file
 ##' @param grp.file Atlantis group file
@@ -427,9 +424,6 @@ feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, q
 ## ~      FUNCTIONS!!   ~ ##
 ## ~~~~~~~~~~~~~~~~~~~~~~ ##
 ## getting the RN and SN from the NC file
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Biomass from nc file
 ##' @param nc.file Atlantis initial condition file
 ##' @param groups.csv Atlantis groups file
@@ -579,9 +573,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     over.sp[, 3 : ncol(over.sp)] <- mom.t
     return(list(Struct, Biom.N, over.sp))
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -631,9 +622,6 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         return(pp.mat)
     }
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Calculate the gape limitation for each functional group
 ##' @param groups.csv Atlantis group file
 ##' @param Struct Structural weight by age group
@@ -669,9 +657,6 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
     }
     return(list(Gape, age))
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Overlap matrix
 ##' @param Ava.mat Availavility matrix (or pPREY matrix from the parameter file
 ##' @param Gape Limit of prey by Gape size
@@ -734,9 +719,6 @@ Over.mat.func <- function(Ava.mat, Gape){
     }
     return(Over.mat)
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Biomass by age class
 ##' @param Biom.N Biomass by Cohort
 ##' @param age Age of maturation
@@ -765,9 +747,6 @@ Bio.age <- function(Biom.N, age, Over.mat){
     bio.adl <- bio.adl[or.prey, ]
     return(list(bio.juv, bio.adl))
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Save pPREY matrix
 ##' @param data matrix of pPrey modified
 ##' @return a txt file of the pPREY matrix
@@ -785,9 +764,6 @@ saveData <- function(data) {
     }
     sink()
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Function to get the vertices of the bgm map for Atlantis
 ##' @param bgm.file BGM file for atlantis
 ##' @return A datafrma con witht 3 columns,  first the box_id,  then the latitude and the longitude
@@ -816,9 +792,6 @@ make.map <- function(bgm.file){
                             lon   = latlon$x)
     return(map)
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title text separatror
 ##' @param text a string scalar
 ##' @return 3 columns with names and stage of the predator and the prey
@@ -836,9 +809,6 @@ sepText <- function(ortext){
                               Stg.predator = st.pred, Stg.prey = st.prey, Overlap = ortext[3])
     return(out)
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Num layer  per box
 ##' @param bgm.file BGM file for the atlantis model
 ##' @param cum.depths Cummulativce depths of the model

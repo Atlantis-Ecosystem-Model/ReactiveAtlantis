@@ -15,12 +15,6 @@ prey.pos(FGs, grp.dat)
 \value{
 The trophic level of the Functional group
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

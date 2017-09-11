@@ -16,12 +16,6 @@ food.web(diet.file, grp.file, quiet = TRUE)
 \value{
 Reactive output
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

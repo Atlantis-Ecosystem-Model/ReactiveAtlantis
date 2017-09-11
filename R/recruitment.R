@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Estimation of Recruitment function
 ##' @param ini.nc.file Atlantis initital condition file (netcdf file)
 ##' @param out.nc.file Estandar netcdf output file
@@ -457,9 +454,6 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         }
     )
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Beverton Equation
 ##' @param sp spawning power
 ##' @param bha Alpha parameter
@@ -474,9 +468,6 @@ BH.rec <- function(sp, bha, bhb, bio){
     return(recruit)
 }
 ## functions
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking

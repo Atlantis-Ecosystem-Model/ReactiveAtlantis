@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Function on shiny R to plot the trophic level of the fucntional groups
 ##' @param diet.file Diet output file from atlantis
 ##' @param grp.file Group file. Atlantis input file (.cvs)
@@ -175,9 +172,6 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
 
 
 ## functions
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Assing trophic level of the prey the values are based on Pauly et al 1998 [Diet composition and trophic levels of marine mammals]
 ##'        And Tucket and Rogers 2014 [Examining predator–prey body size, trophic level and body mass across marine and terrestrial mammals]
 ##' @param FGs Preys
@@ -199,9 +193,6 @@ prey.pos <- function(FGs, grp.dat){
 }
 
 
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Throphic level estimation. Equation based on Pauly et al 1998 [Diet composition and trophic levels of marine mammals]
 ##' @param DC Diet composition
 ##' @param TLp Trophic level of the prey

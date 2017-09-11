@@ -20,12 +20,6 @@ compare(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths)
 \value{
 A shiny output (reactive html)
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

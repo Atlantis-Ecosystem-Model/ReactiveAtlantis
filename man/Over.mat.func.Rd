@@ -14,12 +14,6 @@ Over.mat.func(Ava.mat, Gape)
 \value{
 Overlap Matrix based only in the gape limitation
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

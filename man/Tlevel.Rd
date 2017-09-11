@@ -14,12 +14,6 @@ Tlevel(DC, TLp)
 \value{
 The trophic level of the predator
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

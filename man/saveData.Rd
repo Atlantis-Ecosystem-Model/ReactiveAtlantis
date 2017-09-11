@@ -12,12 +12,6 @@ saveData(data)
 \value{
 a txt file of the pPREY matrix
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Compare two diferent outputs
 ##' @param nc.out.current Current netcdf output file. this is the tradicional output file from Atlantis
 ##' @param nc.out.old (Default = NULL) This is the old netcdf output file,  used only for compare.
@@ -307,9 +304,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         }
         return(grp.bio)
     }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Calculate the value of a time serie based on the first value
 ##' @param df Data frame of biomass by FG
 ##' @return A vector of relative values
@@ -321,9 +315,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         return(df)
     }
 ## functions
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -373,9 +364,6 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         return(pp.mat)
     }
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Box information
 ##' @param bgm.file BGM file,  Atlantis input
 ##' @param depths Cummulative depths (de max depth of each layer)
@@ -398,9 +386,6 @@ boxes.prop <- function(bgm.file, depths){
     out[out$Depth <= 0, 2 : ncol(out)] <- 0
     return(out)
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Calculate the different weigt (estructural reserve) and number of indivduals
 ##' @param nc.out Netcdf out file. this is the traditional .nc file from atlantis
 ##' @param grp groups csv file
@@ -476,9 +461,6 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
                    Reserve    = RN,
                    Type       = type)
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Interactive Plot for biomass (structural and reserve nitrogen)
 ##' @param total Dataframe with the weight output from the nitro.weight function
 ##' @param rn2 True if active the plot of reserve nitrogen

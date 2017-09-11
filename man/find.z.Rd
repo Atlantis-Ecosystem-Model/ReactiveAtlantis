@@ -14,12 +14,6 @@ find.z(bgm.file, cum.depths)
 \value{
 dataframe with the number of layer per box including the box that are island
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

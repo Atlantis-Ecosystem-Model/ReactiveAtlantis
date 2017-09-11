@@ -54,24 +54,6 @@ A matrix with the values from the .prm file
 
 A matrix with the values from the .prm file
 }
-\description{
-.. content for \description{} (no empty lines) ..
-
-.. content for \description{} (no empty lines) ..
-
-.. content for \description{} (no empty lines) ..
-
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-
-.. content for \details{} ..
-
-.. content for \details{} ..
-
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 

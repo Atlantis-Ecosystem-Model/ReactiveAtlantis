@@ -18,12 +18,6 @@ gape.func(groups.csv, Struct, Biom.N, prm)
 \value{
 the limits for the prey based on the predator gape size and prey size
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

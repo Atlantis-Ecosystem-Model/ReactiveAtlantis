@@ -12,12 +12,6 @@ relative(df, biomass = TRUE, Vec = NULL)
 \value{
 A vector of relative values
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

@@ -23,12 +23,6 @@ feeding.mat.shy(prm.file, grp.file, nc.file, bgm.file, cum.depths,
 \value{
 Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

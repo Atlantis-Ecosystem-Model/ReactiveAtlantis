@@ -18,12 +18,6 @@ predation(biom.file, groups.csv, diet.file, age.biomass = NULL)
 \value{
 A reactive html output useful for dynamically evaluating and visualizing predator-prey relationships from atlantis output.
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

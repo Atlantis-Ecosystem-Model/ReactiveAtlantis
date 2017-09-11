@@ -12,12 +12,6 @@ sepText(ortext)
 \value{
 3 columns with names and stage of the predator and the prey
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }

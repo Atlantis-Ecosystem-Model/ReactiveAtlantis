@@ -1,6 +1,3 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Growth primary producers
 ##' @param ini.nc.file Atlantis initital condition file (netcdf file)
 ##' @param grp.file  Group file. Atlantis input file (.cvs)
@@ -239,9 +236,6 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 }
 
 ## functions
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking

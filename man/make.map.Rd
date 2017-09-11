@@ -12,12 +12,6 @@ make.map(bgm.file)
 \value{
 A datafrma con witht 3 columns,  first the box_id,  then the latitude and the longitude
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo,  based on Shane function \ref{https://github.com/shanearichards/shinyrAtlantis}
 }
