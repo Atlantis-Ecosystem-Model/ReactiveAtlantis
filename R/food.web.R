@@ -7,6 +7,7 @@
 ##' @param quiet help to debug the function
 ##' @return Reactive output
 ##' @author Demiurgo
+##' @export
 food.web <- function(diet.file, grp.file,  quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
     txtHelp <- paste(txtHelp, "<p>This bit of code help to visualize the food web change during the simulation output from <b>Atlantis</b> run. </p>")

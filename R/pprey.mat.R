@@ -10,6 +10,7 @@
 ##' @param quiet For debugging porpouses,  default TRUE
 ##' @return Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 ##' @author Demiurgo
+##' @export
 feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
     txtHelp <- paste(txtHelp, "<p>This program displays data for the predator prey relationshi for  <b>Atlantis</b> run. Also,  provide help for the tunning of the pprey matrix</p>")

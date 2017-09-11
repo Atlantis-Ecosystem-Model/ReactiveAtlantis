@@ -8,6 +8,7 @@
 ##' @param age.biomass output file for the biomass by age (non-standard atlantis output, make sure to put the flag 'flag_age_output' in the run.prm if you want to look at this output)
 ##' @return A reactive html output useful for dynamically evaluating and visualizing predator-prey relationships from atlantis output.
 ##' @author Demiurgo
+##' @export
 predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     txtHelp <- "<h2>Summary</h2>"
     txtHelp <- paste(txtHelp, "<p>This program is useful for dynamically evaluating and visualizing predator-prey relationships from atlantis</p>")

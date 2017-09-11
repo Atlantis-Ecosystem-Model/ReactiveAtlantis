@@ -1,3 +1,14 @@
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Growth primary producers
+##' @param ini.nc.file Atlantis initital condition file (netcdf file)
+##' @param grp.file  Group file. Atlantis input file (.cvs)
+##' @param prm.file  Atlantis Biology parameter file
+##' @param out.nc.file Estandar netcdf output file
+##' @return  A shiny output (reactive html)
+##' @author Demiurgo
+##' @export
 growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     if (!require('shiny', quietly = TRUE)) {
         stop('The package shiny was not installed')

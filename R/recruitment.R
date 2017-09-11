@@ -1,3 +1,16 @@
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Estimation of Recruitment function
+##' @param ini.nc.file Atlantis initital condition file (netcdf file)
+##' @param out.nc.file Estandar netcdf output file
+##' @param yoy.file Young of the Year output file the estandar name for this file is : output[YOUR_MODLE]YOY.txt where [YOUR_MODLE] is the name of yout atlatnis model
+##' @param grp.file Groups csv file (Atlatnis input file)
+##' @param prm.file Biology parameter file (*.prm file)
+##' @param quiet (Default = TRUE) this paramter helps the debuging
+##' @return Reactive output whith recruitment curves and estimated values
+##' @author Demiurgo
+##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
     txtHelp <- "<h2>Summary Recruit and YOY page</h2>"
     txtHelp <- paste(txtHelp, "<p>This code Helps to calibrate the recruitment for <b>Atlantis</b> based on the recruitment and allows you to test new values</p>")
