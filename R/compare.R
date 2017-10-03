@@ -263,7 +263,11 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
         name.fg <- paste0(pol.grp$Name[pool], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom))== 3){
-            biom <- apply(biom, 3, '*', box.info$Vol)
+           if(pol.grp$GroupType[pool] == 'LG_INF'){
+               biom <- apply(biom, 3, '*', box.info$VolInf)
+           }else{
+               biom <- apply(biom, 3, '*', box.info$Vol)
+           }
             biom <- apply(biom, 2, sum, na.rm = TRUE)
         } else {
             biom <- apply(biom, 2, function(x) x * box.info$info$Area)
@@ -378,12 +382,15 @@ boxes.prop <- function(bgm.file, depths){
                                            Depth =  -z$Value, Layers = box.lyrs))
         vol[b, 1 : box.lyrs] <- area$Value * depths[1 : box.lyrs]
     }
-    vol <- cbind(out$Area, vol) # to include the sediment layer for later calculations
-    vol <- t(vol[, ncol(vol) : 1])
+    vol                <- cbind(out$Area, vol) # to include the sediment layer for later calculations
+    vol                <- t(vol[, ncol(vol) : 1])
+    vol2               <- vol ## arrange not for infauna
+    vol2[nrow(vol2), ] <- 0
     if(any(out$Area < 1)) warning('\nOne (or more) of the boxes areas is less than 1m2,  Check if the right BGM file in xy coordinates')
     out[out$Depth <= 0, 2 : ncol(out)] <- 0
-    out <- list(info = out,
-                Vol  = vol)
+    out <- list(info   = out,
+                Vol    = vol2,
+                VolInf = vol)
     return(out)
 }
 ##' @title Calculate the different weigt (estructural reserve) and number of indivduals
@@ -428,7 +435,11 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         name.fg <- paste0(grp$Name[pos.fg], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom)) == 3){
-            biom <- apply(biom, 3, '*', box.info$Vol)
+            if(grp$GroupType[pos.fg] == 'LG_INF'){
+                biom <- apply(biom, 3, '*', box.info$VolInf)
+            }else{
+                biom <- apply(biom, 3, '*', box.info$Vol)
+            }
             if(By == 'Total'){
                 biom <- apply(biom, 2, sum, na.rm = TRUE)
             }
