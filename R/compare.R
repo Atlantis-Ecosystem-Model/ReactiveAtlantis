@@ -109,7 +109,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                                  checkboxInput('scl2', label = strong("Scaled"), value = TRUE),
                                                  checkboxInput('limit2', label = strong("limit-axis"), value = TRUE),
                                                  selectInput('right2', label = strong("Legend position"), c('Right', 'Left'))
-                                                 ),
+                                             ),
                                              wellPanel(
                                                  checkboxInput('cur2', label = strong("Compare current output"), value = FALSE),
                                                  selectInput('FG2b', 'Functional Group :', as.character(grp$Code)),
@@ -120,7 +120,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                                  checkboxInput('scl2b', label = strong("Scaled"), value = TRUE),
                                                  checkboxInput('limit2b', label = strong("limit-axis"), value = TRUE),
                                                  selectInput('right2b', label = strong("Legend position"), c('Right', 'Left'))
-                                                 )                                             ),
+                                             )                                             ),
                                       column(10,
                                              plotOutput('plot2a', width = "100%", height = "450px"),
                                              plotOutput('plot2b', width = "100%", height = "450px")
@@ -137,7 +137,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                                  checkboxInput('scl3a', label = strong("Scaled"), value = TRUE),
                                                  checkboxInput('limit3a', label = strong("limit-axis"), value = TRUE),
                                                  selectInput('right3a', label = strong("Legend position"), c('Right', 'Left'))
-                                                 )),
+                                             )),
                                       column(10,
                                              plotOutput('plot3a', width = "100%", height = "1000px")
                                              ))),
@@ -206,7 +206,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 plot
             })
             output$plot2a <- renderPlot({
-            plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
+                plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
             })
             output$plot2b <- renderPlot({
                 validate(
@@ -232,21 +232,21 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
 bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
-        grp.bio <- NULL
-        for(age in 1 : nrow(age.grp)){
-            cohort <- NULL
-            for(coh in 1 : age.grp[age, 'NumCohorts']){
-                name.fg <- paste0(age.grp$Name[age], coh)
-                b.coh   <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
-                            ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
-                    ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
-                b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
-                cohort  <- cbind(cohort, b.coh)
-            }
-            grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$Code[age]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+    grp.bio <- NULL
+    for(age in 1 : nrow(age.grp)){
+        cohort <- NULL
+        for(coh in 1 : age.grp[age, 'NumCohorts']){
+            name.fg <- paste0(age.grp$Name[age], coh)
+            b.coh   <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
+                        ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
+                ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
+            b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
+            cohort  <- cbind(cohort, b.coh)
         }
-        return(grp.bio)
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$Code[age]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
+    return(grp.bio)
+}
 ##' @title Biomass for age groups
 ##' @param pol.grp Biomass pool groups
 ##' @param nc.out ncdf atlantis' output file
@@ -257,24 +257,23 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
 ##' @param age.grp Age groups
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
-    bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
-        grp.bio <- NULL
-        for(pool in 1 : nrow(pol.grp)){
-            name.fg <- paste0(pol.grp$Name[pool], '_N')
-            biom    <- ncvar_get(nc.out, name.fg)
-            if(length(dim(biom)) == 3){
-                biom <- apply(biom, c(2, 3), sum, na.rm = TRUE)
-                biom <- apply(biom, 2, function(x) x * box.info$Volumen)
-                biom <- apply(biom, 2, sum, na.rm = TRUE)
-            } else {
-                biom <- apply(biom, 2, function(x) x * box.info$Area)
-                biom <- apply(biom, 2, sum, na.rm = TRUE)
-            }
-            biom    <- biom * mg2t * x.cn
-            grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$Code[pool]), Biomass  = biom, Simulation = ctg))
+bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
+    grp.bio <- NULL
+    for(pool in 1 : nrow(pol.grp)){
+        name.fg <- paste0(pol.grp$Name[pool], '_N')
+        biom    <- ncvar_get(nc.out, name.fg)
+        if(length(dim(biom))== 3){
+            biom <- apply(biom, 3, '*', box.info$Vol)
+            biom <- apply(biom, 2, sum, na.rm = TRUE)
+        } else {
+            biom <- apply(biom, 2, function(x) x * box.info$info$Area)
+            biom <- apply(biom, 2, sum, na.rm = TRUE)
         }
-        return(grp.bio)
+        biom    <- biom * mg2t * x.cn
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$Code[pool]), Biomass  = biom, Simulation = ctg))
     }
+    return(grp.bio)
+}
 ##' @title Biomass for age groups
 ##' @param pwn.grp Biomass pools with age classes
 ##' @param nc.out ncdf atlantis' output file
@@ -283,32 +282,31 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
 ##' @param x.cn Redfield ratio of C:N 5.7
 ##' @return a dataframe with the biomass for all the functional groups with Biomass pool age classes
 ##' @author Demiurgo
-    bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
-        grp.bio <- NULL
-        for(pwn in 1 : nrow(pwn.grp)){
-            cohort <- NULL
-            for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
-                name.fg <- paste0(pwn.grp$Name[pwn], '_N', coh)
-                b.coh   <- ncvar_get(nc.out, name.fg) * mg2t * x.cn
-                b.coh   <- apply(b.coh, c(2, 3), sum, na.rm = TRUE)
-                b.coh   <- apply(b.coh, 2, function(x) x * box.info$Volumen)
-                b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
-                cohort  <- cbind(cohort, b.coh)
-            }
-            grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(pwn.grp$Code[pwn]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
+    grp.bio <- NULL
+    for(pwn in 1 : nrow(pwn.grp)){
+        cohort <- NULL
+        for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
+            name.fg <- paste0(pwn.grp$Name[pwn], '_N', coh)
+            b.coh   <- ncvar_get(nc.out, name.fg) * mg2t * x.cn
+            b.coh   <- apply(b.coh, 3, '*', box.info$Vol)
+            b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
+            cohort  <- cbind(cohort, b.coh)
         }
-        return(grp.bio)
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(pwn.grp$Code[pwn]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
+    return(grp.bio)
+}
 ##' @title Calculate the value of a time serie based on the first value
 ##' @param df Data frame of biomass by FG
 ##' @return A vector of relative values
 ##' @author Demiurgo
-    relative <- function(df, biomass = TRUE, Vec = NULL){
-        if(biomass)       vector <- df$Biomass
-        if(!is.null(Vec)) vector <- df[Vec]
-        df$Relative  <- vector / vector[1]
-        return(df)
-    }
+relative <- function(df, biomass = TRUE, Vec = NULL){
+    if(biomass)       vector <- df$Biomass
+    if(!is.null(Vec)) vector <- df[Vec]
+    df$Relative  <- vector / vector[1]
+    return(df)
+}
 ## functions
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
@@ -368,7 +366,9 @@ boxes.prop <- function(bgm.file, depths){
     bgm       <- readLines(bgm.file, warn = FALSE)
     boxes     <- text2num(bgm, 'nbox', FG = 'look')
     out       <- NULL
-    max.nlyrs <- length(depths) - 1              ## maximum number of water layers
+    depths    <- depths[ - which(depths == 0)]
+    max.nlyrs <- length(depths)              ## maximum number of water layers
+    vol       <- array(NA, dim = c(boxes$Value, length(depths)))
     for(b in 1 : boxes$Value){
         area      <- text2num(bgm, paste0('box', b - 1,'.area'), FG = 'look')
         z         <- text2num(bgm, paste0('box', b - 1,'.botz'), FG = 'look')
@@ -376,9 +376,14 @@ boxes.prop <- function(bgm.file, depths){
         box.lyrs  <- pmin(box.lyrs, max.nlyrs) # bound by maximum depth
         out       <- rbind(out, data.frame(Boxid = b - 1, Area  = area$Value, Volumen = area$Value *  -z$Value,
                                            Depth =  -z$Value, Layers = box.lyrs))
+        vol[b, 1 : box.lyrs] <- area$Value * depths[1 : box.lyrs]
     }
+    vol <- cbind(out$Area, vol) # to include the sediment layer for later calculations
+    vol <- t(vol[, ncol(vol) : 1])
     if(any(out$Area < 1)) warning('\nOne (or more) of the boxes areas is less than 1m2,  Check if the right BGM file in xy coordinates')
     out[out$Depth <= 0, 2 : ncol(out)] <- 0
+    out <- list(info = out,
+                Vol  = vol)
     return(out)
 }
 ##' @title Calculate the different weigt (estructural reserve) and number of indivduals
@@ -420,16 +425,16 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         }
         type <- 'AgeClass'
     } else if (grp[pos.fg, 'NumCohorts'] == 1){ ## Biomass pool
+        browser()
         name.fg <- paste0(grp$Name[pos.fg], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom)) == 3){
-            biom <- apply(biom, c(1, 3), function(x) x * box.info$Volumen)
-            biom <- aperm(biom, c(2,1,3))
+            biom <- apply(biom, 3, '*', box.info$Vol)
             if(By == 'Total'){
-                biom <- apply(biom, 3, sum, na.rm = TRUE)
+                biom <- apply(biom, 2, sum, na.rm = TRUE)
             }
         } else {
-            biom <- apply(biom, 2, function(x) x * box.info$Volumen)
+            biom <- apply(biom, 2, function(x) x * box.info$info$Area)
             if(By == 'Total'){
                 biom <- apply(biom, 2, sum, na.rm = TRUE)
             }
@@ -441,10 +446,9 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
             name.fg <- paste0(grp$Name[pos.fg],'_N', coh)
             biom    <- ncvar_get(nc.out, name.fg)
-            biom    <- apply(biom, c(1, 3), function(x) x * box.info$Volumen)
-            biom    <- aperm(biom, c(2,1,3))
+            biom    <- apply(biom, 3, '*', box.info$Vol)
             if(By == 'Total'){
-                biom <- apply(biom, 3, sum, na.rm = TRUE)
+                biom <- apply(biom, 2, sum, na.rm = TRUE)
             }
             Bio[[coh]] <- biom
         }
@@ -468,7 +472,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
 ##' @return A interactive plot
 ##' @author Demiurgo
 plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right, colors, coh = NULL, max.coh = NULL){
-    #if(!is.null(coh)) browser()
+                                        #if(!is.null(coh)) browser()
     ## Definig limits and general configuration of plots
     l.lab  <- 4 * ifelse(scl2, 1, sum(rn2, sn2, num2, bio2))
     yli    <- cbind(c(0, 3), sapply(total[-5], range, na.rm = TRUE))
@@ -493,7 +497,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
         axis(1, at = tickx, labels = FALSE, lwd = 2,  col = 1)
         if(scl2){
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
-            #axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
+                                        #axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
             if(is.null(coh) || coh%%nr.lab == 1){
                 axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
                 mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
@@ -520,7 +524,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
             if(is.null(coh) || coh%%nr.lab == 1)
-            mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
+                mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
         } else if(!scl2){
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = format(yticks, scientific = TRUE, digits = 2), lwd = 2, line = sum.l, col.axis = colors[2], col = colors[2])
@@ -543,7 +547,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
             if(is.null(coh) || coh%%nr.lab == 1)
-            mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
+                mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
         } else if(!scl2){
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = format(yticks, scientific = TRUE, digits = 2), lwd = 2, line = sum.l, col.axis = colors[4], col = colors[4])
@@ -566,7 +570,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = yticks, lwd = 2,  col = 1)
             if(is.null(coh) || coh%%nr.lab == 1)
-            mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
+                mtext(2, text = 'Relative Values (X_t/X_0)', line = 2)
         } else if(!scl2){
             yticks <- seq(ylim[1], round(ylim[2]), by = round(ylim[2]) / 5)
             axis(2, at = yticks , labels = format(yticks, scientific = TRUE, digits = 2), lwd = 2, line = sum.l, col.axis = colors[3], col = colors[3])
@@ -581,7 +585,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
         on <- seq(1:4)[c(bio2, num2, sn2, rn2)]
         legend(ifelse(right == 'Right', 'topright', 'topleft'), names(total)[on], lty=1, col = colors[on], lwd=2, bty='n')
     }
-        if(!is.null(coh)){
-            mtext(paste0("AgeClass - ", ifelse(coh>10, '', '0'), coh))}
+    if(!is.null(coh)){
+        mtext(paste0("AgeClass - ", ifelse(coh>10, '', '0'), coh))}
 
 }

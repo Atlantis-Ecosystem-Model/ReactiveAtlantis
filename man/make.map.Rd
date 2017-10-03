@@ -13,6 +13,6 @@ make.map(bgm.file)
 A dataframe con witht 3 columns,  first the box_id,  then the latitude and the longitude
 }
 \author{
-Demiurgo,  based on Shane function \code{\ref{https://github.com/shanearichards/shinyrAtlantis}}
+Demiurgo,  based on Shane function \href{https://github.com/shanearichards/shinyrAtlantis}{shinyrAtlantis}
 }
 

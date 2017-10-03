@@ -767,7 +767,7 @@ saveData <- function(data) {
 ##' @title Function to get the vertices of the bgm map for Atlantis
 ##' @param bgm.file BGM file for atlantis
 ##' @return A dataframe con witht 3 columns,  first the box_id,  then the latitude and the longitude
-##' @author Demiurgo,  based on Shane function \code{\ref{https://github.com/shanearichards/shinyrAtlantis}}
+##' @author Demiurgo,  based on Shane function \href{https://github.com/shanearichards/shinyrAtlantis}{shinyrAtlantis}
 make.map <- function(bgm.file){
     bgm          <- readLines(bgm.file)
     numboxes     <- as.numeric(gsub('nbox', '', grep("nbox", bgm, value = TRUE)))
