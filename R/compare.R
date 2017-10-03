@@ -425,7 +425,6 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         }
         type <- 'AgeClass'
     } else if (grp[pos.fg, 'NumCohorts'] == 1){ ## Biomass pool
-        browser()
         name.fg <- paste0(grp$Name[pos.fg], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom)) == 3){
@@ -472,7 +471,6 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
 ##' @return A interactive plot
 ##' @author Demiurgo
 plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right, colors, coh = NULL, max.coh = NULL){
-                                        #if(!is.null(coh)) browser()
     ## Definig limits and general configuration of plots
     l.lab  <- 4 * ifelse(scl2, 1, sum(rn2, sn2, num2, bio2))
     yli    <- cbind(c(0, 3), sapply(total[-5], range, na.rm = TRUE))
