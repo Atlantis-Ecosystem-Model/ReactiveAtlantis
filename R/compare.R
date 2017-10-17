@@ -274,6 +274,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
             biom <- apply(biom, 2, sum, na.rm = TRUE)
         }
         biom    <- biom * mg2t * x.cn
+        biom[1] <- biom[2]
         grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$Code[pool]), Biomass  = biom, Simulation = ctg))
     }
     return(grp.bio)

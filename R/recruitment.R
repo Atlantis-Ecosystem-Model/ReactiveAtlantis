@@ -19,14 +19,14 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     txtHelp <- paste(txtHelp, "<p><b>New Beta</b> You can put a new value for Beta and calculate a new YOY for that new value</p>")
     txtHelp <- paste(txtHelp, "<h4>Outputs</h4>")
     txtHelp <- paste(txtHelp, "<p><b>Plot 1</b> YOY and Larvaes calcualted for ATLANTIS; new larvae and new YOY values calculated using <b>New Alpha</b> and <b>New Beta</b> values </p>")
-    txtHelp <- paste(txtHelp, "<p><b>Plot 2</b> Proportion of the YOY compared with the initial value (YOY<sub>0</sub></p>")
+    txtHelp <- paste(txtHelp, "<p><b>Plot 2</b> Proportion of the YOY compared with the initial value (YOY<sub>0</sub></)p>")
     txtHelp <- paste(txtHelp, "<p><b>Table</b> Output from both plots by each reproduction period</p>")
     txtHelp <- paste(txtHelp, "<h2>Summary Growth Zooplankton and Primare producer</h2>")
     txtHelp <- paste(txtHelp, "<p><b>Functional group 1 </b> and <b>Functional group 2</b> allow you to highlight the FGs on the plots</p>")
     txtHelp <- paste(txtHelp, "<p><b>Box</b> Select the box that you are interested</p>")
     txtHelp <- paste(txtHelp, "<p><b>Layer-Proportion</b> Each time serie on the plot is scaled between 0 and 1 in each layer (devided by the highest value of the time serie on that specific layer and box)  (<i>Default = TRUE</i>)</p>")
     txtHelp <- paste(txtHelp, "<p><b>Box-Proportion</b> Each time serie on the plot is scaled between 0 and 1 (devided by the highest value of the time serie on that box)  (<i>Default = FALSE</i>)</p>")
-    txtHelp <- paste(txtHelp, "<p><b>Logarithm</b> Lobarirth of the time serie(<i>Default = FALSE</i>)</p>")
+    txtHelp <- paste(txtHelp, "<p><b>Logarithm</b> Logarirthm of the time serie(<i>Default = FALSE</i>)</p>")
     txtHelp <- paste(txtHelp, "<h4>Outputs</h4>")
     txtHelp <- paste(txtHelp, "<p>One Plot for layer with the time series of <b><i>Zooplankton</i></b>, <b><i>Primary Producers</i></b>, <b><i>Light</i></b> and <b><i>Eddies</i></b></p>")
     ## Libraries
@@ -72,13 +72,13 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     sp.dat    <- with(group.csv, which(IsTurnedOn == 1 & NumCohorts > 1)) ## Age structure groups
     options(warn =  - 1)
 
-    rec       <- text2num(prm, 'flagrecruit', FG = 'look') ## Avoinding the annoying warnings
+    rec       <- text2num(prm, '^flagrecruit', FG = 'look') ## Avoinding the annoying warnings
     options(warn =  0)
     rec       <- rec[complete.cases(rec), ] ## avoiding NAs
     rec       <- cbind(rec, Alpha = NA, Beta = NA, KSPA = NA, FSP = NA, Time.sp  = NA, Period.sp = NA,
                        Time.rec = NA, Period.rec = NA, XCN = text2num(prm, 'X_CN', FG = 'look')[1, 2],
                        XRS = text2num(prm, 'X_RS', FG = 'look')[1, 2], Rec.SNW = NA, Rec.RNW = NA)
-    sps    <- gsub(pattern = 'flagrecruit', '', rec$FG)
+    sps    <- gsub(pattern = '^flagrecruit', '', rec$FG)
     rec$FG <- sps
     max.gr <- with(group.csv, max(NumCohorts[IsTurnedOn == 1]))
     FSPB   <- NULL
@@ -108,7 +108,6 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             rownames(FSPB)[t]   <- as.character(sps[fg.r])
             t                   <- t + 1
         }
-        if(sps[fg.r]=='NGO')browser()
         rec$Time.sp[fg.r]   <- text2num(prm, paste0(sps[fg.r], '_Time_Spawn'), FG = 'look')[1, 2]
         rec$Period.sp[fg.r] <- text2num(prm, paste0(sps[fg.r], '_spawn_period'), FG = 'look')[1, 2]
         rec$Time.rec[fg.r]  <- text2num(prm, paste0(sps[fg.r], '_Recruit_Time'), FG = 'look')[1, 2]
@@ -187,7 +186,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 SSB.tmp <- nums
                 spawn   <- nums *  FSPB[pos.fspb, coh]
                 num.sp  <- spawn
-            } else{
+            } else {
                 name.fg <- paste0(nam.fg[fg], coh)
                 nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
                 mask    <- ifelse(nums > 1.e-16, 1, 0)
@@ -277,7 +276,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                                                  br(),
                                                  numericInput("new.alpha", label = "New Alpha", value = 0),
                                                  br(),
-                                                 numericInput("new.beta", label = "New Beta", value = 0)
+                                                 numericInput("new.beta", label = "New Beta", value = 0),
+                                                 mainPanel("Recomened Alpha: ", textOutput("ratio"))
                                              )
                                              ),
                                       column(10,
@@ -346,6 +346,9 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                     recruit <- rec$Alpha[rec$FG == input$sp]  * rep(1, length(num.fg))
                     new.rec <- input$new.alpha * rep(1, length(num.fg))
                 }
+                ## Avoiding NaNs
+                spawn.fg[is.na(spawn.fg)] <- 0
+                biom.fg[is.na(biom.fg)] <- 0
                 recruit[is.na(recruit)] <- 0
                 new.rec[is.na(new.rec)] <- 0
                 if(mod == 1 || mod == 12){
@@ -366,6 +369,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 fst.val  <- (new.bio * prop.dif) /  yoy.fg$Rec[1]
                 N.YOY    <- (new.bio * prop.dif)
                 df.end   <- data.frame(Rec = rec.bio, N.YOY = N.YOY, N.Rec = new.bio, BYOY = n.yoy, TYOY = Time.yoy, PrpYOY = n.f.yoy[, 2], Prp.st = fst.val, P.diff = prop.dif, Model = mod)
+                if(mod %in% c(3, 10, 19)) df.end$Ratio <-  biom.fg[1 : length(time.stp())] / recruit[1 : length(time.stp())]
+                df.end
             })
             ## Out Primary producers List
             o.pp <- reactive({
@@ -392,7 +397,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                     } else if (input$l.prop == FALSE & input$b.prop == TRUE){
                         out.pp.list[[i]] <- out.pp.list[[i]] / max(out.pp.list[[i]] , na.rm = TRUE)
                     } else {
-                        warning('\nYou need to choose between proportion by boxo or proportion by layer, but you cannot use both\n')
+                        warning('\nYou need to choose between proportion by box or proportion by layer, but you cannot use both\n')
                     }
                     if(input$log.v == TRUE){
                         out.pp.list[[i]] <- log(out.pp.list[[i]])
@@ -422,6 +427,14 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 sp.plt   <- paste0(input$sp, '.0')
                 Ini.YOY  <- yoy[1, which(names(yoy) == sp.plt)]
             })
+            output$ratio <- renderText({
+                if(rec.bio()$Model[1] %in% c(3, 10, 19)) {
+                    ratio <- rec.bio()$Ratio[1] * as.numeric(rec$Alpha[rec$FG == input$sp])
+                } else {
+                    ratio <- 'Not Available for this model'
+                }
+                ratio
+            })
             output$plot1 <- renderPlot({
                 par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$BYOY , xlab = 'Time (days)', ylab = ifelse(rec.bio()$Model[1] %in% c(1, 12), 'Numbers', 'Biomass [Tonnes]'), las = 1, bty = 'n', pch = 20,type = 'b',
@@ -450,10 +463,13 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             })
             output$table <- renderTable({
                 table <- with(rec.bio(), data.frame(Time.Larv = time.stp(), TimeYOY = TYOY, Larvaes.Atlantis = Rec, YOY.Atlantis = BYOY, Diff.Prop = P.diff * 100, Est.Larvaes = N.Rec, Est.YOY = N.YOY))
+                if(rec.bio()$Model[1] %in% c(3, 10, 19)) table$Ratio <- rec.bio()$Ratio
+                table <- as.data.frame(table)
             })
         }
     )
 }
+
 ##' @title Beverton Equation
 ##' @param sp spawning power
 ##' @param bha Alpha parameter
