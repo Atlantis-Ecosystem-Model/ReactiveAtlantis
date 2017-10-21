@@ -411,7 +411,9 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         for(coh in 1 : n.coh){
             name.fg <- paste0(grp$Name[pos.fg], coh)
             resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
+            resN[which(resN == 0)] <- NA
             strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
+            strN[which(strN == 0)] <- NA
             nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
             if(By %in% c('Total', 'Cohort')){
