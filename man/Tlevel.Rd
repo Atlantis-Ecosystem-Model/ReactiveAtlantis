@@ -17,4 +17,3 @@ The trophic level of the predator
 \author{
 Demiurgo
 }
-

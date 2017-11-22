@@ -17,4 +17,3 @@ a dataframe with information (box-id, area (m), )
 \author{
 Demiurgo
 }
-

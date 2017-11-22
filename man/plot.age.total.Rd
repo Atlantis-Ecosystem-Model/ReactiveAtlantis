@@ -30,4 +30,3 @@ A interactive plot
 \author{
 Demiurgo
 }
-

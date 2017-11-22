@@ -26,4 +26,3 @@ Reactive output whith recruitment curves and estimated values
 \author{
 Demiurgo
 }
-

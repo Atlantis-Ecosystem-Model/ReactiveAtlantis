@@ -21,4 +21,3 @@ the limits for the prey based on the predator gape size and prey size
 \author{
 Demiurgo
 }
-

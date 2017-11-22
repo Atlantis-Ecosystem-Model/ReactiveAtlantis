@@ -23,4 +23,3 @@ A shiny output (reactive html)
 \author{
 Demiurgo
 }
-

@@ -21,4 +21,3 @@ A reactive html output useful for dynamically evaluating and visualizing predato
 \author{
 Demiurgo
 }
-

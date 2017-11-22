@@ -23,4 +23,3 @@ a dataframe with the biomass for all the functional groups with Biomass pool age
 \author{
 Demiurgo
 }
-

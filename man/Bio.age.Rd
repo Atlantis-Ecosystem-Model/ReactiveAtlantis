@@ -19,4 +19,3 @@ Biomass by adult and juveniles
 \author{
 Demiurgo
 }
-

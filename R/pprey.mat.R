@@ -431,13 +431,14 @@ feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, q
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
-    nc.out <- nc_open(nc.file)
-    Is.off <- which(groups.csv$IsTurnedOn == 0)
-    FG     <- as.character(groups.csv$Name)
-    FGN    <- as.character(groups.csv$Code)
-    TY     <- as.character(groups.csv$GroupType)
-    Biom.N <- array(data = NA, dim = c(length(FG), max(groups.csv$NumCohorts)))
-    Struct <- Biom.N
+    nc.out  <- nc_open(nc.file)
+    Is.off  <- which(groups.csv$IsTurnedOn == 0)
+    FG      <- as.character(groups.csv$Name)
+    FGN     <- as.character(groups.csv$Code)
+    TY      <- as.character(groups.csv$GroupType)
+    Biom.N  <- array(data = NA, dim = c(length(FG), max(groups.csv$NumCohorts)))
+    Struct  <- Biom.N
+    over.sp <- NULL
     for(code in 1 : length(FG)){
         if(code %in% Is.off) next
         if(TY[code] %in% c('CEP', 'PWN') && groups.csv$NumCohorts[code] > 1){
@@ -550,7 +551,11 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
                     new.sp  <- as.vector(melt(Numb.tmp)[, 3])
-                    over.sp <- cbind(over.sp, new.sp)
+                    if(is.null(over.sp)){
+                        over.sp <- new.sp
+                    } else {
+                        over.sp <- cbind(over.sp, new.sp)
+                    }
                     names(over.sp)[ncol(over.sp)] <- paste(FGN[code], cohort, sep = '_')
                 }
                 Biom.N[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE)  +

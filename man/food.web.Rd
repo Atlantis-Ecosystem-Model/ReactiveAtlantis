@@ -19,4 +19,3 @@ Reactive output
 \author{
 Demiurgo
 }
-

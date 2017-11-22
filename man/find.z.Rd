@@ -17,4 +17,3 @@ dataframe with the number of layer per box including the box that are island
 \author{
 Demiurgo
 }
-

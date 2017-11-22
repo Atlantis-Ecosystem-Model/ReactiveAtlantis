@@ -91,7 +91,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                                                  selectInput('FG', 'Functional Group :', as.character(grp)),
                                                  selectInput('Stocks', 'Stocks :', stocks),
                                                  numericInput("Thr", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001),
-                                                 checkboxInput(inputId = "scl", label = strong("scaled to 1"), value = TRUE)
+                                                 checkboxInput(inputId = "scl", label = strong("scaled to 1"), value = TRUE),
+                                                 checkboxInput(inputId = "merT", label = strong("Melt time step"), value = FALSE)
                                              )
                                              ),
                                       column(10,
@@ -194,6 +195,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 predator        <- melt(predator, id.vars = "Time", na.rm = TRUE)
                 predator        <- left_join(predator, new.bio[new.bio$Predator == input$FG, ],  by = 'Time')
                 predator$consum <- with(predator, value * Biomass)
+                if(input$merT) predator$Time <- predator$Time / diff(unique(predator$Time))[1]
                 predator        <- as.data.frame(predator)
 
             })
@@ -206,6 +208,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 prey          <- left_join(prey, new.bio, by = c('Predator', 'Time')) ## Biomass of the predator, so we have an idea of the total pressure
                 prey$eff.pred <- prey[, input$FG] * prey$Biomass
                 trh.max       <- max(prey$eff.pred) * input$Thr
+                if(input$merT) prey$Time <- prey$Time / diff(unique(prey$Time))[1]
                 prey          <- prey[prey$eff.pred > trh.max, ]
             })
             output$plot1 <- renderPlot({
@@ -242,7 +245,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             output$plot4B <- renderPlot({
                 colorpp <- mycol(length(unique(age.diet()$variable)))
                 ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = colorpp) +
-                    labs(list(title = paste('Predator  -', input$FG, 'on Time step :', input$Time), x = 'AgeGroup', y = 'Proportion'))
+                    labs(list(title = paste('Predator  -', input$FG2, 'on Time step :', input$Time), x = 'AgeGroup', y = 'Proportion'))
             })
 
             output$plot5 <- renderPlot({

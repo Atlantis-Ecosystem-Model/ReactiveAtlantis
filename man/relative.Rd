@@ -15,4 +15,3 @@ A vector of relative values
 \author{
 Demiurgo
 }
-

@@ -19,4 +19,3 @@ The biomass for age class and the sturctural nitrogen by age class
 \author{
 Demiurgo
 }
-

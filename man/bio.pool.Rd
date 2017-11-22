@@ -27,4 +27,3 @@ a dataframe with the biomass for all the functional groups with age classes
 \author{
 Demiurgo
 }
-

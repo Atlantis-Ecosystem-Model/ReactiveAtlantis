@@ -26,4 +26,3 @@ Reactive html that display predator prey information such as: the ppPREY matrix,
 \author{
 Demiurgo
 }
-

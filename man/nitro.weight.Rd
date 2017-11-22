@@ -23,4 +23,3 @@ List witht he weight (reserve and structural), total biomass (tons) and number
 \author{
 Demiurgo
 }
-
