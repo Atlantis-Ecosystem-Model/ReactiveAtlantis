@@ -589,7 +589,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-        col1 <- col2 <- vector()
+         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
@@ -613,11 +613,13 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
             if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                pp.mat <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
+                t.text <- gsub('\t', ' ',  text[l.pat[i] + 1])
+                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for', tmp[1], ' has ', ncol(pp.tmp))
+                t.text <- gsub('\t', ' ',  text[l.pat[i] + 1])
+                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }
