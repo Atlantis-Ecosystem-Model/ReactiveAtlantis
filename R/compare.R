@@ -57,7 +57,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType == 'PWN', ]
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
-    age.cur.bio  <- bio.age(age.grp, nc.cur, 'Current', mg2t, x.cn)
+    if(nrow(age.grp) > 0){
+        age.cur.bio  <- bio.age(age.grp, nc.cur, 'Current', mg2t, x.cn)
+    } else {
+        age.cur.bio <- NULL
+        warning('You dont have any Age structure Active in this simulation.\n Check your group.csv file\n')
+    }
     pool.cur.bio <- bio.pool(pol.grp, nc.cur, 'Current', mg2t, x.cn, inf.box)
     old.bio      <- NULL
     if(!is.null(nc.out.old)){
