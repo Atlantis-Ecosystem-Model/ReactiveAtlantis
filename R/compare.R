@@ -66,7 +66,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     pool.cur.bio <- bio.pool(pol.grp, nc.cur, 'Current', mg2t, x.cn, inf.box)
     old.bio      <- NULL
     if(!is.null(nc.out.old)){
-        age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn)
+        if(nrow(age.grp) > 0){
+            age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn)
+        } else {
+            age.old.bio  <- NULL
+        }
         pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box)
         old.bio      <- rbind(pool.old.bio, age.old.bio)
     }

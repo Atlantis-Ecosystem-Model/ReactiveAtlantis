@@ -83,7 +83,9 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard'))
                                                  )),
                                       column(10,
-                                             plotOutput('plotC', width = "100%", height = "700px")
+                                             plotOutput('plotC', width = "100%", height = "700px"),
+                                             p(strong("\nModel skill assessment (quantitative metrics)")),
+                                             dataTableOutput('TabStat')
                                              ))),
                          ## -- Exit --
                          tabPanel(
@@ -121,6 +123,13 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 C.arry <- rowsum(C.arry, format(Time, '%Y'))
                 ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
                 ext    <- list(A.catch = C.arry, external.c = ext)
+                for(i in  2 : ncol(ext$external.c)){
+                   pos <- which(colnames(ext$A.catch) %in% colnames(ext$external.c)[i])
+                   if(length(pos) == 0) next()
+                   na.rmv    <- which(!is.na(ext$external.c[, i]))
+                   t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
+                   ext$Stats <- stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[na.rmv, i]))
+                }
                 ext
             })
             ## exit
@@ -156,6 +165,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     plot.catch(ext()$A.catch[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(ext()$A.catch)[i], by.year = TRUE, external = ext()$external.c)
                 }
             })
+            output$TabStat <- renderDataTable(ext()$Stats)
         }
     )
 }
@@ -261,4 +271,33 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
         mtext(bio.n)
         mtext(2, text = 'Biomass (t)', line = 3)
     }
+}
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Skill assessment of the model
+##' @param obs Observed values
+##' @param mod modeled values
+##' @return metrics  =  AAE; AE; MEF; RMSE; COR
+##' @author Demiurgo
+stats <- function(obs, mod){
+    ## Stimation of Correlation
+    COR  <- cor(obs, mod, method = 'spearman')
+    ## Average error
+    AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
+    ## Average absolute error
+    diff <- mod - obs
+    AAE  <- mean(abs(diff), na.rm = TRUE)
+    ## Mean squared error
+    RMSE <- sqrt(mean((diff) ^ 2, na.rm = TRUE))
+    ## Reliability index
+    RI   <-  exp(sqrt(mean(log(obs / mod) ^ 2, na.rm = TRUE)))
+    ## Modeling efficiency
+    ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^ 2)
+    out <- data.frame(Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
+                                  'Average Absolute Error (AAE)', 'Mean Squared Error (RMSE)', 'Reliability index',
+                                  'Model Efficiency (ME)'),
+                      Results = c(COR, AE, AAE, RMSE, RI, ME))
+    return(out)
 }
