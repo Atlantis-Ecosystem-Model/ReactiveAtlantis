@@ -128,7 +128,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                    if(length(pos) == 0) next()
                    na.rmv    <- which(!is.na(ext$external.c[, i]))
                    t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
-                   ext$Stats <- stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[na.rmv, i]))
+                   t.mat.ext <- which(ext$external.c$Time %in% unique(format(Time, '%Y'))[t.match])
+                   ext$Stats <- stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]))
                 }
                 ext
             })
@@ -292,7 +293,10 @@ stats <- function(obs, mod){
     ## Mean squared error
     RMSE <- sqrt(mean((diff) ^ 2, na.rm = TRUE))
     ## Reliability index
-    RI   <-  exp(sqrt(mean(log(obs / mod) ^ 2, na.rm = TRUE)))
+    ## Avoiding (inf values)
+    tmp                   <- log(obs / mod) ^ 2
+    tmp[is.infinite(tmp)] <- NA
+    RI                    <-  exp(sqrt(mean(tmp, na.rm = TRUE)))
     ## Modeling efficiency
     ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^ 2)
     out <- data.frame(Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
