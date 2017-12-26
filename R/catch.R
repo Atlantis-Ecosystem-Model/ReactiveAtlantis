@@ -1,8 +1,8 @@
 ##' @title Analysis of the Harvest in Atlatnis
-##' @param grp.csv Groups csv file (Atlatnis input file)
-##' @param fish.csv Fisheries csv file (Atlantis input file)
-##' @param catch.nc Netcdf Output file from Atlantis. Usually with the name of [Your_Model]CATCH.nc
-##' @param ext.catch.f External File with the Observed catches and discards by year. This helps to calibrate the harvest section of atlatnis.
+##' @param grp.csv Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param fish.csv Character string with the connection to the fisheries \code{*.csv} file (Atlantis input file)
+##' @param catch.nc Character string with the connection to the catch netcdf output file from Atlantis. Usually with the name of \code{[Your_Model]CATCH.nc}, where [Your_Model] is the name of your Atlantis model
+##' @param ext.catch.f (Default = NULL) Character string with the connection to the External File with the Observed catches and discards by year. This helps to calibrate the harvest section of atlatnis.
 ##' @return A shiny output (reactive html)
 ##' @author Demiurgo
 ##' @export

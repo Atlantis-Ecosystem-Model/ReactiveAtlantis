@@ -7,13 +7,13 @@
 growth.pp(ini.nc.file, grp.file, prm.file, out.nc.file)
 }
 \arguments{
-\item{ini.nc.file}{Atlantis initital condition file (netcdf file)}
+\item{ini.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".}
 
-\item{grp.file}{Group file. Atlantis input file (.cvs)}
+\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{prm.file}{Atlantis Biology parameter file}
+\item{prm.file}{Character string with the connection to the biology parameter file \code{*.prm}.}
 
-\item{out.nc.file}{Estandar netcdf output file}
+\item{out.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
 }
 \value{
 A shiny output (reactive html)

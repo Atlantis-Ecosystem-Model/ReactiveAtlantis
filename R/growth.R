@@ -1,8 +1,8 @@
 ##' @title Growth primary producers
-##' @param ini.nc.file Atlantis initital condition file (netcdf file)
-##' @param grp.file  Group file. Atlantis input file (.cvs)
-##' @param prm.file  Atlantis Biology parameter file
-##' @param out.nc.file Estandar netcdf output file
+##' @param ini.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".
+##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param prm.file Character string with the connection to the biology parameter file \code{*.prm}.
+##' @param out.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
 ##' @return  A shiny output (reactive html)
 ##' @author Demiurgo
 ##' @export

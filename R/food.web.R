@@ -1,7 +1,7 @@
-##' @title Function on shiny R to plot the trophic level of the fucntional groups
+##' @title Trophic level of the fucntional groups
 ##' @param diet.file Diet output file from atlantis
-##' @param grp.file Group file. Atlantis input file (.cvs)
-##' @param quiet help to debug the function
+##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param quiet (Default = TRUE) this paramter helps during the process of debuging.
 ##' @return Reactive output
 ##' @author Demiurgo
 ##' @export

@@ -1,11 +1,20 @@
-##' @title Estimation of Recruitment function
-##' @param ini.nc.file Atlantis initital condition file (netcdf file)
-##' @param out.nc.file Estandar netcdf output file
-##' @param yoy.file Young of the Year output file the estandar name for this file is : output[YOUR_MODLE]YOY.txt where [YOUR_MODLE] is the name of yout atlatnis model
-##' @param grp.file Groups csv file (Atlatnis input file)
-##' @param prm.file Biology parameter file (*.prm file)
-##' @param quiet (Default = TRUE) this paramter helps the debuging
-##' @return Reactive output whith recruitment curves and estimated values
+##' This function helps to estimate the recruitment for Age class functional
+##'     groups and the primary and secundary production. This function shows the parameter values and the recruitment equation
+##'     for the chosen functional groups (i.e. Ricker or Beverton-holt). Based on the larval survival and the biomass
+##'     at each reproductive time step the function allows the user to re-calculate
+##'     the recruitment based on a new  set of paramterers provided by the user. For
+##'     the primary and secondary production the function provide a view of the
+##'     primary production (Phytoplankton, seagrass and macroalgae),  light and
+##'     seconday production (zooplankton) by box and layer. This helps to  calibrate
+##'     the growth of primary producer and the consuption of light.
+##' @title Estimation of Recruitment and primary producer growth
+##' @param ini.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".
+##' @param out.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
+##' @param yoy.file Character string with the connection to Young of the Year standar output file. Usually the name for this file is : \code{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.
+##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param prm.file Character string with the connection to the biology parameter file \code{*.prm}.
+##' @param quiet (Default = TRUE) this paramter helps during the process of debuging.
+##' @return Reactive output whith recruitment curves and estimated values.
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){

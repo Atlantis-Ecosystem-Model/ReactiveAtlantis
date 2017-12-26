@@ -7,13 +7,13 @@
 compare(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths)
 }
 \arguments{
-\item{nc.out.current}{Current netcdf output file. this is the tradicional output file from Atlantis}
+\item{nc.out.current}{Current netcdf output file. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
 
-\item{nc.out.old}{(Default = NULL) This is the old netcdf output file,  used only for compare.}
+\item{nc.out.old}{(Default = NULL) This is the old netcdf output file,  used only for comparation. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
 
-\item{grp.csv}{Groups csv file (Atlatnis input file)}
+\item{grp.csv}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{bgm.file}{XY coordinates bgm file with the information in meters}
+\item{bgm.file}{Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.}
 
 \item{cum.depths}{Cummulative depth of the Atlatnis model}
 }

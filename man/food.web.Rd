@@ -2,16 +2,16 @@
 % Please edit documentation in R/food.web.R
 \name{food.web}
 \alias{food.web}
-\title{Function on shiny R to plot the trophic level of the fucntional groups}
+\title{Trophic level of the fucntional groups}
 \usage{
 food.web(diet.file, grp.file, quiet = TRUE)
 }
 \arguments{
 \item{diet.file}{Diet output file from atlantis}
 
-\item{grp.file}{Group file. Atlantis input file (.cvs)}
+\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{quiet}{help to debug the function}
+\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
 }
 \value{
 Reactive output

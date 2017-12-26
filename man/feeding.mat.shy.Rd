@@ -8,17 +8,17 @@ feeding.mat.shy(prm.file, grp.file, nc.file, bgm.file, cum.depths,
   quiet = TRUE)
 }
 \arguments{
-\item{prm.file}{Atlantis parameter file}
+\item{prm.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{grp.file}{Atlantis group file}
+\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{nc.file}{Atlantis initial conditions file}
+\item{nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".}
 
-\item{bgm.file}{Bgm used for the Atlantis model}
+\item{bgm.file}{Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.}
 
-\item{cum.depths}{Cumulative depths of the differente layers}
+\item{cum.depths}{Vector with the cumulative depths of the differente layers \code{cum.depths <- c(0, 20, 100, 200, 500)}}
 
-\item{quiet}{For debugging porpouses,  default TRUE}
+\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
 }
 \value{
 Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.

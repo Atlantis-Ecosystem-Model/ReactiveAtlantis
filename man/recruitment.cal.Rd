@@ -2,26 +2,37 @@
 % Please edit documentation in R/recruitment.R
 \name{recruitment.cal}
 \alias{recruitment.cal}
-\title{Estimation of Recruitment function}
+\title{Estimation of Recruitment and primary producer growth}
 \usage{
 recruitment.cal(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,
   quiet = TRUE)
 }
 \arguments{
-\item{ini.nc.file}{Atlantis initital condition file (netcdf file)}
+\item{ini.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".}
 
-\item{out.nc.file}{Estandar netcdf output file}
+\item{out.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
 
-\item{yoy.file}{Young of the Year output file the estandar name for this file is : output[YOUR_MODLE]YOY.txt where [YOUR_MODLE] is the name of yout atlatnis model}
+\item{yoy.file}{Character string with the connection to Young of the Year standar output file. Usually the name for this file is : \code{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.}
 
-\item{grp.file}{Groups csv file (Atlatnis input file)}
+\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{prm.file}{Biology parameter file (*.prm file)}
+\item{prm.file}{Character string with the connection to the biology parameter file \code{*.prm}.}
 
-\item{quiet}{(Default = TRUE) this paramter helps the debuging}
+\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
 }
 \value{
-Reactive output whith recruitment curves and estimated values
+Reactive output whith recruitment curves and estimated values.
+}
+\description{
+This function helps to estimate the recruitment for Age class functional
+    groups and the primary and secundary production. This function shows the parameter values and the recruitment equation
+    for the chosen functional groups (i.e. Ricker or Beverton-holt). Based on the larval survival and the biomass
+    at each reproductive time step the function allows the user to re-calculate
+    the recruitment based on a new  set of paramterers provided by the user. For
+    the primary and secondary production the function provide a view of the
+    primary production (Phytoplankton, seagrass and macroalgae),  light and
+    seconday production (zooplankton) by box and layer. This helps to  calibrate
+    the growth of primary producer and the consuption of light.
 }
 \author{
 Demiurgo

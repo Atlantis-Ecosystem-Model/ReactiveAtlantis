@@ -1,8 +1,8 @@
 ##' @title Compare two diferent outputs
-##' @param nc.out.current Current netcdf output file. this is the tradicional output file from Atlantis
-##' @param nc.out.old (Default = NULL) This is the old netcdf output file,  used only for compare.
-##' @param grp.csv Groups csv file (Atlatnis input file)
-##' @param bgm.file XY coordinates bgm file with the information in meters
+##' @param nc.out.current Current netcdf output file. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
+##' @param nc.out.old (Default = NULL) This is the old netcdf output file,  used only for comparation. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
+##' @param grp.csv Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param bgm.file Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.
 ##' @param cum.depths Cummulative depth of the Atlatnis model
 ##' @return A shiny output (reactive html)
 ##' @author Demiurgo

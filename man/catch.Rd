@@ -7,13 +7,13 @@
 catch(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL)
 }
 \arguments{
-\item{grp.csv}{Groups csv file (Atlatnis input file)}
+\item{grp.csv}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{fish.csv}{Fisheries csv file (Atlantis input file)}
+\item{fish.csv}{Character string with the connection to the fisheries \code{*.csv} file (Atlantis input file)}
 
-\item{catch.nc}{Netcdf Output file from Atlantis. Usually with the name of [Your_Model]CATCH.nc}
+\item{catch.nc}{Character string with the connection to the catch netcdf output file from Atlantis. Usually with the name of \code{[Your_Model]CATCH.nc}, where [Your_Model] is the name of your Atlantis model}
 
-\item{ext.catch.f}{External File with the Observed catches and discards by year. This helps to calibrate the harvest section of atlatnis.}
+\item{ext.catch.f}{(Default = NULL) Character string with the connection to the External File with the Observed catches and discards by year. This helps to calibrate the harvest section of atlatnis.}
 }
 \value{
 A shiny output (reactive html)
