@@ -12,27 +12,37 @@ recruitment.cal(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,
 
 \item{out.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
 
-\item{yoy.file}{Character string with the connection to Young of the Year standar output file. Usually the name for this file is : \code{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.}
+\item{yoy.file}{Character string with the connection to Young of the Year standard output file. Usually the name for this file is : \code{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.}
 
 \item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
 \item{prm.file}{Character string with the connection to the biology parameter file \code{*.prm}.}
 
-\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
+\item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
 \value{
-Reactive output whith recruitment curves and estimated values.
+Reactive output with 3 tabs: \itemize{
+        \item \bold{recruitment and YOY}: Shows the recruitment and YOY curves
+    from the Atlantis output for each functional group and provide the option to
+    test different parameter values to obtain new recruitment and YOY curves.
+        \item \bold{Growth Zoo and PP's}: Allows the user to check the values of
+    biomass of primary producer, zooplankton and light by box and layer. The user
+    has the option to set those values as a proportion by box, proportion by
+    layer or their logarithmic value.
+    \item \bold{Help}: Shows information about the inputs, parameter values and
+    output. Also, provides an overview of the different options for the user}
 }
 \description{
 This function helps to estimate the recruitment for Age class functional
-    groups and the primary and secundary production. This function shows the parameter values and the recruitment equation
+    groups and the primary and secondary production. \itemize{
+    \item \bold{Recruits and YOY}: This option shows the parameter values and the recruitment equation
     for the chosen functional groups (i.e. Ricker or Beverton-holt). Based on the larval survival and the biomass
     at each reproductive time step the function allows the user to re-calculate
-    the recruitment based on a new  set of paramterers provided by the user. For
-    the primary and secondary production the function provide a view of the
+    the recruitment based on a new set of parameters provided by the user.
+    this option provides a view of the
     primary production (Phytoplankton, seagrass and macroalgae),  light and
-    seconday production (zooplankton) by box and layer. This helps to  calibrate
-    the growth of primary producer and the consuption of light.
+    secondary production (zooplankton) by box and layer. This helps to  calibrate
+    the growth of primary producer and the consumption of light.}
 }
 \author{
 Demiurgo

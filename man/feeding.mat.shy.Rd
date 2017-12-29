@@ -23,6 +23,14 @@ feeding.mat.shy(prm.file, grp.file, nc.file, bgm.file, cum.depths,
 \value{
 Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 }
+\description{
+This functions helps the user to calibrate the interaction between prey and
+    predator in Atlantis in two ways: \itemize{
+\item \bold{No spatial} allows the user to check and modified availability values
+    from the pprey matrix.
+\item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
+    between the prey and the predator in all the boxes and layers}
+}
 \author{
 Demiurgo
 }

@@ -1,3 +1,9 @@
+##' This functions helps the user to calibrate the interaction between prey and
+##'     predator in Atlantis in two ways: \itemize{
+##' \item \bold{No spatial} allows the user to check and modified availability values
+##'     from the pprey matrix.
+##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
+##'     between the prey and the predator in all the boxes and layers}
 ##' @title Atlantis feeding tool
 ##' @param prm.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
 ##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
