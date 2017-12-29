@@ -1,12 +1,13 @@
 ##' This function helps to estimate the recruitment for Age class functional
-##'     groups and the primary and secundary production. This function shows the parameter values and the recruitment equation
+##'     groups and the primary and secundary production. \itemize{
+##'     \item \bold{Recruits and YOY}This function shows the parameter values and the recruitment equation
 ##'     for the chosen functional groups (i.e. Ricker or Beverton-holt). Based on the larval survival and the biomass
 ##'     at each reproductive time step the function allows the user to re-calculate
-##'     the recruitment based on a new  set of paramterers provided by the user. For
+##'     the recruitment based on a new  set of parameters provided by the user. For
 ##'     the primary and secondary production the function provide a view of the
 ##'     primary production (Phytoplankton, seagrass and macroalgae),  light and
 ##'     seconday production (zooplankton) by box and layer. This helps to  calibrate
-##'     the growth of primary producer and the consuption of light.
+##'     the growth of primary producer and the consuption of light.}
 ##' @title Estimation of Recruitment and primary producer growth
 ##' @param ini.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".
 ##' @param out.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
@@ -14,7 +15,16 @@
 ##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
 ##' @param prm.file Character string with the connection to the biology parameter file \code{*.prm}.
 ##' @param quiet (Default = TRUE) this paramter helps during the process of debuging.
-##' @return Reactive output whith recruitment curves and estimated values.
+##' @return Reactive output whith 3 tabs: \itemize{
+##'         \item \bold{recruitment and YOY}: Shows the recruitment and YOY curves
+##'     from the Atlantis output for each functional group and provide the option to
+##'     test different paramter values to obtain new recruitment and YOY curves.
+##'         \item \bold{Growth Zoo and PP's}: Allows the user to check the values of
+##'     biomass of primary producer, zooplancton and light by box and layer. The user
+##'     has the option to set those values as a proportion by box, proportion by
+##'     layer or their logarithmic value.
+##'     \item \bold{Help}: Shows information about the inputs, parameter values and
+##'     output. Also, provides an overview of the diferent options for the user}
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
@@ -28,7 +38,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     txtHelp <- paste(txtHelp, "<p><b>New Beta</b> You can put a new value for Beta and calculate a new YOY for that new value</p>")
     txtHelp <- paste(txtHelp, "<h4>Outputs</h4>")
     txtHelp <- paste(txtHelp, "<p><b>Plot 1</b> YOY and Larvaes calcualted for ATLANTIS; new larvae and new YOY values calculated using <b>New Alpha</b> and <b>New Beta</b> values </p>")
-    txtHelp <- paste(txtHelp, "<p><b>Plot 2</b> Proportion of the YOY compared with the initial value (YOY<sub>0</sub></)p>")
+    txtHelp <- paste(txtHelp, "<p><b>Plot 2</b> Proportion of the YOY compared with the initial value (YOY<sub>0</sub></))p>")
     txtHelp <- paste(txtHelp, "<p><b>Table</b> Output from both plots by each reproduction period</p>")
     txtHelp <- paste(txtHelp, "<h2>Summary Growth Zooplankton and Primare producer</h2>")
     txtHelp <- paste(txtHelp, "<p><b>Functional group 1 </b> and <b>Functional group 2</b> allow you to highlight the FGs on the plots</p>")
