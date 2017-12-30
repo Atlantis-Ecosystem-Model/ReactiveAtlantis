@@ -9,8 +9,8 @@
 ##'     given his gape size limitations. This function use the knife-edge
 ##'     size selectivity, where availability of the prey is either available (1) or not
 ##'     available to the predator (0).
-##'      \deqn{1 if SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
-##             0 Otherwise}
+##'      \deqn{1 \it{if} SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
+##             0 \it{Otherwise}}
 ##'  Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
 ##'     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
 ##'     the predator (age structured or biomass pool).
