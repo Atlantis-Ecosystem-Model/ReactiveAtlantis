@@ -5,16 +5,19 @@
 ##'     from the pprey matrix. This Function provides 5 outputs:
 ##'    \itemize{
 ##'      \item \bold{Availability matrix}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
-##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey given his gape size limitations.
-##'      \deqn{PreySize_{adult, first} = SN_{adult, first} * KLP * Aval{adult, prey, predator}}
-##'      \deqn{PreySize_{adult, last}  = SN_{adult, last} * KUP * Aval{adult, prey, predator}}
-##'      \deqn{PreySize_{juvenile, first} = SN_{juvenile, first} * KLP * Aval{juvenile, prey, predator}}}
-##'      \deqn{PreySize_{juvenile, last}  = SN_{juvenile, last} * KUP * Aval{juvenile, prey, predator}}}
-##'
+##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
+##'     given his gape size limitations. This function use the knife-edge
+##'     size selectivity, where availability of the prey is either available (1) or not
+##'     available to the predator (0).
+##'      \deqn{1 if SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
+##             0 Otherwise}
+##'  Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
+##'     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
+##'     the predator (age structured or biomass pool).
 ##' \item \bold{Efective Predation}:
 ##' \item \bold{% of predation pressure}:
 ##' \item \bold{Total biomass prey}:
-##'}
+##'}}
 ##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
 ##'     between the prey and the predator in all the boxes and layers}
 ##' @title Atlantis feeding tool
