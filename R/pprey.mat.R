@@ -9,15 +9,18 @@
 ##'     given his gape size limitations. This function use the knife-edge
 ##'     size selectivity, where availability of the prey is either available (1) or not
 ##'     available to the predator (0).
-##'      \deqn{1 \it{if} SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
-##             0 \it{Otherwise}}
+##'      \deqn{\omega 1 \emph{if} SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
+##             0 \emph{Otherwise}}
 ##'  Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
 ##'     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
 ##'     the predator (age structured or biomass pool).
-##' \item \bold{Efective Predation}:
+##' \item \bold{Efective Predation}: Provided an aproximation of the total biomass of
+##'     prey consumed by a predator. It asumes a perfect spatial match between prey
+##'     and predator.
+##'     \deqn{Biomass * availability_{predator, prey} * \omega }
 ##' \item \bold{% of predation pressure}:
 ##' \item \bold{Total biomass prey}:
-##'}}
+##'}}}
 ##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
 ##'     between the prey and the predator in all the boxes and layers}
 ##' @title Atlantis feeding tool
@@ -165,7 +168,6 @@ feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, q
     ## resolution table
     plotHeigh <- paste(as.character(40 * (ncol(t.o.mat) %/% 3 + 1)), "px", sep = "")
     plotWidth <- paste(as.character(45 * (nrow(t.o.mat) %/% 3 + 1)), "px", sep = "")
-    ##real.vec.pprey <- melt(t(log(real.feed)))
     if(!quiet) cat(' ...Done!')
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n # -     Step 3    -   #')
@@ -269,7 +271,6 @@ feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, q
                     newval <- isolate(input$num)
                     col.ch <- isolate(which(colnames(Ava.mat) == input$xcol))
                     row.ch <- isolate(which(row.names(Ava.mat) == pred.name()))
-                    ##row.ch <- isolate(which(row.names(Ava.mat) == input$ycol))
                     isolate(N.mat$Ava[row.ch, col.ch] <- newval)
                 }
             })
