@@ -1,7 +1,20 @@
 ##' This functions helps the user to calibrate the interaction between prey and
-##'     predator in Atlantis in two ways: \itemize{
-##' \item \bold{No spatial} allows the user to check and modified availability values
-##'     from the pprey matrix.
+##'     predator in Atlantis in two ways:
+##'  \itemize{
+##'   \item \bold{No spatial} allows the user to check and modified availability values
+##'     from the pprey matrix. This Function provides 5 outputs:
+##'    \itemize{
+##'      \item \bold{Availability matrix}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey given his gape size limitations.
+##'      \deqn{PreySize_{adult, first} = SN_{adult, first} * KLP * Aval{adult, prey, predator}}
+##'      \deqn{PreySize_{adult, last}  = SN_{adult, last} * KUP * Aval{adult, prey, predator}}
+##'      \deqn{PreySize_{juvenile, first} = SN_{juvenile, first} * KLP * Aval{juvenile, prey, predator}}}
+##'      \deqn{PreySize_{juvenile, last}  = SN_{juvenile, last} * KUP * Aval{juvenile, prey, predator}}}
+##'
+##' \item \bold{Efective Predation}:
+##' \item \bold{% of predation pressure}:
+##' \item \bold{Total biomass prey}:
+##'}
 ##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
 ##'     between the prey and the predator in all the boxes and layers}
 ##' @title Atlantis feeding tool
@@ -661,7 +674,7 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
     Gape$juv.Min  <- Struct[G.pos, 1] * Gape$KLP
     for( i in 1 : length(G.pos)){
         Gape$adult.Min[i]  <- Struct[G.pos[i], Gape$Age.Adult[i]] * Gape$KLP[i]
-        Gape$adult.Max[i]  <- Struct[G.pos[i], length(sum(!is.na(Struct[G.pos[i], ])))] * Gape$KLP[i]
+        Gape$adult.Max[i]  <- Struct[G.pos[i], length(sum(!is.na(Struct[G.pos[i], ])))] * Gape$KUP[i]
         Gape$juv.Max[i]    <- Struct[G.pos[i], Gape$Age.Young[i]] * Gape$KUP[i]
         Gape$JminS[i]      <- Struct[G.pos[i], 1]
         Gape$AminS[i]      <- Struct[G.pos[i], Gape$Age.Adult[i]]

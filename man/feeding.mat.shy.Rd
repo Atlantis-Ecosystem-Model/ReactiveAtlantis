@@ -27,7 +27,16 @@ Reactive html that display predator prey information such as: the ppPREY matrix,
 This functions helps the user to calibrate the interaction between prey and
     predator in Atlantis in two ways: \itemize{
 \item \bold{No spatial} allows the user to check and modified availability values
-    from the pprey matrix.
+    from the pprey matrix. This Function provides 3 outputs: \itemize{
+\item \bold{Availability matrix}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+\item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey given his gape size limitations.
+\deqn{Prey{adult, first} = SN_{adult, first} * KPL}
+\deqn{Prey{adult, last}  = SN_{adult, last} * KPL}
+}
+\item \bold{Efective Predation}:
+\item \bold{% of predation pressure}:
+\item \bold{Total biomass prey}:
+ }
 \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
     between the prey and the predator in all the boxes and layers}
 }
