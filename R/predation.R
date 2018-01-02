@@ -1,7 +1,12 @@
 ##' @title Predation
 ##' @param biom.file Output biomass file from the Atlantis simulation. Usually this output has the name 'outputYOUR_Model_NAMEBiomIndx.txt',  were YOUR_Model_NAME is the name of your Atlatnis model.
 ##' @param groups.csv This file is the group csv file. Which is one of the compulsory inputs of Atlantis
-##' @param diet.file Usual Atlatnis output file,. This file contain the diets of each functional group at each (recorded) time step. If the atlantis simulation is for too many years, it is highly recommended a low frequency recording periodicity of the output file (toutinc). General high frequency engravings very large files and difficult to handle in R.
+##' @param diet.file Character string with the connection to the Diet output
+##'     file. This file contain the diets of each functional group at each (recorded)
+##'     time step. If the atlantis simulation is for several years, it is highly
+##'     recommended a low frequency recording periodicity of this output file
+##'     (toutinc). General high frequency engravings very large files and difficult
+##'     to handle in R.
 ##' @param age.biomass output file for the biomass by age (non-standard atlantis output, make sure to put the flag 'flag_age_output' in the run.prm if you want to look at this output)
 ##' @return A reactive html output useful for dynamically evaluating and visualizing predator-prey relationships from atlantis output.
 ##' @author Demiurgo
