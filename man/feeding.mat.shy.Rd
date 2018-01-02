@@ -12,7 +12,7 @@ feeding.mat.shy(prm.file, grp.file, nc.file, bgm.file, cum.depths,
 
 \item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".}
+\item{nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}.}
 
 \item{bgm.file}{Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.}
 
@@ -30,22 +30,28 @@ This functions helps the user to calibrate the interaction between prey and
   \item \bold{No spatial} allows the user to check and modified availability values
     from the pprey matrix. This Function provides 5 outputs:
    \itemize{
-     \item \bold{Availability matrix}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+     \item \bold{Availability matrix \eqn{\lambda}}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
     given his gape size limitations. This function use the knife-edge
     size selectivity, where availability of the prey is either available (1) or not
     available to the predator (0).
-     \deqn{\omega 1 \emph{if} SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
+ \deqn{\omega = \left\{
+    \begin{array}{ll}
+    1 & SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \\
+    0 & Otherwise
+    \end{array}
+    \right. }{ (non-Latex version) }
  Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
     the predator (age structured or biomass pool).
 \item \bold{Efective Predation}: Provided an aproximation of the total biomass of
     prey consumed by a predator. It asumes a perfect spatial match between prey
     and predator.
-    \deqn{Biomass * availability_{predator, prey} * \omega }
-\item \bold{% of predation pressure}:
+    \deqn{\gamma  =  Biomass * availability_{predator, prey} * \omega}
+Were : \eqn{\gamma} is the effective predation;
+\item \bold{Predation pressure}:
 \item \bold{Total biomass prey}:
-}}}
+}
 \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
     between the prey and the predator in all the boxes and layers}
 }

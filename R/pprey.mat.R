@@ -4,47 +4,57 @@
 ##'   \item \bold{No spatial} allows the user to check and modified availability values
 ##'     from the pprey matrix. This Function provides 5 outputs:
 ##'    \itemize{
-##'      \item \bold{Availability matrix}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+##'      \item \bold{Availability matrix (\eqn{\lambda})}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
 ##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
 ##'     given his gape size limitations. This function use the knife-edge
 ##'     size selectivity, where availability of the prey is either available (1) or not
 ##'     available to the predator (0).
-##'      \deqn{\omega 1 \emph{if} SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \cr
-##             0 \emph{Otherwise}}
-##'  Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
+##'  \deqn{\omega = \left\{
+##'     \begin{array}{ll}
+##'     1 & SN_{predator} * KLP < SN_{prey} < SN_{predator} * KUP \\
+##'     0 & Otherwise
+##'     \end{array}
+##'     \right. }{ (non-Latex version) }
+##'  Were : \eqn{SN} is the structural weight; \eqn{KLP} Minimum gape limit of the
 ##'     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
 ##'     the predator (age structured or biomass pool).
-##' \item \bold{Efective Predation}: Provided an aproximation of the total biomass of
-##'     prey consumed by a predator. It asumes a perfect spatial match between prey
+##' \item \bold{Effective Predation}: Provided an approximation of the total biomass of
+##'     prey consumed by a predator. It assumes a perfect spatial match between prey
 ##'     and predator.
-##'     \deqn{Biomass * availability_{predator, prey} * \omega }
-##' \item \bold{% of predation pressure}:
-##' \item \bold{Total biomass prey}:
-##'}}}
+##'     \deqn{\gamma  =  B * \lambda * \omega}
+##' Were : \eqn{\gamma} is the effective predation; \eqn{B} is the biomass;
+##'     \eqn{\lambda} is the predator-prey availability (pprey matrix); and
+##'     \eqn{\omega} is the predator-prey gape overlap.
+##' \item \bold{Predation pressure}: This function calculate what percentage of the predator
+##'     diet correspond an specific prey.
+##' \item \bold{Total biomass prey}: Is the Total biomass per functional group and
+##'     maturity stage (adult and juvenile)
+##'}
 ##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
-##'     between the prey and the predator in all the boxes and layers}
+##'     between the prey and the predator in all the boxes and layers.
+##' this function gives information about the spatial overlap between prey and predator at the initial condition and the gape limitation}
 ##' @title Atlantis feeding tool
 ##' @param prm.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
 ##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
-##' @param nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".
-##' @param bgm.file Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.
-##' @param cum.depths Vector with the cumulative depths of the differente layers \code{cum.depths <- c(0, 20, 100, 200, 500)}
-##' @param quiet (Default = TRUE) this paramter helps during the process of debuging.
-##' @return Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
+##' @param nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}.
+##' @param bgm.file Character string with the connection to the XY coordinates Atlantis input file \code{*.bgm} with the information in meters.
+##' @param cum.depths Vector with the cumulative depths of the different layers \code{cum.depths <- c(0, 20, 100, 200, 500)}
+##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
+##' @return Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundance of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 ##' @author Demiurgo
 ##' @export
 feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
-    txtHelp <- paste(txtHelp, "<p>This program displays data for the predator prey relationshi for  <b>Atlantis</b> run. Also,  provide help for the tunning of the pprey matrix</p>")
+    txtHelp <- paste(txtHelp, "<p>This program displays data for the predator prey relationship for  <b>Atlantis</b> run. Also,  provide help for the tuning of the pprey matrix</p>")
     txtHelp <- paste(txtHelp, "<h3>Details</h3>")
     txtHelp <- paste(txtHelp, "<p>Plots have a zoom feature. Draw a box and double click to zoom into the box. Double click to reset zoom.</p>")
     txtHelp <- paste(txtHelp, "<p>Using the input panel,  the user can select the focal prey (<b>Prey panel</b>) and predator <b>Predator panel</b> .</p>")
     txtHelp <- paste(txtHelp, "<p>The <b>Original value :</b> box,  display the value that is used on the pprey matrix on the Biological parameter file.</p>")
-    txtHelp <- paste(txtHelp, "<p>The <b>Current value :</b> box,  display the value that the user set in the current run. If the user dont save the run,  the value will be lost.</p>")
-    txtHelp <- paste(txtHelp, "<p>On the <b>New value :</b> box,  the user can enter the new value for the pprey matrix for the selected predator and prey. The result of the aplication woudl be reflected on the current run in all the plots after the used click the box <b>Change value</b>.</p>")
-    txtHelp <- paste(txtHelp, "<p>The <b>Write pPREY Matrix</b> buttom create a txt file that contain the new pprey matrix created by the user</p>")
-    txtHelp <- paste(txtHelp, "<p><b>Efective predation</b> Represent the total predation based on the Predator\'s biomass,  is the same approach that Beth used on the spreadsheet to calibrate predation. Values are on logarithmic scale</p>")
-    txtHelp <- paste(txtHelp, "<p><b>Availability matrix</b> The raw pPREY matrix freom the biological parameter file.</p>")
+    txtHelp <- paste(txtHelp, "<p>The <b>Current value :</b> box,  display the value that the user set in the current run. If the user don't save the run,  the value will be lost.</p>")
+    txtHelp <- paste(txtHelp, "<p>On the <b>New value :</b> box,  the user can enter the new value for the pprey matrix for the selected predator and prey. The result of the application would be reflected on the current run in all the plots after the used click the box <b>Change value</b>.</p>")
+    txtHelp <- paste(txtHelp, "<p>The <b>Write pPREY Matrix</b> bottom create a txt file that contain the new pprey matrix created by the user</p>")
+    txtHelp <- paste(txtHelp, "<p><b>Effective predation</b> Represent the total predation based on the Predator\'s biomass,  is the same approach that Beth used on the spreadsheet to calibrate predation. Values are on logarithmic scale</p>")
+    txtHelp <- paste(txtHelp, "<p><b>Availability matrix</b> The raw pPREY matrix from the biological parameter file.</p>")
     txtHelp <- paste(txtHelp, "<p><b>Overlap matrix</b> shows if the predator is able to eat the prey based on the gape limitations.</p>")
     txtHelp <- paste(txtHelp, "<p><b>% of predation pressure</b> Which percentage of each prey corresponds to the total consumed by the predator.</p>")
     txtHelp <- paste(txtHelp, "<p><b>Total biomass prey</b> Total biomass of each functional group on logarithmic scale.</p>")
@@ -198,7 +208,7 @@ feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, q
                                       column(10,
                                              wellPanel(
                                                  tabsetPanel(
-                                                     tabPanel('Efective Predation',#
+                                                     tabPanel('Effective Predation',#
                                                               plotOutput('plot1', width = plotWidth, height = plotHeigh)
                                                               ),
                                                      tabPanel('Availability matrix',#
