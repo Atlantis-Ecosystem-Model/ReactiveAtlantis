@@ -14,14 +14,14 @@ feeding.mat.shy(prm.file, grp.file, nc.file, bgm.file, cum.depths,
 
 \item{nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}.}
 
-\item{bgm.file}{Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.}
+\item{bgm.file}{Character string with the connection to the XY coordinates Atlantis input file \code{*.bgm} with the information in meters.}
 
-\item{cum.depths}{Vector with the cumulative depths of the differente layers \code{cum.depths <- c(0, 20, 100, 200, 500)}}
+\item{cum.depths}{Vector with the cumulative depths of the different layers \code{cum.depths <- c(0, 20, 100, 200, 500)}}
 
-\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
+\item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
 \value{
-Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundace of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
+Reactive html that display predator prey information such as: the ppPREY matrix,  the initial abundance of prey, the overlap matrix based on gape size, predator preference and predator prey spatial overlap.
 }
 \description{
 This functions helps the user to calibrate the interaction between prey and
@@ -30,7 +30,7 @@ This functions helps the user to calibrate the interaction between prey and
   \item \bold{No spatial} allows the user to check and modified availability values
     from the pprey matrix. This Function provides 5 outputs:
    \itemize{
-     \item \bold{Availability matrix \eqn{\lambda}}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+     \item \bold{Availability matrix (\eqn{\lambda})}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
     given his gape size limitations. This function use the knife-edge
     size selectivity, where availability of the prey is either available (1) or not
@@ -41,19 +41,24 @@ This functions helps the user to calibrate the interaction between prey and
     0 & Otherwise
     \end{array}
     \right. }{ (non-Latex version) }
- Were : \eqn{SN} is the estructural weight; \eqn{KLP} Minimum gape limit of the
+ Were : \eqn{SN} is the structural weight; \eqn{KLP} Minimum gape limit of the
     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
     the predator (age structured or biomass pool).
-\item \bold{Efective Predation}: Provided an aproximation of the total biomass of
-    prey consumed by a predator. It asumes a perfect spatial match between prey
+\item \bold{Effective Predation}: Provided an approximation of the total biomass of
+    prey consumed by a predator. It assumes a perfect spatial match between prey
     and predator.
-    \deqn{\gamma  =  Biomass * availability_{predator, prey} * \omega}
-Were : \eqn{\gamma} is the effective predation;
-\item \bold{Predation pressure}:
-\item \bold{Total biomass prey}:
+    \deqn{\gamma  =  B * \lambda * \omega}
+Were : \eqn{\gamma} is the effective predation; \eqn{B} is the biomass;
+    \eqn{\lambda} is the predator-prey availability (pprey matrix); and
+    \eqn{\omega} is the predator-prey gape overlap.
+\item \bold{Predation pressure}: This function calculate what percentage of the predator
+    diet correspond an specific prey.
+\item \bold{Total biomass prey}: Is the Total biomass per functional group and
+    maturity stage (adult and juvenile)
 }
 \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
-    between the prey and the predator in all the boxes and layers}
+    between the prey and the predator in all the boxes and layers.
+this function gives information about the spatial overlap between prey and predator at the initial condition and the gape limitation}
 }
 \author{
 Demiurgo

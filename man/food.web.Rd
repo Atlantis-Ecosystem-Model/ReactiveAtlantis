@@ -2,19 +2,41 @@
 % Please edit documentation in R/food.web.R
 \name{food.web}
 \alias{food.web}
-\title{Trophic level of the fucntional groups}
+\title{Trophic level}
 \usage{
 food.web(diet.file, grp.file, quiet = TRUE)
 }
 \arguments{
-\item{diet.file}{Diet output file from atlantis}
+\item{diet.file}{Character string with the connection to the Diet output
+file. This file contain the diets of each functional group at each (recorded)
+time step. If the Atlantis simulation is for several years, it is highly
+recommended a low frequency recording periodicity of this output file
+(toutinc). General high frequency engravings very large files and difficult
+to handle in R.}
 
 \item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
 
-\item{quiet}{(Default = TRUE) this paramter helps during the process of debuging.}
+\item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
 \value{
-Reactive output
+Reactive output with the plot of the food web for the specific time step,
+    and a table with the trophic level of each prey and predator in the food web
+}
+\description{
+This function allows you to explore the changes in the the food web structure
+    and trophic level for an specific functional group through time.  The
+    estimation of the trophic position is based on Pauly \emph{et al.}(1998) approach.
+    \deqn{1  +  (DC  *  TLp)  / \code{sum(DC)}}
+Were : DC is the diet composition; Tlp is the trophic level position of the
+    diet. This initial values for the trophic position are based on Pauly et
+    al. (1998) and Tucket and Rogers (2014).
+the flexibility of this function allows you to change : a) \bold{the \emph{focus}
+    functional group} over which all calculation would be made; b) \bold{Maximum
+    trophic connection},  this allows you to simplified the food-web and set the
+    maximum number of connection from the focus functional group; c) \bold{the
+    minimum proportion} this value sets the minimum proportion of a functional in a
+    diet to be considered as prey; and d) \bold{time step} that set the time step
+    for the calculation of the food-web.
 }
 \author{
 Demiurgo

@@ -1,7 +1,7 @@
 ##' This function allows you to explore the changes in the the food web structure
 ##'     and trophic level for an specific functional group through time.  The
-##'     estimation of the trophic position is based on Pauly \emp{et al.}(1998) approach.
-##'     deqn{1  +  (DC  *  TLp)  / \sum{DC}}
+##'     estimation of the trophic position is based on Pauly \emph{et al.}(1998) approach.
+##'     \deqn{1  +  (DC  *  TLp)  / \code{sum(DC)}}
 ##' Were : DC is the diet composition; Tlp is the trophic level position of the
 ##'     diet. This initial values for the trophic position are based on Pauly et
 ##'     al. (1998) and Tucket and Rogers (2014).
