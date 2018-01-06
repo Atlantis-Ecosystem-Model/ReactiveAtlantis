@@ -2,23 +2,68 @@
 % Please edit documentation in R/compare.R
 \name{compare}
 \alias{compare}
-\title{Compare two diferent outputs}
+\title{Compare Outputs}
 \usage{
 compare(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths)
 }
 \arguments{
-\item{nc.out.current}{Current netcdf output file. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
+\item{nc.out.current}{Current netcdf output file. Character string with the
+connection to the netcdf file to read in. This netcdf file contains is a
+generic output from an Atlantis run usually starts with \code{output} and
+ends in \code{.nc}".}
 
-\item{nc.out.old}{(Default = NULL) This is the old netcdf output file,  used only for comparation. Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
+\item{nc.out.old}{(Default = NULL) This is the old netcdf output file,  used only
+for comparison. Character string with the connection to the netcdf file to
+read in. This netcdf file contains is a generic output from an Atlantis run
+usually starts with \code{output} and ends in \code{.nc}".}
 
-\item{grp.csv}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
+\item{grp.csv}{Character string with the connection to the Groups \code{*.csv}
+file (Atlantis input file).}
 
-\item{bgm.file}{Character string with the connection to the XY coordinates Antlantis input file \code{*.bgm} with the information in meters.}
+\item{bgm.file}{Character string with the connection to the XY coordinates
+Atlantis input file \code{*.bgm} with the information in meters.}
 
-\item{cum.depths}{Cummulative depth of the Atlatnis model}
+\item{cum.depths}{Cumulative depth of the Atlantis model}
 }
 \value{
-A shiny output (reactive html)
+A reactive HTML with divided in 3 different panels : \itemize{
+\item \bold{Biomass}: This panel shows the result for one output or the
+    comparison of two and is divided in two sub-panels: 1) \emph{Total
+    Biomass} which displays the changes in total biomass for
+    each functional group; and 2) \emph{Relative Biomass} displays the variation of the
+    total biomass relative to the initial biomass (\eqn{B_{0}}).
+\item \bold{Total*}: This function shows the changes in the variables
+    (i.e. Biomass, Numbers and Structural and reserve nitrogen) for the entire
+    population during time. If a second output is provided the function allows
+    you to compare both outputs. In this function you are able to : 1) \emph{
+    visualize any combination of variables} that means that you can activate and
+    deactivate variables from the visualization. this provides more flexibility to
+    explore the changes in the variables and compare between them; 2)
+    \emph{Scaled}, this option allows you to visualize the values scaled by the
+    initial condition value,  this option is very helpful to check were are the
+    main changes in variables during the calibration process; and 3)
+    \emph{limit-axis} due that you will be dealing with either total or scaled
+    values,  this option allows you to  leave the y-axis free a or to set the
+    limit from 0 to 3.
+\item \bold{By AgeClass*}: In this tab you are able to visualize the changes
+    thought time of the variables by age. In this function you are able to : 1) \emph{
+    visualize any combination of variables} that means that you can activate and
+    deactivate variables from the visualization. this provides more flexibility to
+    explore the changes in the variables and compare between them; 2)
+    \emph{Scaled}, this option allows you to visualize the values scaled by the
+    initial condition value,  this option is very helpful to check were are the
+    main changes in variables during the calibration process; and 3)
+    \emph{limit-axis} due that you will be dealing with either total or scaled
+    values,  this option allows you to  leave the y-axis free a or to set the
+    limit from 0 to 3.
+}
+}
+\description{
+This function allows you to either visualize the output from a simulation or
+    compare two different Atlantis simulations. the comparison allows the user to compare
+    the variables biomass, abundance, structural and reserve nitrogen  between two different
+    outputs. Also, you are able to check the changes is this variables by age for
+    the different functional groups.
 }
 \author{
 Demiurgo
