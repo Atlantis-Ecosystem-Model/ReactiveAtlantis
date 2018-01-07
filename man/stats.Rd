@@ -14,12 +14,6 @@ stats(obs, mod)
 \value{
 metrics  =  AAE; AE; MEF; RMSE; COR
 }
-\description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
-}
 \author{
 Demiurgo
 }
