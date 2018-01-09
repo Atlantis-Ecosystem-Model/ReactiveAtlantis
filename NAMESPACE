@@ -2,7 +2,7 @@
 
 export(catch)
 export(compare)
-export(feeding.mat.shy)
+export(feeding.mat)
 export(food.web)
 export(growth.pp)
 export(predation)

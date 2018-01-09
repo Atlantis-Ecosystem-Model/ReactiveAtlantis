@@ -25,7 +25,7 @@ text2num(text, pattern, FG = NULL, Vector = FALSE)
 
 \item{Vector}{Logic argument, if the data is on vectors or not}
 
-\item{text}{Biological parametar file for Atlatnis}
+\item{text}{Biological parametar file for Atlantis}
 
 \item{pattern}{Text that you are looking}
 

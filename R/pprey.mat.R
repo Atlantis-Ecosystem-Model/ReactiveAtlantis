@@ -48,7 +48,7 @@
 ##'     size, predator preference and predator prey spatial overlap.
 ##' @author Demiurgo
 ##' @export
-feeding.mat.shy <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
+feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
     txtHelp <- paste(txtHelp, "<p>This program displays data for the predator prey relationship for  <b>Atlantis</b> run. Also,  provide help for the tuning of the pprey matrix</p>")
     txtHelp <- paste(txtHelp, "<h3>Details</h3>")

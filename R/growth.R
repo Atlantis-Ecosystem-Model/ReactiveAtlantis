@@ -1,9 +1,75 @@
-##' @title Growth primary producers
-##' @param ini.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".
-##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
-##' @param prm.file Character string with the connection to the biology parameter file \code{*.prm}.
-##' @param out.nc.file Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".
-##' @return  A shiny output (reactive html)
+##' This function helps you visualize what are the possible factors that limit the
+##'     growth of primary producers. Primary producers in Atlantis are limited in
+##'     their biomass by variables such as: nutrients, light, space, and by processes
+##'     such as acidification and the presence of eddies (Asta etl al. 2017). In this
+##'     function, most of these factors are analyzed, except for the acidification
+##'     process and the spatial limitation.
+##' \itemize{
+##'    \item \bold{Nutrient limitation}: The nutrients limitation scalar
+##'     (\eqn{\delta_{nutrients}}) in the case of species limited only by nitrogen is
+##'     calculated as :
+##'     \deqn{\delta_{nutrients}  = \frac{DIN}{KN + DIN}} \cr
+##'     Were where \eqn{DIN} is the concentration of \eqn{NH_{3}} + \eqn{NO_{3}} and
+##'     \eqn{KN} is the half saturation constant of nutrient uptake. \cr
+##'     For species that are limited for multiple nutrients like diatom that can be
+##'     limited by silicate \eqn{Si} and nitrogen you have 3 different options to choose on
+##'     Atlantis (\emph{flagnut}) and the nutrient limitation can have different options:
+##'     \itemize{
+##'       \item \emph{Leibig limitation \bold{flagnut = 0}}
+##'       \deqn{\delta_{nutrients} = min(\frac{DIN}{KN + DIN}, \frac{Si}{KS + Si})}
+##'       \item \emph{multiplicative limitation \bold{flagnut = 1}}
+##'       \deqn{\delta_{nutrients} = \sqrt{\frac{DIN}{KN + DIN} * \frac{Si}{KS + Si}}}
+##'       \item \emph{ERSEM WQI limitation \bold{flagnut = 2}}
+##'       \deqn{\delta_{nutrients} = \frac{2}{\frac{DIN}{KN + DIN} * \frac{Si}{KS + Si}}}
+##'     Were: \eqn{KS} is the growth half-saturation constant for the functional group.
+##'            }
+##'   \item \bold{Light limitation}: In Atlantis photosynthesis in  primary producers
+##'     can be limited by light. The light limitation factor \eqn{\delta_{light}} is calculated by :
+##'  \deqn{\delta_{light} = min(\frac{IRR}{KI}, 1)} \cr
+##'  Were :  \eqn{IRR} irradiance or available light  and\eqn{KI} is the light
+##'     saturation coefficient. \cr
+##' In Atlantis there is a second option \emph{flaglight = 1} that allows the calculation of the light
+##'     limitation factor allowing for light adaptation. This is intended to capture
+##'     the ability of the primary producers to rapidly adapt to different light
+##'     condition (Asta et al., 2017). This option was not considered in this version
+##'     of the tool but would be implemented in future updates.
+##'  \item \bold{Effect of eddies on primary production}: The eddy effect on primary
+##'     produces \eqn{\delta_{eddy}} is calculated by scaling the scale parameter \eqn{eddy_{scale}}
+##'     (\emph{eddy_scale} on Atlantis) by the eddy strength \eqn{eddy_{strength}}.
+##'    \deqn{\delta_{eddy} = eddy_{scale} * eddy_{strength} }
+##' }
+##' @title Limitation Growth primary producers
+##' @param ini.nc.file Character string with the connection to the netcdf file to
+##'     read in. This netcdf file contains the initial conditions for the Atlantis
+##'     model usually ends in \code{.nc}.
+##' @param grp.file Character string with the connection to the Groups \code{*.csv}
+##'     file (Atlantis input file).
+##' @param prm.file Character string with the connection to the biology parameter
+##'     file \code{*.prm}.
+##' @param out.nc.file Character string with the connection to the netcdf file to
+##'     read in. This netcdf file contains is a generic output from an Atlantis run
+##'     usually starts with \code{output} and ends in \code{.nc}.
+##' @return  A reactive HTML with graphical output by functional group, layer and box
+##'     of the variables :
+##' \itemize{
+##'   \item \bold{Growth} :  This variable is the  Primary producer growth (\eqn{G_{pp}}) which is
+##'     determined by the biomass for the primary producer (\eqn{Biom_{pp}}),  the maximum effective
+##'     growth (\eqn{mum}) and the limiting factors: Light limitation (\eqn{\delta_{light}}),
+##'     Nutrients limitation \eqn{\delta_{nutrients}}, and Eddy scalar (\eqn{\delta_{eddy}}).
+##'     \deqn{G_{pp} = Biom_{pp} * mum * \delta_{light} * \delta_{nutrients} *
+##'     \delta_{eddy}}
+##' \item \bold{Light limitation}: The available light by box and layer this option
+##'     use only the basic formula and currently does not use the light adaptation
+##'     option. The light attenuation values used for the calculations are the values
+##'     calculated by Atlantis and reported in the \bold{\emph{out.nc.file}}.
+##' \item \bold{Nutrients limitation} :  Nutrients limitation calculated by layer and
+##'     by box, using the option chosen by the you in the Atlantis run
+##'     (\emph{flagnut = 0,  1 or 2}).
+##' \item \bold{Eddy scalar}: This value is calculated by functional group and by
+##'     box. The values of eddies strength (\eqn{eddy_{strength}}) used are from the
+##'     Atlantis output and the value of eddy scale (\eqn{eddy_{scale}}) is read from
+##'     the Atlantis configuration file.
+##'   }
 ##' @author Demiurgo
 ##' @export
 growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
@@ -25,8 +91,6 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     library(RColorBrewer)
     color <- palette(brewer.pal(n = 12, name = "Paired"))
 
-    ##recruitment.cal(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file)
-    ##Biom      <- read.csv('~/Documents/PhD/Atlantis_Model/model_JFR/JFR_Output_Folder/outputJFREBiomIndx.txt')
     nc.ini    <- nc_open(ini.nc.file)
     group.csv <- read.csv(grp.file)
     nc.out    <- nc_open(out.nc.file)
@@ -84,7 +148,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             l.light[[fg]] <- pmin((IRR / KI$Value[fg]) , 1, na.rm = TRUE)
         } else if(flagnut$Value > 0){
             ## not implemented
-            stop('Option : ', flagnut$Value, 'for light limitation,  not implemented yet\n')
+            stop('Option : ', flagnut$Value, 'for light limitation, not implemented yet\n')
         }
 
         ## space limitation for Phytobentos and seagrass
@@ -228,7 +292,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 legend("topright", inset = c(-0.2, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
-                       col = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Whater Layers')
+                       col = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers')
 
             })
         }
@@ -237,7 +301,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 
 ## functions
 ##' @title Parameter file reader
-##' @param text Biological parametar file for Atlatnis
+##' @param text Biological parametar file for Atlantis
 ##' @param pattern Text that you are looking
 ##' @param FG Name of the functional groups
 ##' @param Vector Logic argument, if the data is on vectors or not
