@@ -116,7 +116,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  selectInput('is.CB', label = strong("Data type"), c('Catch', 'Discard')),
                                                  checkboxInput('rem.cb', label = strong("Remove Values"), value = FALSE),
                                                  numericInput("lag.cb", "Observations:", 1, min = 1, max = 100),
-                                                 checkboxInput('b.year', label = strong("By year"), value = FALSE)
+                                                 checkboxInput('b.year', label = strong("By year"), value = FALSE),
+                                                 downloadButton("DL_Biomass", "Download")
                                                  )),
                                       column(10,
                                              plotOutput('plotB', width = "100%", height = "700px")
@@ -241,6 +242,21 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 }
             })
             output$TabStat <- renderDataTable(ext()$Stats)
+            ## Save data
+            output$DL_Biomass <- downloadHandler(
+                filename = function() {
+                    paste(input$dataset, ".csv", sep = "")
+                },
+                content = function(file) {
+                    if(input$b.year){
+                        Time <- as.Date(unique(format(Time, '%Y')), format = '%Y')
+                    }
+                    write.csv(data.frame(Time = Time, bio()), file, row.names = FALSE)
+                }
+            )
+
+
+
         }
     )
 }
