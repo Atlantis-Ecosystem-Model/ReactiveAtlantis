@@ -144,10 +144,11 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard')),
                                                  checkboxInput('rem.CC', label = strong("Remove Values"), value = FALSE),
                                                  numericInput("lag.CC", "Observations:", 1, min = 1, max = 100)
-                                                 )),
+                                             )),
                                       column(10,
                                              plotOutput('plotC', width = "100%", height = "700px"),
                                              p(strong("\nModel skill assessment (quantitative metrics)")),
+                                             downloadButton("DL.cp.stat", "Download"),
                                              dataTableOutput('TabStat')
                                              ))),
                          ## -- Exit --
@@ -264,6 +265,15 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     out.abu <- matrix(unlist(num()), ncol = length(num()), byrow = TRUE)
                     colnames(out.abu) <- paste0(input$FG, '-Age', seq(1 : length(num())))
                     write.csv(data.frame(Date = Time, out.abu), file, row.names = FALSE)
+                }
+            )
+
+             output$DL.cp.stat <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    write.csv(data.frame(ext()$Stats), file, row.names = FALSE)
                 }
             )
 
