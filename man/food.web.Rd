@@ -14,7 +14,7 @@ recommended a low frequency recording periodicity of this output file
 (toutinc). General high frequency engravings very large files and difficult
 to handle in R.}
 
-\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
+\item{grp.file}{Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).}
 
 \item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }

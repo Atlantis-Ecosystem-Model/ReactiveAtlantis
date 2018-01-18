@@ -1,5 +1,26 @@
-##' This functions helps the user to calibrate the interaction between prey and
-##'     predator in Atlantis in two ways:
+##' This functions helps the user to calibrate and explore different aspect of the
+##'     predator-prey interaction. In Atlantis interaction between the predator and
+##'     the prey is mainly defined by the predator-prey matrix which represent the
+##'     maximum availability of each prey biomass available to a specific
+##'     predator. This consumption can be strongly affected by different processes
+##'     like the spatial overlap, biomass of the prey and gape limitation of the
+##'     predator. With this tool you would be able to explore the availability matrix
+##'     and all this processes that affect the realize consumption. Also this tool
+##'     allow you explore new values for the predator prey matrix and observe online
+##'     how these new values affect the predator prey interaction.
+##' @title Atlantis feeding tool
+##' @param prm.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
+##' @param grp.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
+##' @param nc.file Character string with the connection to the netcdf file to read
+##'     in. This netcdf file contains the initial conditions for the Atlantis model
+##'     usually ends in \emph{.nc}.
+##' @param bgm.file Character string with the connection to the XY coordinates Atlantis input file \emph{*.bgm} with the information in meters.
+##' @param cum.depths Vector with the cumulative depths of the different layers
+##'     \emph{cum.depths <- c(0, 20, 100, 200, 500)}
+##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
+##' @return Reactive HTML with  that display predator prey information such as: the ppPREY
+##'     matrix,  the initial abundance of prey, the overlap matrix based on gape
+##'     size, predator preference and predator prey spatial overlap. All these information is divided in 2 different tabs:
 ##'  \itemize{
 ##'   \item \bold{No spatial} allows the user to check and modified availability values
 ##'     from the pprey matrix. This Function provides 5 outputs:
@@ -33,19 +54,6 @@
 ##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
 ##'     between the prey and the predator in all the boxes and layers.
 ##' this function gives information about the spatial overlap between prey and predator at the initial condition and the gape limitation}
-##' @title Atlantis feeding tool
-##' @param prm.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
-##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
-##' @param nc.file Character string with the connection to the netcdf file to read
-##'     in. This netcdf file contains the initial conditions for the Atlantis model
-##'     usually ends in \code{.nc}.
-##' @param bgm.file Character string with the connection to the XY coordinates Atlantis input file \code{*.bgm} with the information in meters.
-##' @param cum.depths Vector with the cumulative depths of the different layers
-##'     \code{cum.depths <- c(0, 20, 100, 200, 500)}
-##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
-##' @return Reactive html that display predator prey information such as: the ppPREY
-##'     matrix,  the initial abundance of prey, the overlap matrix based on gape
-##'     size, predator preference and predator prey spatial overlap.
 ##' @author Demiurgo
 ##' @export
 feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){

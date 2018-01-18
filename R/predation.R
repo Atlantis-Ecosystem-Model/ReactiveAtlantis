@@ -8,7 +8,7 @@
 ##'     file from the Atlantis simulation. Usually this
 ##'     output has the name 'output\bold{\emph{YOUR_Model_NAME}}BiomIndx.txt', were
 ##'     \bold{\emph{YOUR_Model_NAME}} is the name of your Atlantis model.
-##' @param groups.csv Character string with the connection to the Groups \code{*.csv}
+##' @param groups.csv Character string with the connection to the Groups \emph{*.csv}
 ##'     file (Atlantis input file).
 ##' @param diet.file Character string with the connection to the Diet output
 ##'     file. This file contain the diets of each functional group at each (recorded)

@@ -8,10 +8,10 @@
 ##'     coefficient, root mean squared error, reliability index, average error,
 ##'     average absolute error and the modeling efficiency.
 ##' @title Analysis of the Harvest in Atlantis
-##' @param grp.csv Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
-##' @param fish.csv Character string with the connection to the fisheries \code{*.csv} file (Atlantis input file)
+##' @param grp.csv Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
+##' @param fish.csv Character string with the connection to the fisheries \emph{*.csv} file (Atlantis input file)
 ##' @param catch.nc Character string with the connection to the catch netcdf output
-##'     file from Atlantis. Usually with the name of \code{[Your_Model]CATCH.nc},
+##'     file from Atlantis. Usually with the name of \emph{[Your_Model]CATCH.nc},
 ##'     where [Your_Model] is the name of your Atlantis model
 ##' @param ext.catch.f (Default = NULL) Character string with the connection to the
 ##'     external file with the Observed catches and discards by year. This helps to
@@ -90,7 +90,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
     mycol    <- colorRampPalette(mycol)
     col.bi   <- mycol(15)[c(14, 13, 12, 10)]
     nc.data  <- nc_open(catch.nc)
-    #nc.out   <- nc_open(out.nc)
     grp      <- read.csv(grp.csv)
     if(!is.null(ext.catch.f)){
         ext.f  <- scan(ext.catch.f, nlines = 1, what = character(), sep = ',')
@@ -115,6 +114,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                              wellPanel(
                                                  selectInput('FISHB', 'Fishery :', as.character(fsh$Code)),
                                                  selectInput('is.CB', label = strong("Data type"), c('Catch', 'Discard')),
+                                                 checkboxInput('rem.cb', label = strong("Remove Values"), value = FALSE),
+                                                 numericInput("lag.cb", "Observations:", 1, min = 1, max = 100),
                                                  checkboxInput('b.year', label = strong("By year"), value = FALSE)
                                                  )),
                                       column(10,
@@ -126,6 +127,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                              wellPanel(
                                                  selectInput('FG', 'Functional Group :', as.character(grp$Code)),
                                                  selectInput('is.catch', label = strong("Data type"), c('Catch', 'Discard')),
+                                                 checkboxInput('rem.ab', label = strong("Remove Values"), value = FALSE),
+                                                 numericInput("lag.ab", "Observations:", 1, min = 1, max = 100),
                                                  checkboxInput('gen', label = strong("limit-axis"), value = TRUE)
                                              )),
                                       column(10,
@@ -136,7 +139,9 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                       column(2,
                                              wellPanel(
                                                  selectInput('FISHC', 'Fishery :', as.character(fsh$Code)),
-                                                 selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard'))
+                                                 selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard')),
+                                                 checkboxInput('rem.CC', label = strong("Remove Values"), value = FALSE),
+                                                 numericInput("lag.CC", "Observations:", 1, min = 1, max = 100)
                                                  )),
                                       column(10,
                                              plotOutput('plotC', width = "100%", height = "700px"),
@@ -153,15 +158,24 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
         function(input, output, session){
             num <- reactive({
                 num <- read.var(input$FG, nc.data, input$is.catch, grp) #, input$is.box)
+                if(input$rem.ab){
+                    rep <- 1 : length(num[[1]])
+                    rep[c(1 : input$lag.ab)] <- NA
+                    num <- lapply(num, function(x) x * rep)
+                }
+                num
             })
             bio <- reactive({
                 cat.obs <- paste0(grp$Code, '_', input$is.CB, '_FC', which(fsh$Code == input$FISHB))
                 cat.obs <- which(cat.obs %in% nam.var)
                 arry    <- array(NA, dim = c(length(Time), length(cat.obs)))
                 for(da in 1 : length(cat.obs)){
-                    arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHB, nc.data, fsh = fsh, is.C = 'Catch', grp = grp, by.box = FALSE)
+                    arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHB, nc.data, fsh = fsh, is.C = input$is.CB, grp = grp, by.box = FALSE)
                 }
                 colnames(arry) <- grp$Code[cat.obs]
+                if(input$rem.cb){
+                    arry[c(1 : input$lag.cb), ] <- NA
+                }
                 if(input$b.year){
                     arry <- rowsum(arry, format(Time, '%Y'))
                 }
@@ -176,6 +190,10 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     C.arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHC, nc.data, fsh = fsh, is.C = 'Catch', grp = grp, by.box = FALSE)
                 }
                 colnames(C.arry) <- grp$Code[cat.obs]
+                if(input$rem.CC){
+                    C.arry[c(1 : input$lag.CC), ] <- NA
+                }
+
                 C.arry <- rowsum(C.arry, format(Time, '%Y'))
                 ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
                 ext    <- list(A.catch = C.arry, external.c = ext)
@@ -265,7 +283,6 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
     Tcatch <-list()
     if(n.coh > 1){
         for(coh in 1 : n.coh){
-#            browser()
             name.fg <- paste0(grp$Name[pos], coh,'_', is.C)
             tmp    <- ncvar_get(nc.data, name.fg)
             if(!by.box){
@@ -297,7 +314,7 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
 ##' @author Demiurgo
 plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL, by.year = FALSE, external = NULL, ...){
     par(mar = c(1, 4, 1, 1) + 0.1)
-    if(is.null(ylm)) ylm <- range(ctch)
+    if(is.null(ylm)) ylm <- range(ctch, na.rm = TRUE)
     if(!is.null(external)){
         plp <- which(colnames(external) %in% bio.n)
         ylm <- c(0, max(c(range(ctch, na.rm = TRUE), range(external[, plp], na.rm = TRUE))))
@@ -337,7 +354,7 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @author Demiurgo
 stats <- function(obs, mod){
     ## Stimation of Correlation
-    COR  <- cor(obs, mod, method = 'spearman')
+    COR  <- cor(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
     ## Average error
     AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
     ## Average absolute error

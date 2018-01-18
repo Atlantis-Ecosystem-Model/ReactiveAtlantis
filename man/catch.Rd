@@ -7,12 +7,12 @@
 catch(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL)
 }
 \arguments{
-\item{grp.csv}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
+\item{grp.csv}{Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).}
 
-\item{fish.csv}{Character string with the connection to the fisheries \code{*.csv} file (Atlantis input file)}
+\item{fish.csv}{Character string with the connection to the fisheries \emph{*.csv} file (Atlantis input file)}
 
 \item{catch.nc}{Character string with the connection to the catch netcdf output
-file from Atlantis. Usually with the name of \code{[Your_Model]CATCH.nc},
+file from Atlantis. Usually with the name of \emph{[Your_Model]CATCH.nc},
 where [Your_Model] is the name of your Atlantis model}
 
 \item{ext.catch.f}{(Default = NULL) Character string with the connection to the

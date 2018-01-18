@@ -19,7 +19,7 @@
 ##'     recommended a low frequency recording periodicity of this output file
 ##'     (toutinc). General high frequency engravings very large files and difficult
 ##'     to handle in R.
-##' @param grp.file Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).
+##' @param grp.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
 ##' @return Reactive output with the plot of the food web for the specific time step,
 ##'     and a table with the trophic level of each prey and predator in the food web

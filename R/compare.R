@@ -6,16 +6,16 @@
 ##' @title Compare Outputs
 ##' @param nc.out.current Current netcdf output file. Character string with the
 ##'     connection to the netcdf file to read in. This netcdf file contains is a
-##'     generic output from an Atlantis run usually starts with \code{output} and
-##'     ends in \code{.nc}".
+##'     generic output from an Atlantis run usually starts with \emph{output} and
+##'     ends in \emph{.nc}".
 ##' @param nc.out.old (Default = NULL) This is the old netcdf output file,  used only
 ##'     for comparison. Character string with the connection to the netcdf file to
 ##'     read in. This netcdf file contains is a generic output from an Atlantis run
-##'     usually starts with \code{output} and ends in \code{.nc}".
-##' @param grp.csv Character string with the connection to the Groups \code{*.csv}
+##'     usually starts with \emph{output} and ends in \emph{.nc}".
+##' @param grp.csv Character string with the connection to the Groups \emph{*.csv}
 ##'     file (Atlantis input file).
 ##' @param bgm.file Character string with the connection to the XY coordinates
-##'     Atlantis input file \code{*.bgm} with the information in meters.
+##'     Atlantis input file \emph{*.bgm} with the information in meters.
 ##' @param cum.depths Cumulative depth of the Atlantis model
 ##' @return A reactive HTML with divided in 3 different panels : \itemize{
 ##' \item \bold{Biomass}: This panel shows the result for one output or the

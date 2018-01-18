@@ -9,17 +9,17 @@ growth.pp(ini.nc.file, grp.file, prm.file, out.nc.file)
 \arguments{
 \item{ini.nc.file}{Character string with the connection to the netcdf file to
 read in. This netcdf file contains the initial conditions for the Atlantis
-model usually ends in \code{.nc}.}
+model usually ends in \emph{.nc}.}
 
-\item{grp.file}{Character string with the connection to the Groups \code{*.csv}
+\item{grp.file}{Character string with the connection to the Groups \emph{*.csv}
 file (Atlantis input file).}
 
 \item{prm.file}{Character string with the connection to the biology parameter
-file \code{*.prm}.}
+file \emph{*.prm}.}
 
 \item{out.nc.file}{Character string with the connection to the netcdf file to
 read in. This netcdf file contains is a generic output from an Atlantis run
-usually starts with \code{output} and ends in \code{.nc}.}
+usually starts with \emph{output} and ends in \emph{.nc}.}
 }
 \value{
 A reactive HTML with graphical output by functional group, layer and box

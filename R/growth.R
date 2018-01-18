@@ -41,14 +41,14 @@
 ##' @title Limitation Growth primary producers
 ##' @param ini.nc.file Character string with the connection to the netcdf file to
 ##'     read in. This netcdf file contains the initial conditions for the Atlantis
-##'     model usually ends in \code{.nc}.
-##' @param grp.file Character string with the connection to the Groups \code{*.csv}
+##'     model usually ends in \emph{.nc}.
+##' @param grp.file Character string with the connection to the Groups \emph{*.csv}
 ##'     file (Atlantis input file).
 ##' @param prm.file Character string with the connection to the biology parameter
-##'     file \code{*.prm}.
+##'     file \emph{*.prm}.
 ##' @param out.nc.file Character string with the connection to the netcdf file to
 ##'     read in. This netcdf file contains is a generic output from an Atlantis run
-##'     usually starts with \code{output} and ends in \code{.nc}.
+##'     usually starts with \emph{output} and ends in \emph{.nc}.
 ##' @return  A reactive HTML with graphical output by functional group, layer and box
 ##'     of the variables :
 ##' \itemize{

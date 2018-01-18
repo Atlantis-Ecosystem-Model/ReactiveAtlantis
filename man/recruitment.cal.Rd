@@ -8,15 +8,15 @@ recruitment.cal(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,
   quiet = TRUE)
 }
 \arguments{
-\item{ini.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \code{.nc}".}
+\item{ini.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains the initial conditions for the Atlantis model usually ends in \emph{.nc}".}
 
-\item{out.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \code{output} and ends in \code{.nc}".}
+\item{out.nc.file}{Character string with the connection to the netcdf file to read in. This netcdf file contains is a generic output from an Atlantis run usually starts with \emph{output} and ends in \emph{.nc}".}
 
-\item{yoy.file}{Character string with the connection to Young of the Year standard output file. Usually the name for this file is : \code{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.}
+\item{yoy.file}{Character string with the connection to Young of the Year standard output file. Usually the name for this file is : \emph{output[YOUR_MODEL]YOY.txt} where [YOUR_MODEL] is the name of your Atlantis model.}
 
-\item{grp.file}{Character string with the connection to the Groups \code{*.csv} file (Atlantis input file).}
+\item{grp.file}{Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).}
 
-\item{prm.file}{Character string with the connection to the biology parameter file \code{*.prm}.}
+\item{prm.file}{Character string with the connection to the biology parameter file \emph{*.prm}.}
 
 \item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
