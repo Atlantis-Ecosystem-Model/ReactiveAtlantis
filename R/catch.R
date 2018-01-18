@@ -130,7 +130,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  selectInput('is.catch', label = strong("Data type"), c('Catch', 'Discard')),
                                                  checkboxInput('rem.ab', label = strong("Remove Values"), value = FALSE),
                                                  numericInput("lag.ab", "Observations:", 1, min = 1, max = 100),
-                                                 checkboxInput('gen', label = strong("limit-axis"), value = TRUE)
+                                                 checkboxInput('gen', label = strong("limit-axis"), value = TRUE),
+                                                 downloadButton("DL_Abun", "Download")
                                              )),
                                       column(10,
                                              plotOutput('plot1', width = "100%", height = "700px")
@@ -244,16 +245,35 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
             output$TabStat <- renderDataTable(ext()$Stats)
             ## Save data
             output$DL_Biomass <- downloadHandler(
-                filename = function() {
-                    paste(input$dataset, ".csv", sep = "")
+                filename = function(){
+                    paste0(input$dataset, ".csv")
                 },
                 content = function(file) {
                     if(input$b.year){
-                        Time <- as.Date(unique(format(Time, '%Y')), format = '%Y')
+                        Tim <- as.Date(unique(format(Time, '%Y')), format = '%Y')
                     }
-                    write.csv(data.frame(Time = Time, bio()), file, row.names = FALSE)
+                    write.csv(data.frame(Date = Tim, bio()), file, row.names = FALSE)
                 }
             )
+
+            output$DL_Abun <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    out.abu <- matrix(unlist(num()), ncol = length(num()), byrow = TRUE)
+                    colnames(out.abu) <- paste0(input$FG, '-Age', seq(1 : length(num())))
+                    write.csv(data.frame(Date = Time, out.abu), file, row.names = FALSE)
+                }
+            )
+
+
+
+
+
+
+
+
 
 
 
