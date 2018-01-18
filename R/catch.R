@@ -196,7 +196,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 if(input$rem.CC){
                     C.arry[c(1 : input$lag.CC), ] <- NA
                 }
-
                 C.arry <- rowsum(C.arry, format(Time, '%Y'))
                 ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
                 ext    <- list(A.catch = C.arry, external.c = ext)
@@ -256,7 +255,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(Date = Tim, bio()), file, row.names = FALSE)
                 }
             )
-
             output$DL_Abun <- downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
@@ -267,7 +265,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(Date = Time, out.abu), file, row.names = FALSE)
                 }
             )
-
              output$DL.cp.stat <- downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
@@ -276,17 +273,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(ext()$Stats), file, row.names = FALSE)
                 }
             )
-
-
-
-
-
-
-
-
-
-
-
         }
     )
 }
