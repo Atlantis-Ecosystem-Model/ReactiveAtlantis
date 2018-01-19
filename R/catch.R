@@ -143,13 +143,14 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  selectInput('FISHC', 'Fishery :', as.character(fsh$Code)),
                                                  selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard')),
                                                  checkboxInput('rem.CC', label = strong("Remove Values"), value = FALSE),
-                                                 numericInput("lag.CC", "Observations:", 1, min = 1, max = 100)
+                                                 numericInput("lag.CC", "Observations:", 1, min = 1, max = 100),
+                                                 downloadButton("DL.cp.dat", "Download")
                                              )),
                                       column(10,
                                              plotOutput('plotC', width = "100%", height = "700px"),
                                              p(strong("\nModel skill assessment (quantitative metrics)")),
-                                             downloadButton("DL.cp.stat", "Download"),
-                                             dataTableOutput('TabStat')
+                                             dataTableOutput('TabStat'),
+                                             downloadButton("DL.cp.stat", "Download")
                                              ))),
                          ## -- Exit --
                          tabPanel(
@@ -271,6 +272,24 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 },
                 content = function(file) {
                     write.csv(data.frame(ext()$Stats), file, row.names = FALSE)
+                }
+            )
+            output$DL.cp.dat <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    out.ext <- ext()$external
+                    out.int <- data.frame(Time = unique(format(Time, '%Y')), Simulated = ext()$A.catch)
+                    diff    <- nrow(out.int) - nrow(out.ext)
+                    if(diff > 0){
+                        out.ext[c((nrow(out.ext) + 1) : (nrow(out.ext) + diff)), ] <- NA
+                    } else if (diff < 0) {
+                        out.int[c((nrow(out.int) + 1) : (nrow(out.int) + (diff *  - 1))), ] <- NA
+                    }
+                    out.f           <- data.frame(out.ext, out.int)
+                    colnames(out.f) <- c(paste0('Observed-', colnames(out.ext)), paste0('Simulated-', colnames(out.int)))
+                    write.csv(out.f, file, row.names = FALSE)
                 }
             )
         }
