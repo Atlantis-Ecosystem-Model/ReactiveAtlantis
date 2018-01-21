@@ -197,7 +197,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 if(input$rem.CC){
                     C.arry[c(1 : input$lag.CC), ] <- NA
                 }
-                C.arry <- rowsum(C.arry, format(Time, '%Y'))
+                C.arry <- rowsum(C.arry, format(Time, '%Y'), na.rm = TRUE)
                 ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
                 ext    <- list(A.catch = C.arry, external.c = ext)
                 for(i in  2 : ncol(ext$external.c)){
