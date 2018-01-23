@@ -669,25 +669,25 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
     nam <- NULL
     if(rn){
         n.c    <- length(list$Reserve)
-        reserv <- matrix(unlist(list$Reserve, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        reserv <- matrix(unlist(list$Reserve, use.names = FALSE), ncol = n.c, byrow = FALSE)
         out    <- cbind(out, reserv)
         nam    <- c(nam, paste0('RN.Age', 1 : n.c))
     }
     if(sn){
         n.c    <- length(list$Structural)
-        struct <- matrix(unlist(list$Structural, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        struct <- matrix(unlist(list$Structural, use.names = FALSE), ncol = n.c, byrow = FALSE)
         out    <- cbind(out, Struct)
         nam    <- c(nam, paste0('SN.Age', 1 : n.c))
     }
     if(b){
         n.c    <- length(list$Biomass)
-        biom   <- matrix(unlist(list$Biomass, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        biom   <- matrix(unlist(list$Biomass, use.names = FALSE), ncol = n.c, byrow = FALSE)
         out    <- cbind(out, biom)
         nam    <- c(nam, paste0('Biom.Age', 1 : n.c))
     }
     if(n){
         n.c    <- length(list$Numbers)
-        num    <- matrix(unlist(list$Numbers, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        num    <- matrix(unlist(list$Numbers, use.names = FALSE), ncol = n.c, byrow = FALSE)
         out    <- cbind(out, num)
         nam    <- c(nam, paste0('Num.Age', 1 : n.c))
     }
