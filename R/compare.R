@@ -188,7 +188,8 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                                  checkboxInput('bio3a', label = strong("Biomass"), value = TRUE),
                                                  checkboxInput('scl3a', label = strong("Scaled"), value = TRUE),
                                                  checkboxInput('limit3a', label = strong("limit-axis"), value = TRUE),
-                                                 selectInput('right3a', label = strong("Legend position"), c('Right', 'Left'))
+                                                 selectInput('right3a', label = strong("Legend position"), c('Right', 'Left')),
+                                                 downloadButton("Dwn.age", "Download")
                                              )),
                                       column(10,
                                              plotOutput('plot3a', width = "100%", height = "1000px")
@@ -273,6 +274,15 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
                 }
             })
+            output$Dwn.age <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    out <- to.save(coho(), input$sn3a, input$rn3a, input$num3a, input$bio3a, Time)
+                    write.csv(out, file, row.names = FALSE)
+                }
+            )
         }
     )
 }
@@ -652,4 +662,36 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
     if(!is.null(coh)){
         mtext(paste0("AgeClass - ", ifelse(coh>10, '', '0'), coh))}
 
+}
+
+to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = Time){
+    out <- NULL
+    nam <- NULL
+    if(rn){
+        n.c    <- length(list$Reserve)
+        reserv <- matrix(unlist(list$Reserve, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        out    <- cbind(out, reserv)
+        nam    <- c(nam, paste0('RN.Age', 1 : n.c))
+    }
+    if(sn){
+        n.c    <- length(list$Structural)
+        struct <- matrix(unlist(list$Structural, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        out    <- cbind(out, Struct)
+        nam    <- c(nam, paste0('SN.Age', 1 : n.c))
+    }
+    if(b){
+        n.c    <- length(list$Biomass)
+        biom   <- matrix(unlist(list$Biomass, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        out    <- cbind(out, biom)
+        nam    <- c(nam, paste0('Biom.Age', 1 : n.c))
+    }
+    if(n){
+        n.c    <- length(list$Numbers)
+        num    <- matrix(unlist(list$Numbers, use.names = FALSE), ncol = n.c, byrow = TRUE)
+        out    <- cbind(out, num)
+        nam    <- c(nam, paste0('Num.Age', 1 : n.c))
+    }
+    colnames(out) <- c(nam)
+    out <- data.frame(Date = Time, out)
+    return(data.frame(out))
 }

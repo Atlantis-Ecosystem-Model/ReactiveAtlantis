@@ -161,7 +161,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
         ## Create the plots
         function(input, output, session){
             num <- reactive({
-                num <- read.var(input$FG, nc.data, input$is.catch, grp) #, input$is.box)
+                num <- read.var(input$FG, nc.data, input$is.catch, grp)
                 if(input$rem.ab){
                     rep <- 1 : length(num[[1]])
                     rep[c(1 : input$lag.ab)] <- NA
