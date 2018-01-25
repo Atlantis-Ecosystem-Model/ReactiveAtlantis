@@ -94,10 +94,10 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if(!is.null(nc.out.old)) nc.old <- nc_open(nc.out.old)
     grp     <- grp[grp$IsTurnedOn == 1, c('Code', 'Name', 'LongName', 'GroupType', 'NumCohorts')]
     ## Getting the total biomass
-    age.grp <- grp[grp$NumCohorts > 1 & grp$GroupType != 'PWN', ]
+    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('CEP', 'PWN'), ]
     pol.grp <- grp[grp$NumCohorts == 1, ]
     ## Some model use Agestructured biomass pools
-    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType == 'PWN', ]
+    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'CEP'), ]
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
     if(nrow(age.grp) > 0){
