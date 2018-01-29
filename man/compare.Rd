@@ -41,21 +41,21 @@ A reactive HTML with divided in 3 different panels:
     population over time. If a second output is provided the function allows
     comparison of the outputs. In this function the user is able to:
   \itemize{
-    \item \emph{visualize any combination of variables}, that means the user can activate and
+    \item \emph{Visualize any combination of variables}, that means the user can activate and
     deactivate variables from the visualization. This provides more flexibility
     for exploring the changes in the variables and compare between them.
     \item \emph{Scaled}, this option allows for visualization of the values
     normalized by the value in the initial conditions (this option is very
     helpful for checking the main changes in variables during the calibration
     process).
-    \item \emph{limit-axis}, indicating whether the user desires total or normalized
+    \item \emph{Limit-axis}, indicating whether the user desires total or normalized
     values, this option allows for the y-axis to be unscaled or to set the upper
     limit for the scaled version(from 0 to 3).
    }
 \item \bold{By AgeClass}: This tab visualizes the changes through time of the
     variables by age. In this function the user is able to:
     \itemize{
-    \item \emph{visualize any combination of variables}, that means that the
+    \item \emph{Visualize any combination of variables}, that means that the
     user can activate and deactivate variables from the visualization (this
     provides more flexibility to explore the changes in the variables and compare
     between them).
@@ -63,7 +63,7 @@ A reactive HTML with divided in 3 different panels:
     normalised by the value in the initial conditions (this option is very
     helpful for checking the main changes in variables during the calibration
     process).
-    \item \emph{limit-axis} which allows the user to set the visualization to
+    \item \emph{Limit-axis} which allows the user to set the visualization to
     either total or scaled values (this option allows the y-axis to be unscaled
     or to set the limit from 0 to 3 for the normalized version.
 }

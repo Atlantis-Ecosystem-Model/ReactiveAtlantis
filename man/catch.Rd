@@ -7,74 +7,78 @@
 catch(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL)
 }
 \arguments{
-\item{grp.csv}{Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).}
+\item{grp.csv}{Character string with the path to the Groups \emph{*.csv} file (Atlantis input file).}
 
-\item{fish.csv}{Character string with the connection to the fisheries \emph{*.csv} file (Atlantis input file)}
+\item{fish.csv}{Character string with the path to the fisheries \emph{*.csv} file (Atlantis input file)}
 
-\item{catch.nc}{Character string with the connection to the catch netcdf output
-file from Atlantis. Usually with the name of \emph{[Your_Model]CATCH.nc},
+\item{catch.nc}{Character string with the path to the catch netcdf output
+file from Atlantis. Usually this file has the name of \emph{[Your_Model]CATCH.nc},
 where [Your_Model] is the name of your Atlantis model}
 
-\item{ext.catch.f}{(Default = NULL) Character string with the connection to the
-external file with the Observed catches and discards by year. This helps to
+\item{ext.catch.f}{(Default = NULL) Character string with the path to the
+external file with the observed catches and discards by year. This helps to
 calibrate the harvest section of Atlantis and it is required to perform the
 skill assessment of the model.}
 }
 \value{
-A shiny output with 3 different tabs:
+This function provides 3 different sets of analyzes of the catches in the following tabs:
 \itemize{
-\item \bold{Biomass} : This function helps you to analyze change through time of all the variables
-    (i.e. catch and discard) for the selected Fishery. This information can be
-    displayed by each recording time step (\emph{toutfinc} parameter) or by year.
-\item \bold{Numbers}:  This function allows you to analyze the change by age and
+\item \bold{Biomass}: This function helps to analyze change through time of all
+    the variables (i.e. catch and discard) for the selected Fishery. This
+    information can be displayed by each recording time step (\emph{toutfinc}
+    parameter) or by year.
+\item \bold{Numbers}:  This function allows the user to analyze the change by age and
     through time of the variable catch and discards for the selected functional group
-\item \bold{Compare} This function allows you to perform an skill assessment of the
-    model based on the analysis the simulated and observed time series of catch
-    and bycatch. The analysis performed is based on the approach described by Olsen et
-    al (2016) and Stow et al. 2009,  which is composed by the following quantitative metrics:
+\item \bold{Compare}: This function allows for n skill assessment of the model
+    (based on the analysis the simulated and observed time series of catch and
+    bycatch) to be performed. The analysis is based on the approach described by
+    Olsen \emph{et al.} (2016) and Stow \emph{et al.} 2009, which is composed of the following
+    quantitative metrics:
 \itemize{
 \item \bold{Correlation coefficient (\eqn{r})}: measures the tendency of the
     predicted \eqn{P} and observed \eqn{O} values to vary together. The values of
     correlation can range from -1 to 1, with negative values of correlation for
-    time series than vary inversely.
+    time series that vary inversely.
 \deqn{r = \frac{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})(P_{i} - \bar{P})}{\sqrt{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})^2 \displaystyle\sum_{i=1}^{n} (P_{i} - \bar{P})^2}}}
-\item \bold{Average Error (\eqn{AE}; or model bias)}: The average error is a measure of aggregate model bias.
+\item \bold{Average Error (\eqn{AE}; or model bias)}: The average error is a
+    measure of aggregated model bias.
 \deqn{AE = \frac{\displaystyle\sum_{i=1}^{n} (P_{i} - O_{i})}{n}  = \bar{P} - \bar{O}}
 \item \bold{average absolute error (\eqn{AAE}) and root mean squared error
-    (\eqn{RMSE})} : Both equation calculate the bias of the
+    (\eqn{RMSE})} : Both equations calculate the bias of the
     model, considering the magnitude rather than the direction of each
-    discrepancy. That because values near zero in the \eqn{AE} can be misleading
-    because negative and positive discrepancies can cancel each other.
+    discrepancy. That is because values near zero in the \eqn{AE} can be
+    misleading,  as negative and positive discrepancies can cancel each other.
 \deqn{AAE = \frac{\displaystyle\sum_{i=1}^{n} |P_{i} - O_{i}|}{n}} \cr
 \deqn{RMSE = \sqrt{\frac{\displaystyle\sum_{i=1}^{n} (P_{i} - O_{i})}{n}}}
-\item \bold{Reliability index \eqn{RI}}: It quantifies the average factor by
+\item \bold{Reliability index \eqn{RI}}: This quantifies the average factor by
     which the predicted values differ from observations. If the model predictions
-    do not differ too much from the observed the value of \eqn{RI} should be close to 1. But if the
+    do not differ too much from the observed then the value of \eqn{RI} should be close to 1. But if the
     value of \eqn{RI} is 2 it means that a model predicts the observations
     within a multiplicative factor of two, on average.
 \deqn{RI = exp\sqrt{\frac{1}{n} \displaystyle\sum_{i=1}^{n} (log\frac{O_{i}}{P_{i}})^2}}
 \item \bold{Modeling efficiency \eqn{MEF}}: The modeling efficiency measures how
     well a model predicts relative to the average of the observations. A value on
-    \eqn{MEF} close to 1 indicates that the model match with the
-    observation. Value of \eqn{MEF} less than zero means that observation average
-    is a better predictor than the model.
+    \eqn{MEF} close to 1 indicates that the model matches the
+    observations. A value of \eqn{MEF} less than zero means that the average of
+    the observations is a better predictor than the model.
 \deqn{MEF = \frac{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})^2 - \displaystyle\sum_{i=1}^{n} (P_{i} - O_{i})^2}{ \displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})^2 }}
 }
-Where: \eqn{n} is the number of observations;  \eqn{O_{i}} the \eqn{ith} of \eqn{n} observations;
+where \eqn{n} is the number of observations;  \eqn{O_{i}} the \eqn{ith} of \eqn{n} observations;
     \eqn{P_{i}} ith of \eqn{n} predictions, and \eqn{\bar{O}} and \eqn{\bar{P}} are the
-    observation and prediction averages, respectively.
+    observation and prediction averaged, respectively.
 }
 }
 \description{
-This tool allows you to visualize and analyze the harvest output from an Atlantis
-    model. This tool includes analysis of catches, bycatch, and discarding either
-    to the entire population or by age classes. In addition to graphical output,
-    it is also possible to perform a skill assessment of the model performance.
-    for the time series of catch and bycatch. The quantitative metrics used for
-    to analyze the performance of the model is based on the approach described by
-    Olsen et al. (2016) and Stow et al. (2009) using: the correlation
-    coefficient, root mean squared error, reliability index, average error,
-    average absolute error and the modeling efficiency.
+This tool allows for the visualization and analysis of the harvest output from an
+    Atlantis model. This tool includes analysis of catches, bycatch, and
+    discarding either at the level of the entire population or by age class. In
+    addition to graphical output, it is also possible to perform a skill
+    assessment of the model performance (as yet only for the time series of catch
+    and bycatch). The quantitative metrics used to analyze the performance of the
+    model is based on the approach described by Olsen \emph{et al.} (2016) and Stow \emph{et
+    al.} (2009) using: the correlation coefficient, root mean squared error,
+    reliability index, average error, average absolute error and the modeling
+    efficiency.
 }
 \author{
 Demiurgo
