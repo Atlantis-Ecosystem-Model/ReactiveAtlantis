@@ -53,7 +53,7 @@ time step the function allows the user to re-calculate
     the recruitment based on a new set of parameters provided by the user.
      \item \bold{Primary production and light limitation}:
     This option provides a view of the
-    primary production (Phytoplankton, seagrass and macroalgae),  light and
+    primary production (phytoplankton, seagrass and macroalgae),  light and
     secondary production (zooplankton) by box and layer. This helps to  calibrate
     the growth of primary producer and the consumption of light.}
 }

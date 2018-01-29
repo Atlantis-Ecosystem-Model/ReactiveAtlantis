@@ -1,25 +1,39 @@
-##' This function allows you to explore the changes in the the food web structure
-##'     and trophic level for an specific functional group through time.  The
-##'     estimation of the trophic position is based on Pauly \emph{et al.}(1998) approach.
-##'     \deqn{1  +  \frac{(DC  *  TLp)}{\sum_{}^{} DC }}
-##' Were : \eqn{DC} is the diet composition; \eqn{Tlp} is the trophic level position of the
-##'     diet. This initial values for the trophic position are based on Pauly et
-##'     al. (1998) and Tucket and Rogers (2014).
-##'     The flexibility of this function allows you to change : a) \bold{the \emph{focus}
+##' This function allows you to explore the changes in the food web structure and
+##'     trophic level for an specific functional group through time. The estimation
+##'     of the trophic position is based on the approach of Pauly \emph{et al.}(1998)
+##'     \deqn{TL_{i}  = 1  +  \frac{\sum_{j = 1}^{n}(DC_{i, j}  *  TL_{j})}{\sum_{j = 1}^{n} DC_{i, j}}}
+##' were \eqn{TL_{i}} in the trophic position of the predator, \eqn{DC_{i, j}} is the diet composition; \eqn{TL_{j}} is the trophic level of the
+##'     prey,  and n in the number of preys. These initial values for the trophic position were based on Pauly \emph{et
+##'     al.} (1998) and Tucker and Roger (2014) and for the primary producer a value of 2 was used. \cr
+##' Table 1 : Initial trophic position Assigned for each functional groups.
+##'   \tabular{|l|c|}{
+##'     \bold{Functional Group} \tab \bold{Trophic level} \cr
+##'     Primary producers   \tab 2   \cr
+##'     Herbivorous prey    \tab 2.2 \cr
+##'     Large zooplankton   \tab 2.2 \cr
+##'     Benthic invertebrates \tab 2.2 \cr
+##'     Small pelagic fishes   \tab 2.7 \cr
+##'     Small squids   \tab 3.2 \cr
+##'     Mesopelagic fishes   \tab 3.2 \cr
+##'     Miscellanous fishes   \tab 3.3 \cr
+##'     Large squids   \tab 3.7 \cr
+##'     High vertebrates   \tab 4.0 \cr
+##'  }
+##'     The flexibility of this function allows you to change: a) \bold{the \emph{focus}
 ##'     functional group} over which all calculation would be made; b) \bold{Maximum
-##'     trophic connection},  this allows you to simplified the food-web and set the
-##'     maximum number of connection from the focus functional group; c) \bold{the
-##'     minimum proportion} this value sets the minimum proportion of a functional in a
-##'     diet to be considered as prey; and d) \bold{time step} that set the time step
-##'     for the calculation of the food-web.
+##'     trophic connection}, this allows for simplification of the food-web and the
+##'     setting of the maximum number of connections from the focus functional group;
+##'     c) \bold{the minimum proportion}, which sets the minimum proportion of a
+##'     functional group in a diet that is considered as prey for the analysis; and
+##'     d) \bold{time step} which sets the time step for the calculation of the food-web.
 ##' @title Trophic level
-##' @param diet.file Character string with the connection to the Diet output
-##'     file. This file contain the diets of each functional group at each (recorded)
-##'     time step. If the Atlantis simulation is for several years, it is highly
-##'     recommended a low frequency recording periodicity of this output file
-##'     (toutinc). General high frequency engravings very large files and difficult
-##'     to handle in R.
-##' @param grp.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
+##' @param diet.file Character string with the path to the Diet output file. This
+##'     file contains the diets of each functional group at each (recorded) time
+##'     step. If the Atlantis simulation is for several years, it is highly
+##'     recommended that a low frequency of recording of this output is used (set
+##'     using toutinc) otherwise file sizes can be come substantial (which can be
+##'     very difficult to handle in R).
+##' @param grp.file Character string with the path to the groups \emph{*.csv} file (Atlantis input file).
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
 ##' @return Reactive output with the plot of the food web for the specific time step,
 ##'     and a table with the trophic level of each prey and predator in the food web
