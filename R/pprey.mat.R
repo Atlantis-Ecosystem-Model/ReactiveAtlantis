@@ -1,34 +1,37 @@
 ##' This functions helps the user to calibrate and explore different aspect of the
-##'     predator-prey interaction. In Atlantis interaction between the predator and
-##'     the prey is mainly defined by the predator-prey matrix which represent the
-##'     maximum availability of each prey biomass available to a specific
-##'     predator. This consumption can be strongly affected by different processes
-##'     like the spatial overlap, biomass of the prey and gape limitation of the
+##'     predator-prey interaction. In Atlantis, interactions between the predator and
+##'     the prey is mainly defined by the predator-prey matrix which represents the
+##'     maximum availability of each prey (age) group to a specific predator (age
+##'     group). This consumption can be strongly affected by different processes like
+##'     the spatial overlap, biomass of the prey and gape limitation of the
 ##'     predator. With this tool you would be able to explore the availability matrix
-##'     and all this processes that affect the realize consumption. Also this tool
-##'     allow you explore new values for the predator prey matrix and observe online
-##'     how these new values affect the predator prey interaction.
+##'     and the processes that affect consumption. Also this tool allows you to
+##'     explore new values for the predator-prey matrix and observe online how these
+##'     new values affect the predator-prey interaction.
 ##' @title Atlantis feeding tool
-##' @param prm.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
-##' @param grp.file Character string with the connection to the Groups \emph{*.csv} file (Atlantis input file).
-##' @param nc.file Character string with the connection to the netcdf file to read
+##' @param prm.file Character string with the path to the biological parameter \emph{*.prm} file (Atlantis input file).
+##' @param grp.file Character string with the path to the Groups \emph{*.csv} file (Atlantis input file).
+##' @param nc.file Character string with the path to the netcdf file to read
 ##'     in. This netcdf file contains the initial conditions for the Atlantis model
 ##'     usually ends in \emph{.nc}.
-##' @param bgm.file Character string with the connection to the XY coordinates Atlantis input file \emph{*.bgm} with the information in meters.
+##' @param bgm.file Character string with the path to the XY coordinates Atlantis input file \emph{*.bgm} with the information in metres.
 ##' @param cum.depths Vector with the cumulative depths of the different layers
-##'     \emph{cum.depths <- c(0, 20, 100, 200, 500)}
+##'     (e.g. \emph{cum.depths <- c(0, 20, 100, 200, 500)})
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
-##' @return Reactive HTML with  that display predator prey information such as: the ppPREY
-##'     matrix,  the initial abundance of prey, the overlap matrix based on gape
-##'     size, predator preference and predator prey spatial overlap. All these information is divided in 2 different tabs:
+##' @return Reactive HTML that displays predator-prey information such as: the ppPREY
+##'     matrix, the initial abundance of prey, the overlap matrix based on gape size,
+##'     predator preference and predator prey spatial overlap. All this information
+##'     is divided into two different tabs:
 ##'  \itemize{
-##'   \item \bold{No spatial} allows the user to check and modified availability values
-##'     from the pprey matrix. This Function provides 5 outputs:
+##'   \item \bold{Non-spatial}– this tab allows the user to check and modify
+##'     availability values from the pprey matrix. This Function provides 5 outputs:
 ##'    \itemize{
-##'      \item \bold{Availability matrix (\eqn{\lambda})}: Matrix of prey availability values for each adult young or biomass pool prey and predator.
+##'      \item \bold{Availability matrix (\eqn{\lambda})}: Matrix of prey
+##'     availability values (pprey) for each adult, young or biomass pool prey and
+##'     predator.
 ##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
-##'     given his gape size limitations. This function use the knife-edge
-##'     size selectivity, where availability of the prey is either available (1) or not
+##'     given its gape size limitations. This function uses the knife-edge size
+##'     selectivity, where availability of the prey is either available (1) or not
 ##'     available to the predator (0).
 ##'  \deqn{\omega = \left\{
 ##'     \begin{array}{ll}
@@ -36,24 +39,25 @@
 ##'     0 & Otherwise
 ##'     \end{array}
 ##'     \right. }{ (non-Latex version) }
-##'  Were : \eqn{SN} is the structural weight; \eqn{KLP} Minimum gape limit of the
+##'  were \eqn{SN} is the structural weight; \eqn{KLP} Minimum gape limit of the
 ##'     predator (age structured or biomass pool); \eqn{KUP} Maximum gape limit of
 ##'     the predator (age structured or biomass pool).
-##' \item \bold{Effective Predation}: Provided an approximation of the total biomass of
-##'     prey consumed by a predator. It assumes a perfect spatial match between prey
-##'     and predator.
+##' \item \bold{Effective Predation}: this provides an approximation of the total
+##'     biomass of prey consumed by a predator. It assumes a perfect spatial match
+##'     between prey and predator.
 ##'     \deqn{\gamma  =  B * \lambda * \omega}
-##' Were : \eqn{\gamma} is the effective predation; \eqn{B} is the biomass;
+##' were \eqn{\gamma} is the effective predation; \eqn{B} is the biomass;
 ##'     \eqn{\lambda} is the predator-prey availability (pprey matrix); and
 ##'     \eqn{\omega} is the predator-prey gape overlap.
-##' \item \bold{Predation pressure}: This function calculate what percentage of the predator
-##'     diet correspond an specific prey.
-##' \item \bold{Total biomass prey}: Is the Total biomass per functional group and
-##'     maturity stage (adult and juvenile)
+##' \item \bold{Predation pressure}: this function calculates the percentage of the
+##'     predator diet corresponding to a specific prey.
+##' \item \bold{Total biomass prey}: this is the total biomass per functional group
+##'     and maturity stage (adult and juvenile).
 ##'}
-##' \item \bold{Spatial Overlap}: Allows the user to check the spatial overlap
-##'     between the prey and the predator in all the boxes and layers.
-##' this function gives information about the spatial overlap between prey and predator at the initial condition and the gape limitation}
+##' \item \bold{Spatial Overlap}- this tab allows the user to check the spatial
+##'     overlap between the prey and the predator in all the boxes and layers based
+##'     on the values in the initial conditions file and the parameterized gape
+##'     limitation.}
 ##' @author Demiurgo
 ##' @export
 feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
@@ -199,7 +203,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Shiny Application
     shinyApp(
         ui <- navbarPage('Atlantis Diet Tool',
-                         tabPanel('No Spatial',
+                         tabPanel('Non-Spatial',
                                   fluidRow(
                                       column(2,
                                              wellPanel(
