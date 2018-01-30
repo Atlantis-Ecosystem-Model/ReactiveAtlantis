@@ -1,58 +1,67 @@
 ##' This function is useful for dynamically evaluating and visualizing predator-prey
 ##'     interaction from Atlantis. Providing information of the predation trough
-##'     time for biomass pool and for age class functional groups can helps to
+##'     time for biomass pool and for age class functional groups. This tool can helps to
 ##'     analyze the predatory pressure from the predator and from the prey
 ##'     perspective.
-##' @title Predation analyze
-##' @param biom.file Character string with the connection to \emph{Biomass Output}
+##' @title Predation analysis
+##' @param biom.file Character string with the path to \emph{biomass output}
 ##'     file from the Atlantis simulation. Usually this
-##'     output has the name 'output\bold{\emph{YOUR_Model_NAME}}BiomIndx.txt', were
-##'     \bold{\emph{YOUR_Model_NAME}} is the name of your Atlantis model.
-##' @param groups.csv Character string with the connection to the Groups \emph{*.csv}
+##'     output has the name "output\bold{\emph{_Model_}}BiomIndx.txt", were
+##'     \bold{\emph{Model}} is the name of your Atlantis model.
+##' @param groups.csv Character string with the path to the Groups \emph{*.csv}
 ##'     file (Atlantis input file).
-##' @param diet.file Character string with the connection to the Diet output
-##'     file. This file contain the diets of each functional group at each (recorded)
+##' @param diet.file Character string with the path to the \emph{diet output}
+##'     file. This file contain the diets of each functional group at each recorded
 ##'     time step. If the Atlantis simulation is for several years, it is highly
 ##'     recommended a low frequency recording periodicity of this output file
-##'     (toutinc). General high frequency engravings very large files and difficult
+##'     (toutinc). General high frequency engravings very large files and are very difficult
 ##'     to handle in R.
-##' @param age.biomass Character string with the connection to the output file
+##' @param age.biomass Character string with the path to the output file
 ##'     \bold{\emph{biomass by age}}. This is a non-standard Atlantis output file,
-##'     make sure to turn on the flag \bold{\emph{'flag_age_output'}} in the
+##'     make sure to turn on the flag \bold{\emph{"flag_age_output"}} in the
 ##'     \emph{run.prm} file if you want Atlantis to write this this output file.
-##' @return A reactive html output useful for dynamically evaluating and visualizing
-##'     predator-prey relationships from Atlantis output. The outputs of this program
-##'     are divided into three parts:
+##' @return The output of this function is a reactive html, useful for dynamically evaluating and visualizing
+##'     predator-prey relationships from an Atlantis output. The outputs of the predation analysis
+##'     is divided in three parts:
 ##'    \itemize{
-##'    \item \bold{Biomass}: This panel is divided in two sub-panels: 1) \emph{Total
-##'     Biomass} which displays the changes in total biomass for
-##'     each functional group; and 2) \emph{Relative Biomass} displays the variation of the
+##'    \item \bold{Biomass}: This panel is divided in two sub-panels:
+##'     \itemize{
+##'      \item \emph{Total Biomass} which displays the changes in total biomass for
+##'     each functional group.
+##'      \item \emph{Relative Biomass} displays the variation of the
 ##'     total biomass relative to the initial biomass (\eqn{B_{0}}).
+##'     }
 ##'    \item \bold{Predation through time}: This panel
 ##'     displays in the upper section the proportion of prey ingested by a specific
 ##'     predator during the
 ##'     simulation. The lower section is the proportion of
 ##'     biomass that is predated from the selected functional group by different
 ##'     predators at each time step during the entire simulation. This function has
-##'     different option that includes: a)\bold{Threshold} this option filters the
+##'     different option that includes:
+##'  \itemize{
+##'     \item \bold{Threshold} this option filters the
 ##'     predation values, only the values of proportion of predation greater than
-##'     this limit are displayed; b) \bold{Scale} this option
-##'     allows you to integrate predation values between 0 and 1 for each time
-##'     step. Otherwise, predation values are weighed by the predator's biomass. This
+##'     this limit are displayed;
+##'     \item \bold{Scale} this option
+##'     allows you to normalize the predation values between 0 and 1 for each time
+##'     step. Otherwise, predation values are weighted by the predator's biomass. This
 ##'     allows to evaluate the impact of the predator on each prey at each time
 ##'     step.
+##'      }
 ##'    \item \bold{Predation by age group}: This panel
 ##'     visualize the predation by an age group and it is composed by two sub-panels:
-##'     1) \bold{Total Biomass} shows in the upper panel the time series of biomass of
+##'    \itemize{
+##'     \item \bold{Total Biomass} shows in the upper panel the time series of biomass of
 ##'     the functional group selected. The lower section shows the proportion of each prey in the diet of the selected
 ##'     predator at a given time step. The time step can be changed allowing the user
-##'     to explore the diets of the functional at any point in the simulation</p>; and
-##'     2) \bold{Biomass by age}: This sub-panel shows
+##'     to explore the diets of the functional at any point in the simulation; and
+##'     \item \bold{Biomass by age}: This sub-panel shows
 ##'     the biomass of each prey consumed by each age class. This allows visualizing
 ##'     amount of biomass consumed from each prey by the predator at each time step. The upper panel
 ##'     shows the biomass of the prey throughout the simulation, indicating the
-##'     selected time step.</p>
-##' }
+##'     selected time step.
+##'      }
+##'}
 ##' @author Demiurgo
 ##' @export
 predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){

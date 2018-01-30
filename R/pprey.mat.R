@@ -57,7 +57,8 @@
 ##' \item \bold{Spatial Overlap}- this tab allows the user to check the spatial
 ##'     overlap between the prey and the predator in all the boxes and layers based
 ##'     on the values in the initial conditions file and the parameterized gape
-##'     limitation.}
+##'     limitation.
+##'}
 ##' @author Demiurgo
 ##' @export
 feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
