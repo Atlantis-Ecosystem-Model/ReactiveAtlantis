@@ -155,10 +155,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                          tabPanel('Biomass',
                                   tabsetPanel(
                                       tabPanel('Total Biomass',
-                                               plotOutput('plot1', width = "100%", height = "1000px")
+                                               plotOutput('plot1', width = "100%", height = "1000px"),
+                                               downloadButton("dwn.bio", "Download")
                                                ),
                                       tabPanel('Relative Biomass',
-                                               plotOutput('plot1B', width = "100%", height = "1000px")
+                                               plotOutput('plot1B', width = "100%", height = "1000px"),
+                                               downloadButton("dwn.rel", "Download")
                                                ))),
                          tabPanel('Total',
                                   fluidRow(
@@ -294,6 +296,28 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     write.csv(out, file, row.names = FALSE)
                 }
             )
+            output$dwn.bio <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    biom.save <- list(Biomass = lapply(split(t.biomass, paste(t.biomass$FG, t.biomass$Simulation, sep = '_')),
+                                                       function(x){x$Biomass}))
+                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
+                    write.csv(out, file, row.names = FALSE)
+                }
+             )
+            output$dwn.rel <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file) {
+                    biom.save <- list(Biomass = lapply(split(rel.bio, paste(t.biomass$FG, t.biomass$Simulation, sep = '_')),
+                                                       function(x){x$Relative}))
+                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
+                    write.csv(out, file, row.names = FALSE)
+                }
+             )
         }
     )
 }
@@ -675,7 +699,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
 
 }
 
-to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = Time){
+to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = Time, tot = FALSE){
     out <- NULL
     nam <- NULL
     if(rn){
@@ -694,7 +718,11 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
         n.c    <- length(list$Biomass)
         biom   <- matrix(unlist(list$Biomass, use.names = FALSE), ncol = n.c, byrow = FALSE)
         out    <- cbind(out, biom)
-        nam    <- c(nam, paste0('Biom.Age', 1 : n.c))
+        if(!tot){
+            nam    <- c(nam, paste0('Biom.Age', 1 : n.c))
+        } else {
+            nam    <- names(list$Biomass)
+        }
     }
     if(n){
         n.c    <- length(list$Numbers)
