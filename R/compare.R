@@ -147,7 +147,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     ## relative
     rel.bio <- by(t.biomass, t.biomass$FG, relative)
     rel.bio <- do.call(rbind.data.frame, rel.bio)
-
     ## Start the Shiny application
     shinyApp(
         ## Create the different tabs
@@ -307,12 +306,13 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     write.csv(out, file, row.names = FALSE)
                 }
              )
+
             output$dwn.rel <- downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
                 content = function(file) {
-                    biom.save <- list(Biomass = lapply(split(rel.bio, paste(t.biomass$FG, t.biomass$Simulation, sep = '_')),
+                    biom.save <- list(Biomass = lapply(split(rel.bio, paste(rel.bio$FG, rel.bio$Simulation, sep = '_')),
                                                        function(x){x$Relative}))
                     out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
                     write.csv(out, file, row.names = FALSE)
@@ -696,9 +696,17 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
     }
     if(!is.null(coh)){
         mtext(paste0("AgeClass - ", ifelse(coh>10, '', '0'), coh))}
-
 }
-
+##' @title Function to save data
+##' @param list object from the function
+##' @param sn Structural weigth Object
+##' @param rn Reserve weight Object
+##' @param n Abundance Object
+##' @param b Biomass Object
+##' @param Time Time Object
+##' @param tot Total or partial
+##' @return csv file
+##' @author Demiurgo
 to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = Time, tot = FALSE){
     out <- NULL
     nam <- NULL
