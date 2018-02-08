@@ -306,7 +306,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     write.csv(out, file, row.names = FALSE)
                 }
              )
-
             output$dwn.rel <- downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
