@@ -409,7 +409,7 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @author Demiurgo
 stats <- function(obs, mod){
     ## Stimation of Correlation
-    COR  <- cor(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
+    COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
     ## Average error
     AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
     ## Average absolute error
@@ -424,9 +424,11 @@ stats <- function(obs, mod){
     RI                    <-  exp(sqrt(mean(tmp, na.rm = TRUE)))
     ## Modeling efficiency
     ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^ 2)
+    if(COR$p.value == 0) COR$p.value <- '< 2.2e-16'
     out <- data.frame(Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
                                   'Average Absolute Error (AAE)', 'Mean Squared Error (RMSE)', 'Reliability index',
                                   'Model Efficiency (ME)'),
-                      Results = c(COR, AE, AAE, RMSE, RI, ME))
+                      Results = c(COR$estimate, AE, AAE, RMSE, RI, ME),
+                      p.val = c(COR$p.value, NA, NA, NA, NA, NA))
     return(out)
 }
