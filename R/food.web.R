@@ -97,10 +97,10 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                                       column(2,
                                              wellPanel(
                                                  tags$h3('Functional Group'),
-                                                 selectInput('foc.fg', 'Functional Group', as.character(code.fg)),
+                                                 selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),
                                                  numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
                                                  numericInput("min", "Min proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
-                                                 numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = 1, step = 1),
+                                                 numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = time.stp[1]),
                                                  selectInput('stock', 'Stock', stk))
                                              ),
                                       column(10,
@@ -121,8 +121,12 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
 
             ## Original Recruitment
             t.prey <- reactive({
+                if(input$foc.fg == 'All'){
+                    foc <- as.character(code.fg)
+                } else {
+                    foc    <- input$foc.fg
+                }
                 t.prey <- NULL
-                foc    <- input$foc.fg
                 stg    <- 1
                 while(stg <= input$m.stg){
                     for(fg in foc){
@@ -151,10 +155,28 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                     pospred <- which(t.prey()$Pred %in% pred)
                     TL      <- c(TL, Tlevel(t.prey()$value[pospred], t.prey()$TLprey[pospred]))
                 }
-                pp.prey <- unique(t.prey()$Prey[-which(t.prey()$Prey %in% npred)])
-                pp.prey <- data.frame(FG = pp.prey, Tlevel = prey.pos(pp.prey, grp.dat))
-                TL      <- data.frame(FG = npred, Tlevel = TL)
-                TL      <- rbind(TL, pp.prey)
+                ##browser()
+                pp.prey  <- unique(t.prey()$Prey[ - which(t.prey()$Prey %in% npred)])
+                pp.prey  <- data.frame(FG = pp.prey, Tlevel = prey.pos(pp.prey, grp.dat))
+                TL       <- data.frame(FG = npred, Tlevel = TL)
+                TL       <- rbind(TL, pp.prey)
+                ## in this step I get the trophic level for the previuos step
+                prey.f   <- as.data.frame(t.prey())
+                for(fg in 1 : nrow(TL)){
+                    pntl <- which(prey.f$Prey %in% TL$FG[fg])
+                    if(length(pntl) == 0) next
+                    prey.f$TLprey[pntl] <- TL$Tlevel[fg]
+                }
+                npred         <- unique(prey.f$Pred)
+                TL            <- NULL
+                for(pred in npred){
+                    pospred <- which(prey.f$Pred %in% pred)
+                    TL      <- c(TL, Tlevel(prey.f$value[pospred], prey.f$TLprey[pospred]))
+                }
+                pp.prey  <- unique(prey.f$Prey[ - which(prey.f$Prey %in% npred)])
+                pp.prey  <- data.frame(FG = pp.prey, Tlevel = prey.pos(pp.prey, grp.dat))
+                TL       <- data.frame(FG = npred, Tlevel = TL)
+                TL       <- rbind(TL, pp.prey)
                 ## location on the plot
                 his     <- hist(TL$Tlevel, breaks = c(1.5 : 6.5), plot = FALSE)
                 v.lev   <- max(his$counts)
@@ -171,11 +193,12 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 }
                 TL <- as.data.frame(TL)
             })
+
             output$plot1 <- renderPlot({
                 rad     <- 0.25
                 plot(1, type = "n", xlab = '', ylab = "Trophic-level",
                      xlim = c(0, unique(TL()$v.lev)), ylim = c(1.5, unique(TL()$h.lev)), axes = FALSE)
-                axis(2, at = c(1 : unique(TL()$h.lev)),  las = 1)
+                axis(2, at = c(1 : unique(TL()$h.lev)), las = 1)
                 for( i in 1 : nrow(t.prey())){
                     p.pred <- which(TL()$FG %in% t.prey()$Pred[i])
                     p.prey <- which(TL()$FG %in% t.prey()$Prey[i])
