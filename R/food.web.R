@@ -145,6 +145,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                     stg <- stg + 1
                 }
                 t.prey$TLprey <- prey.pos(t.prey$Prey, grp.dat)
+                t.prey <- t.prey[!duplicated(t.prey[, c(1, 2)]), ]  ## removing duplicates
                 t.prey <- as.data.frame(t.prey)
             })
             ## assing the value of trophic level for the prey
