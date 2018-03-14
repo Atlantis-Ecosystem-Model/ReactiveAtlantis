@@ -89,7 +89,6 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n Processing and plotting')
-
     shinyApp(
         ui <- navbarPage('Atlantis Food Web Tool',
                          tabPanel('Food Web',
@@ -101,10 +100,12 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                                                  numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
                                                  numericInput("min", "Min proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
                                                  numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = time.stp[1]),
-                                                 selectInput('stock', 'Stock', stk))
+                                                 selectInput('stock', 'Stock', stk),
+                                                 downloadButton("Dwnl", "Download-data"))
                                              ),
                                       column(10,
                                              plotOutput('plot1', width = "100%", height = "800px"),
+                                             downloadButton("Dwnl.tl", "Download-table"),
                                              tableOutput('table')
                                              )
                                   )
@@ -118,7 +119,6 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
             time.prey <- reactive({
                 time.prey <- dat[dat$Time == input$time & dat$Stock  == input$stock, c(2, 6 : ncol(dat))]
             })
-
             ## Original Recruitment
             t.prey <- reactive({
                 if(input$foc.fg == 'All'){
@@ -155,7 +155,6 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                     pospred <- which(t.prey()$Pred %in% pred)
                     TL      <- c(TL, Tlevel(t.prey()$value[pospred], t.prey()$TLprey[pospred]))
                 }
-                ##browser()
                 pp.prey  <- unique(t.prey()$Prey[ - which(t.prey()$Prey %in% npred)])
                 pp.prey  <- data.frame(FG = pp.prey, Tlevel = prey.pos(pp.prey, grp.dat))
                 TL       <- data.frame(FG = npred, Tlevel = TL)
@@ -181,7 +180,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 his     <- hist(TL$Tlevel, breaks = c(1.5 : 6.5), plot = FALSE)
                 v.lev   <- max(his$counts)
                 brk     <- his$breaks
-                h.lev   <- max(his$mids[his$counts > 0]) + 1 ## getting the top of the plor
+                h.lev   <- max(his$mids[his$counts > 0]) + 1 ## getting the top of the plot
                 TL$v.lev <- v.lev
                 TL$h.lev <- h.lev
                 TL$vpos <- NA
@@ -193,17 +192,16 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 }
                 TL <- as.data.frame(TL)
             })
-
             output$plot1 <- renderPlot({
                 rad     <- 0.25
                 plot(1, type = "n", xlab = '', ylab = "Trophic-level",
                      xlim = c(0, unique(TL()$v.lev)), ylim = c(1.5, unique(TL()$h.lev)), axes = FALSE)
-                axis(2, at = c(1 : unique(TL()$h.lev)), las = 1)
+                axis(2, at = c(1.5 : unique(TL()$h.lev)), las = 1)
                 for( i in 1 : nrow(t.prey())){
                     p.pred <- which(TL()$FG %in% t.prey()$Pred[i])
                     p.prey <- which(TL()$FG %in% t.prey()$Prey[i])
                     ## Direction of predation
-                    col <- ifelse(TL()$Tlevel[p.pred] < TL()$Tlevel[p.prey], 'forestgreen', 'red1')
+                    col    <- ifelse(TL()$Tlevel[p.pred] < TL()$Tlevel[p.prey], 'forestgreen', 'red1')
                     y      <- c(TL()$Tlevel[p.pred], TL()$Tlevel[p.prey] )
                     x      <- c(TL()$vpos[p.pred], TL()$vpos[p.prey] )
                     lines(x, y , lty = 1, lwd = (t.prey()$value[i] * 3), col = col)
@@ -211,8 +209,8 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 ## circles
                 for( i in 1 : nrow(TL())){
                     draw.circle(TL()$vpos[i], TL()$Tlevel[i], radius = rad, nv = 1500, border = NULL,
-                                col = ifelse(i == 1, 'steelblue', 'gray91'), lty = 1, lwd = 1)
-                    text(TL()$vpos[i], TL()$Tlevel[i], TL()$FG[i], cex = .8, font = 2, col = ifelse(i == 1, 'white', 1))
+                                col = ifelse(i == 1 && input$foc.fg != 'All', 'steelblue', 'gray91'), lty = 1, lwd = 1)
+                    text(TL()$vpos[i], TL()$Tlevel[i], TL()$FG[i], cex = .8, font = 2, col = ifelse(i == 1 && input$foc.fg != 'All', 'white', 1))
                 }
                 legend('topright', c('DownTop', 'TopDown'), lty = 1, col = c('forestgreen', 'red1'), lwd = 1.5, bty = 'n')
 
@@ -220,6 +218,23 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
             output$table <- renderTable({
                 table    <- with(TL(), data.frame(Functional.group = FG, Trophic.Level = Tlevel))
             })
+            output$Dwnl.tl <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file){
+                    write.csv(data.frame(TL()), file, row.names = FALSE)
+                }
+            )
+            output$Dwnl <- downloadHandler(
+                filename = function(){
+                    paste0(input$dataset, ".csv")
+                },
+                content = function(file){
+                    t.out <- as.data.frame(t.prey()[, 1 : 3])
+                    write.csv(t.out, file, row.names = FALSE)
+                }
+                )
             observeEvent(input$exitButton, {
                 stopApp()
             })
