@@ -186,10 +186,16 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 TL$h.lev <- h.lev
                 TL$vpos <- NA
                 for(i in 1 : (length(brk) - 1)){
+                    #browser()
                     nfg.ly          <- which(TL$Tlevel > brk[i] & TL$Tlevel < brk[i + 1] )
                     tot.fg          <- length(nfg.ly)
                     vpos            <-  cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
-                    TL$vpos[nfg.ly] <- vpos
+                    pos.or          <- vector('numeric', length(TL$FG[nfg.ly]))
+                    ## it's necesary to order the fg to get a nice plot
+                    for(i in 1 : length(TL$FG[nfg.ly])){
+                        pos.or[i] <- sum(c(prey.f$Pred %in% TL$FG[nfg.ly][i], prey.f$Prey %in% TL$FG[nfg.ly][i]))
+                    }
+                    TL$vpos[nfg.ly] <- vpos[ord(pos.or)]
                 }
                 TL <- as.data.frame(TL)
             })
@@ -274,4 +280,26 @@ prey.pos <- function(FGs, grp.dat){
 Tlevel <- function(DC, TLp){
     tl <- 1 + (sum(DC * TLp, na.rm = TRUE) / sum(DC, na.rm = TRUE))
     return(tl)
+}
+
+##' @title Piramid order
+##' @param vector Vector of numbers or character that needs to be order with the bigest value in the center
+##' @return A vector with the higest value in the center
+##' @author Demiurgo
+ord <- function(vector){
+    vec     <- vector[order(vector)]
+    or.v    <- order(vector)
+    vec.out <- NA * vec
+    rev <- length(vec)
+    fwd <- 1
+    for(v in 1  :  length(vec)){
+        if(v%%2 == 0){
+            vec.out[rev] <- or.v[v]
+            rev <- rev - 1
+            next
+        }
+        vec.out[fwd] <- or.v[v]
+        fwd <- fwd + 1
+    }
+    return(vec.out)
 }
