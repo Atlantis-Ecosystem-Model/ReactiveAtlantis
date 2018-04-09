@@ -178,7 +178,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 TL       <- data.frame(FG = npred, Tlevel = TL)
                 TL       <- rbind(TL, pp.prey)
                 ## location on the plot
-                his     <- hist(TL$Tlevel, breaks = c(1.5 : 6.5), plot = FALSE)
+                his     <- hist(TL$Tlevel, breaks = c(0.5 : 6.5), plot = FALSE)
                 v.lev   <- max(his$counts)
                 brk     <- his$breaks
                 h.lev   <- max(his$mids[his$counts > 0]) + 1 ## getting the top of the plot
@@ -202,8 +202,8 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
             output$plot1 <- renderPlot({
                 rad     <- 0.25
                 plot(1, type = "n", xlab = '', ylab = "Trophic-level",
-                     xlim = c(0, unique(TL()$v.lev)), ylim = c(1.5, unique(TL()$h.lev)), axes = FALSE)
-                axis(2, at = c(1.5 : unique(TL()$h.lev)), las = 1)
+                     xlim = c(0, unique(TL()$v.lev)), ylim = c(0.5, unique(TL()$h.lev)), axes = FALSE)
+                axis(2, at = c(0.5 : unique(TL()$h.lev)), las = 1)
                 for( i in 1 : nrow(t.prey())){
                     p.pred <- which(TL()$FG %in% t.prey()$Pred[i])
                     p.prey <- which(TL()$FG %in% t.prey()$Prey[i])
@@ -263,11 +263,19 @@ prey.pos <- function(FGs, grp.dat){
         ctg[i] <- which(grp.dat$Code %in% FGs[i], arr.ind = TRUE)
     }
     typ  <-  grp.dat$GroupType[ctg]
-    TL.v <- ifelse(typ == 'FISH', 3.2,
-            ifelse(typ %in% c('SED_EP_FF', 'PWN', 'REPTILE', 'FISH_INVERT', 'MOB_EP_OTHER', 'SED_EP_OTHER', 'SM_ZOO', 'MED_ZOO', 'LG_ZOO'), 2.5,
-            ifelse(typ %in% c('CEP'), 3.2,
-            ifelse(typ %in% c('SHARK', 'BIRD', 'MAMMAL'), 4,
-            ifelse(typ %in% c('PL_BACT', 'SED_BACT', 'CARRION', 'LAB_DET', 'REF_DET', 'SM_PHY', 'LG_PHY', 'MICROPHYTOBENTHOS', 'DINOFLAG', 'PHYTOBEN', 'SEAGRASS', 'TURF', 'CORAL'), 2, 2)))))
+    TL.v <- ifelse(typ %in% c('SHARK', 'MAMMAL'), 4,
+            ifelse(typ == 'BIRD', 3.5,
+            ifelse(typ == 'FISH', 3.24,
+            ifelse(typ == 'CEP', 3.2,
+            ifelse(typ == 'LG_ZOO', 2.7,
+            ifelse(typ == 'FISH_INVERT', 2.52,
+            ifelse(typ %in% c('PWN', 'REPTILE', 'MOB_EP_OTHER', 'MED_ZOO'), 2.4,
+            ifelse(typ == 'SM_ZOO', 2.4,
+            ifelse(typ == 'SED_EP_FF', 2.3,
+            ifelse(typ == 'CORAL', 2.2,
+            ifelse(typ == 'SED_EP_OTHER', 2.1,
+            ifelse(typ == 'LG_PHY', 1.5,
+            ifelse(typ %in% c('MICROPHYTOBENTHOS', 'DINOFLAG'),  1.2, 1)))))))))))))
     return(TL.v)
 }
 
