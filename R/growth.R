@@ -11,7 +11,7 @@
 ##'     \deqn{\delta_{nutrients}  = \frac{DIN}{KN + DIN}} \cr
 ##'     were \eqn{DIN} is the concentration of \eqn{NH_{3}} + \eqn{NO_{3}} and
 ##'     \eqn{KN} is the half-saturation constant of nutrient uptake. \cr
-##'     For species that are limited for multiple nutrients like diatom that can be
+##'     For species that are limited for multiple nutrients like diatoms that can be
 ##'     limited by silicate \eqn{Si} and nitrogen you have 3 different options to choose on
 ##'     Atlantis (\emph{flagnut}) and the nutrient limitation can have different options:
 ##'     \itemize{
@@ -26,12 +26,12 @@
 ##'   \item \bold{Light limitation}: In Atlantis photosynthesis in  primary producers
 ##'     can be limited by light. The light limitation factor \eqn{\delta_{light}} is calculated by:
 ##'  \deqn{\delta_{light} = min(\frac{IRR}{KI}, 1)} \cr
-##'  were \eqn{IRR} irradiance or available light  and\eqn{KI} is the light
+##'  were \eqn{IRR} is irradiance or available light  and\eqn{KI} is the light
 ##'     saturation coefficient. \cr
 ##' In Atlantis there is a second option \emph{flaglight = 1} that allows the calculation of the light
 ##'     limitation factor allowing for light adaptation. This is intended to capture
 ##'     the ability of the primary producers to rapidly adapt to different light
-##'     condition (Audijyontze et al. 2017). This option was not considered in this version
+##'     conditions (Audijyontze et al. 2017). This option was not considered in this version
 ##'     of the tool but would be implemented in future updates.
 ##'  \item \bold{Effect of eddies on primary production}: The eddy effect on primary
 ##'     produces \eqn{\delta_{eddy}}  is calculated by multiplying the scale parameter \eqn{eddy_{scale}}
@@ -47,10 +47,10 @@
 ##' @param prm.file Character string with the path to the biology parameter
 ##'     file \emph{*.prm}.
 ##' @param out.nc.file Character string with the path to the netcdf file to
-##'     read in. This netcdf file contains is a generic output from an Atlantis run
-##'     usually starts with \emph{output} and ends in \emph{.nc}.
-##' @return  A reactive HTML with graphical output by functional group, layer and box
-##'     of the variables:
+##'     read in. This netcdf file is a generic output from an Atlantis run and
+##'     usually starts with output and ends in \emph{.nc}.
+##' @return  A reactive HTML with graphical output by functional group, for layer and box
+##'     of the following variables:
 ##' \itemize{
 ##'   \item \bold{Growth}:  This variable is the  Primary producer growth (\eqn{G_{pp}}) which is
 ##'     determined by the biomass for the primary producer (\eqn{Biom_{pp}}),  the maximum effective
@@ -58,13 +58,13 @@
 ##'     Nutrients limitation \eqn{\delta_{nutrients}}, and Eddy scalar (\eqn{\delta_{eddy}}).
 ##'     \deqn{G_{pp} = Biom_{pp} * mum * \delta_{light} * \delta_{nutrients} *
 ##'     \delta_{eddy}}
-##' \item \bold{Light limitation}: The available light by box and layer this option
-##'     use only the basic formula and currently does not use the light adaptation
+##' \item \bold{Light limitation}: The available light by box and layer. This option
+##'     uses only the basic formula (\eqn{\delta_{light}}, described before) and currently does not use the light adaptation
 ##'     option. The light attenuation values used for the calculations are the values
 ##'     estimated by Atlantis and reported in the \bold{\emph{out.nc.file}}.
-##' \item \bold{Nutrients limitation}:  Nutrients limitation calculated by layer and
+##' \item \bold{Nutrient limitation}: Nutrient limitation is calculated by layer and
 ##'     by box, using the option chosen by the user in the Atlantis run
-##'     (\emph{flagnut = 0,  1 or 2}).
+##'     (\emph{flagnut = 0, 1 or 2}).
 ##' \item \bold{Eddy scalar}: This value is calculated by functional group and by
 ##'     box. The values of eddies strength (\eqn{eddy_{strength}}) used are from the
 ##'     Atlantis output and the value of eddy scale (\eqn{eddy_{scale}}) is read from

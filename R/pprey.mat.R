@@ -1,13 +1,13 @@
-##' This functions helps the user to calibrate and explore different aspect of the
-##'     predator-prey interaction. In Atlantis, interactions between the predator and
+##' This function helps the user to calibrate and explore different aspect of the
+##'     predator-prey interaction. In Atlantis, interaction between the predator and
 ##'     the prey is mainly defined by the predator-prey matrix which represents the
 ##'     maximum availability of each prey (age) group to a specific predator (age
-##'     group). This consumption can be strongly affected by different processes like
-##'     the spatial overlap, biomass of the prey and gape limitation of the
-##'     predator. With this tool you would be able to explore the availability matrix
-##'     and the processes that affect consumption. Also this tool allows you to
-##'     explore new values for the predator-prey matrix and observe online how these
-##'     new values affect the predator-prey interaction.
+##'     group). This consumption can be strongly affected by different processes such
+##'     as the spatial overlap, the biomass of the prey and the gape limitation of
+##'     the predator. With this tool you can explore the availability matrix and the
+##'     processes that affect consumption. This tool also allows you to explore new
+##'     values for the predator-prey matrix and observe online how these new values
+##'     affect the predator-prey interaction.
 ##' @title Atlantis feeding tool
 ##' @param prm.file Character string with the path to the biological parameter \emph{*.prm} file (Atlantis input file).
 ##' @param grp.file Character string with the path to the Groups \emph{*.csv} file (Atlantis input file).
@@ -23,13 +23,13 @@
 ##'     predator preference and predator prey spatial overlap. All this information
 ##'     is divided into two different tabs:
 ##'  \itemize{
-##'   \item \bold{Non-spatial}– this tab allows the user to check and modify
+##'   \item \bold{Non-spatial}: This tab allows the user to check and modify
 ##'     availability values from the pprey matrix. This Function provides 5 outputs:
 ##'    \itemize{
 ##'      \item \bold{Availability matrix (\eqn{\lambda})}: Matrix of prey
 ##'     availability values (pprey) for each adult, young or biomass pool prey and
 ##'     predator.
-##'      \item \bold{Overlap matrix}: Calculate if a predator is able to eat a prey
+##'      \item \bold{Overlap matrix}: Calculates if a predator is able to eat a prey
 ##'     given its gape size limitations. This function uses the knife-edge size
 ##'     selectivity, where availability of the prey is either available (1) or not
 ##'     available to the predator (0).

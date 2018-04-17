@@ -8,30 +8,31 @@ compare(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths)
 }
 \arguments{
 \item{nc.out.current}{Current netcdf output file. Character string with the path
-to the netcdf file to read in. This netcdf file contains is a generic output
-from an Atlantis run usually starts with "\emph{output}" and ends in "\emph{.nc}".}
+to the netcdf file to read in. This netcdf file contains a generic output
+from an Atlantis run and usually starts with \emph{output} and ends in
+\emph{.nc}.}
 
 \item{nc.out.old}{(Default = NULL) This is the character string with the path to
 the second netcdf output file to read in (used only for comparisons). This
-netcdf file contains is a generic output from an Atlantis run and usually
-starts with "\emph{output}" and ends in "\emph{.nc}".}
+netcdf file contains a generic output from an Atlantis run and usually
+starts with \emph{output} and ends in \emph{.nc}.}
 
 \item{grp.csv}{Character string with the path to the Groups \emph{*.csv}
 file (Atlantis input file).}
 
 \item{bgm.file}{Character string with the path to the XY coordinates
-Atlantis input file \emph{*.bgm} with the information in meters.}
+Atlantis input file \emph{*.bgm} with the information in metres.}
 
 \item{cum.depths}{Cumulative depth of the Atlantis model}
 }
 \value{
-A reactive HTML with divided in 3 different panels:
+A reactive HTML that is divided in 3 different panels:
 \itemize{
 \item \bold{Biomass}: This panel shows the results for:
     \itemize{
       \item \emph{Total Biomass} which displays the changes in total biomass for
     each functional group.
-      \item \emph{Relative Biomass} displays the variation of the
+      \item \emph{Relative Biomass} which displays the variation of the
     total biomass relative to the initial biomass (\eqn{B_{0}}).
      }
  If only one netcdf file is read in it provides a single output, which expands
@@ -41,9 +42,9 @@ A reactive HTML with divided in 3 different panels:
     population over time. If a second output is provided the function allows
     comparison of the outputs. In this function the user is able to:
   \itemize{
-    \item \emph{Visualize any combination of variables}, that means the user can activate and
-    deactivate variables from the visualization. This provides more flexibility
-    for exploring the changes in the variables and compare between them.
+    \item \emph{Visualize any combination of variables}, that allows the user to activate and
+    deactivate variables from the visualization. This provides increased flexibility
+    and comparing between variables.
     \item \emph{Scaled}, this option allows for visualization of the values
     normalized by the value in the initial conditions (this option is very
     helpful for checking the main changes in variables during the calibration
@@ -55,10 +56,10 @@ A reactive HTML with divided in 3 different panels:
 \item \bold{By AgeClass}: This tab visualizes the changes through time of the
     variables by age. In this function the user is able to:
     \itemize{
-    \item \emph{Visualize any combination of variables}, that means that the
-    user can activate and deactivate variables from the visualization (this
-    provides more flexibility to explore the changes in the variables and compare
-    between them).
+    \item \emph{Visualize any combination of variables}, by activating and
+    deactivating variables from the visualization (this provides increased
+    flexibility to explore the changes in the variables and compare between
+    them).
     \item \emph{Scaled}, this option allows for visualization of the values
     normalised by the value in the initial conditions (this option is very
     helpful for checking the main changes in variables during the calibration
@@ -73,7 +74,7 @@ A reactive HTML with divided in 3 different panels:
 This function allows visualization of either the output from a simulation or
     comparison between two different Atlantis simulations. The user can compare
     biomasses, abundance, structural or reserve nitrogen between two different
-    outputs. Also, the user is able to check the changes is these variables by
+    outputs. The user is also able to check the changes is these variables by
     age for the different functional groups.
 }
 \author{

@@ -1,13 +1,13 @@
 ##' This tool allows for the visualization and analysis of the harvest output from an
-##'     Atlantis model. This tool includes analysis of catches, bycatch, and
-##'     discarding either at the level of the entire population or by age class. In
-##'     addition to graphical output, it is also possible to perform a skill
-##'     assessment of the model performance (as yet only for the time series of catch
-##'     and bycatch). The quantitative metrics used to analyze the performance of the
+##'     Atlantis model. This tool includes analysis of catch, bycatch, and discarding
+##'     either at the level of the entire population or by age class. In addition to
+##'     graphical output, it is also possible to perform a skill assessment of the
+##'     model performance (currently only for the time series of catch and
+##'     bycatch). The quantitative metrics used to analyze the performance of the
 ##'     model is based on the approach described by Olsen \emph{et al.} (2016) and Stow \emph{et
 ##'     al.} (2009) using: the correlation coefficient, root mean squared error,
 ##'     reliability index, average error, average absolute error and the modeling
-##'     efficiency.
+##'     efficiency routines.
 ##' @title Analysis of the Harvest in Atlantis
 ##' @param grp.csv Character string with the path to the Groups \emph{*.csv} file (Atlantis input file).
 ##' @param fish.csv Character string with the path to the fisheries \emph{*.csv} file (Atlantis input file)
@@ -26,8 +26,8 @@
 ##'     parameter) or by year.
 ##' \item \bold{Numbers}:  This function allows the user to analyze the change by age and
 ##'     through time of the variable catch and discards for the selected functional group
-##' \item \bold{Compare}: This function allows for n skill assessment of the model
-##'     (based on the analysis the simulated and observed time series of catch and
+##' \item \bold{Compare}: This function allows for several skill assessment of the model
+##'     (based on the analysis of the simulated and observed time series of catch and
 ##'     bycatch) to be performed. The analysis is based on the approach described by
 ##'     Olsen \emph{et al.} (2016) and Stow \emph{et al.} 2009, which is composed of the following
 ##'     quantitative metrics:
