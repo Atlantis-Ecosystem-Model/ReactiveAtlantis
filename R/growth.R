@@ -245,7 +245,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             ## STOP
             observeEvent(input$exitButton, {stopApp()})
             output$plot1 <- renderPlot({
-               par(mfrow = c(2, 2), mar = c(0, 3, 1, 0), oma = c(4, 4, 0.5, 0.5))
+               par(mfrow = c(2, 2), mar = c(0, 3, 1, 5.1), oma = c(4, 4, 0.5, 2), xpd = TRUE)
                 ## growth
                 ran <- range(unlist(growth.fin()), finite = TRUE)
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
@@ -288,11 +288,12 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
+#               browser()
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l',
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
-                legend("topright", inset = c(-0.2, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
-                       col = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers')
+                legend("topright", inset = c(-0.1, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
+                       fill = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers', bty = 'n')
 
             })
         }
