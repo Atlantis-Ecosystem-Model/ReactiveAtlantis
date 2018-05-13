@@ -101,7 +101,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                                                  tags$h3('Functional Group'),
                                                  selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),
                                                  numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
-                                                 numericInput("min", "Min proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
+                                                 numericInput("min", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
                                                  numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = time.stp[1]),
                                                  selectInput('stock', 'Stock', stk),
                                                  downloadButton("Dwnl", "Download-data"))
