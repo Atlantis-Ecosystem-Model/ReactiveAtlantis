@@ -7,7 +7,7 @@
 ##'     al.} (1998) and Tucker and Roger (2014) (Table 1).
 ##' \cr
 ##' Table 1 : Initial trophic position Assigned for each functional groups.
-##'   \tabular{|l|c|}{
+##'   \tabular{lc}{
 ##'     \bold{Functional Group} \tab \bold{Trophic level} \cr
 ##'     Small Phytoplankton   \tab 1.2   \cr
 ##'     Large Phytoplankton   \tab 2   \cr
