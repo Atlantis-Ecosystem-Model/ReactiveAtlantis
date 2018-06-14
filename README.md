@@ -31,29 +31,12 @@ library("devtools")
 install_github('jporobicg/ReactiveAtlantis','jporobicg', force=TRUE)
 ```
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
+## Running *ReactiveAtlantis*
+### Compare outputs and Biomass visualization
 
 ```
 Give an example
 ```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Authors
 
