@@ -50,9 +50,13 @@ compare(nc.current, nc.old, grp.csv, bgm.file, cum.depths)
 ```R
 biom        <- 'your_BiomIndx.txt'
 diet.file   <- 'your_DietCheck.txt'
-bio.age     <- 'your_AgeBiomIndx.txt'
+bio.age     <- 'your_AgeBiomIndx.txt' ## optional file. just if you want to check the predation by age
 grp.csv     <- 'your_groups_definition_file.csv'
+## Predation by Age
 predation(biom, grp.csv, diet.file, bio.age)
+## No predation by Age
+predation(biom, grp.csv, diet.file, bio.age = NULL)
+
 ```
 
 ### Exploring predator-prey interactions from the initial conditions
