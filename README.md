@@ -33,11 +33,76 @@ install_github('jporobicg/ReactiveAtlantis','jporobicg', force=TRUE)
 
 ## Running *ReactiveAtlantis*
 ### Compare outputs and Biomass visualization
+```R
+nc.current  <- 'your_current_output.nc'
+nc.old      <- 'your_previous_output.nc'
+grp.csv     <- 'your_groups_definition_file.csv'
+bgm.file    <- 'your_spatial_configuration_file.bgm'
+cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
+## individual file
+compare(nc.current, nc.out.old = FALSE, grp.csv, bgm.file, cum.depths)
+## compare to previuos run
+compare(nc.current, nc.old, grp.csv, bgm.file, cum.depths)
+```
+
+### Predation analysis from the Atlantis output
+```R
+biom        <- 'your_BiomIndx.txt'
+diet.file   <- 'your_DietCheck.txt'
+bio.age     <- 'your_AgeBiomIndx.txt'
+grp.csv     <- 'your_groups_definition_file.csv'
+predation(biom, grp.csv, diet.file, bio.age)
+```
+
+### Exploring predator-prey interactions from the initial conditions
+```R
+prm.file    <- 'your_prm_file.prm'
+nc.file     <- 'your_current_output.nc'
+grp.csv     <- 'your_groups_definition_file.csv'
+bgm.file    <- 'your_spatial_configuration_file.bgm'
+cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
+feeding.mat(prm.file, grp.file, nc.file, bgm.file, cum.depths)
+```
+
+### Atlantis food web and trophic level composition
+```R
+grp.csv     <- 'your_groups_definition_file.csv'
+prm.file    <- 'your_prm_file.prm'
+diet.file   <- 'your_DietCheck.txt'
+food.web(diet.file, grp.file)
 
 ```
-Give an example
+
+### Growth of primary producers and limiting factors
+```R
+nc.initial  <- 'your_initial_conditions.nc'
+nc.current  <- 'your_current_output.nc'
+grp.csv     <- 'your_groups_definition_file.csv'
+prm.file    <- 'your_prm_file.prm'
+growth.pp(nc.initial, grp.csv, prm.file, nc.current)
 ```
 
+### Analysis of recruitment and primary production
+```R
+nc.initial  <- 'your_initial_conditions.nc'
+nc.current  <- 'your_current_output.nc'
+yoy.file    <- 'your_yoy_file.txt'
+grp.csv     <- 'your_groups_definition_file.csv'
+prm.file    <- 'your_prm_file.prm'
+recruitment.cal(nc.initial, nc.current, yoy.file, grp.file, prm.file)
+```
+
+### Harvest outputs and model skill assessment
+```R
+
+catch.nc    <- 'your_output_CATCH.nc'
+ext.catch   <- 'external_catch_time_serie.csv'
+cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
+fsh.csv     <- 'your_fisheries_definition_file.csv'
+bgm.file    <- 'your_spatial_configuration_file.bgm'
+grp.csv     <- 'your_groups_definition_file.csv'
+catch(grp.csv, fsh.csv, catch.nc, ext.catch)
+```
 ## Authors
 
 * **Javier Porobic**
