@@ -116,6 +116,10 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
         diet.data <- diet.data[,  - rem]
     }
     ## Preparing the data
+    ## checking for predator or groups
+    if(any(colnames(diet.data) == 'Group')){
+        colnames(diet.data)[which(colnames(diet.data) == 'Group')] <- 'Predator'
+    }
     predators         <- as.character(unique(diet.data$Predator))
     time              <- unique(diet.data$Time)
     stocks            <- unique(diet.data$Stock)
