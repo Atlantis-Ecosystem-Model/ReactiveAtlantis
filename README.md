@@ -41,7 +41,7 @@ grp.csv     <- 'your_groups_definition_file.csv'
 bgm.file    <- 'your_spatial_configuration_file.bgm'
 cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
 ## individual file
-compare(nc.current, nc.out.old = FALSE, grp.csv, bgm.file, cum.depths)
+compare(nc.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths)
 ## compare to previuos run
 compare(nc.current, nc.old, grp.csv, bgm.file, cum.depths)
 ```
