@@ -29,6 +29,7 @@ install.packages('devtools')   ## you need to do this step just once
 # running
 library("devtools")
 install_github('jporobicg/ReactiveAtlantis','jporobicg', force=TRUE)
+library("ReactiveAtlantis")
 ```
 
 ## Running *ReactiveAtlantis*
