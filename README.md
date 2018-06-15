@@ -24,7 +24,7 @@ solve it as soon as possible.
 What things you need to install To run *ReactiveAtlantis* on R.
 
 ```R
-# install library
+# install packages
 install.packages('devtools')   ## you need to do this step just once
 # running
 library("devtools")
