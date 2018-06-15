@@ -7,7 +7,6 @@ parameterization and analysis of the processes and parameters most often modifie
 during the calibration of Atlantis (e.g. growth rate, predation, recruitment,
 Audzijonyte *et al.* 2017. Among the processes performed by this
 package are:
-\begin{itemize}
 * Visualization and analysis of the input, output and initial conditions of an Atlantis model.
 *  Interactive modification of Atlantis configuration files.
 *  Simulation of new parameters to help in the calibration on an Atlantis model.
