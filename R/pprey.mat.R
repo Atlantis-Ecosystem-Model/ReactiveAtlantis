@@ -70,7 +70,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     txtHelp <- paste(txtHelp, "<p>The <b>Original value :</b> box,  display the value that is used on the pprey matrix on the Biological parameter file.</p>")
     txtHelp <- paste(txtHelp, "<p>The <b>Current value :</b> box,  display the value that the user set in the current run. If the user don't save the run,  the value will be lost.</p>")
     txtHelp <- paste(txtHelp, "<p>On the <b>New value :</b> box,  the user can enter the new value for the pprey matrix for the selected predator and prey. The result of the application would be reflected on the current run in all the plots after the used click the box <b>Change value</b>.</p>")
-    txtHelp <- paste(txtHelp, "<p>The <b>Write pPREY Matrix</b> bottom create a txt file that contain the new pprey matrix created by the user</p>")
+    txtHelp <- paste(txtHelp, "<p>The <b>Write pPREY Matrix</b> bottom create a txt file that contain the new pPrey matrix created by the user</p>")
     txtHelp <- paste(txtHelp, "<p><b>Effective predation</b> Represent the total predation based on the Predator\'s biomass,  is the same approach that Beth used on the spreadsheet to calibrate predation. Values are on logarithmic scale</p>")
     txtHelp <- paste(txtHelp, "<p><b>Availability matrix</b> The raw pPREY matrix from the biological parameter file.</p>")
     txtHelp <- paste(txtHelp, "<p><b>Overlap matrix</b> shows if the predator is able to eat the prey based on the gape limitations.</p>")
@@ -183,6 +183,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Binary values
     ad.sp.ov[ad.sp.ov > 1]   <- 1
     juv.sp.ov[juv.sp.ov > 1] <- 1
+    #browser()
     land      <- rep(numlayers[, 3], each = length(cum.depths))
     ad.sp.ov  <- data.frame (Stage = 'Adult', Land = land, ad.sp.ov)
     juv.sp.ov <- data.frame (Stage = 'Juvenile', Land = land, juv.sp.ov)
@@ -483,6 +484,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
     nc.out  <- nc_open(nc.file)
+    browser()
     Is.off  <- which(groups.csv$IsTurnedOn == 0)
     FG      <- as.character(groups.csv$Name)
     FGN     <- as.character(groups.csv$Code)
@@ -491,6 +493,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     Struct  <- Biom.N
     over.sp <- NULL
     for(code in 1 : length(FG)){
+        ##if(code == 50) browser()
         if(code %in% Is.off) next
         if(TY[code] %in% c('CEP', 'PWN') && groups.csv$NumCohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
@@ -637,23 +640,31 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
+    if(pattern == "pPREY")browser()
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-         col1 <- col2 <- vector()
+        col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+            if(grepl('#', tmp[1])) next
+#            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
             if(FG[1] == 'look') {
                 col1[i] <- tmp2[1]
             } else {
                 id.co   <- which(tmp2 %in% FG )
+                if(sum(id.co) == 0) next
                 col1[i] <- tmp2[id.co]
             }
             col2[i] <- as.numeric(tmp[2])
         }
         if(is.null(FG)) col1 <- rep('FG', length(col2))
-        return(data.frame(FG = col1, Value = col2))
+        out.t <- data.frame(FG = col1, Value = col2)
+        if(any(is.na(out.t[, 1]))){
+            out.t <- out.t[-which(is.na(out.t[, 1])), ]
+        }
+        return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
         nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
@@ -664,13 +675,15 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
             if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                t.text <- gsub('\t', ' ',  text[l.pat[i] + 1])
+                t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                t.text <- gsub('\t', ' ',  text[l.pat[i] + 1])
+                #t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp))
+#                browser()
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }
@@ -691,6 +704,12 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
     ## Gape size and adult and young age
     KLP                     <- text2num(prm, 'KLP', FG = as.character(groups.csv$Code))
     KUP                     <- text2num(prm, 'KUP',  FG = as.character(groups.csv$Code))
+    if(length(unique(KLP[,1])) != nrow(KLP)){
+        stop('You have repeated values of KLP for ', KLP[which(duplicated(KLP[, 1])), 1], ', fix that and run again the tool')
+    }
+    if(length(unique(KUP[,1])) != nrow(KUP)){
+        stop('You have repeated values of KUP for ', KLP[which(duplicated(KLP[, 1])), 1], ', fix that and run again the tool')
+    }
     age                     <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     Gape                    <- data.frame(FG = KLP$FG, KLP = KLP$Value, KUP = KUP$Value, Age.Adult = NA)
     pos.Age                 <- which(Gape$FG %in% age$FG)
