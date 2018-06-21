@@ -129,7 +129,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
     Over.mat <- Over.mat.func(Ava.mat, Gape[[1]])
-    bio.a    <- Bio.age(Biom.N, age = Gape[[2]], Over.mat)
+    bio.a    <- Bio.ages(Biom.N, age = Gape[[2]], Over.mat)
     bio.juv  <- bio.a[[1]]
     bio.adl  <- bio.a[[2]]
     bio.juv  <- data.frame(FG = bio.a[[1]][, 1], Biomass = as.numeric(bio.a[[1]][, 2]))
@@ -803,7 +803,7 @@ Over.mat.func <- function(Ava.mat, Gape){
 ##' @param Over.mat Overlap matrix
 ##' @return Biomass by adult and juveniles
 ##' @author Demiurgo
-Bio.age <- function(Biom.N, age, Over.mat){
+Bio.ages <- function(Biom.N, age, Over.mat){
     ## total biomasss by Juv and Adults
     Biom.N  <- Biom.N[order(row.names(Biom.N)), ]
     fg      <- row.names(Biom.N)
