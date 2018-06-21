@@ -1,4 +1,5 @@
 [![Project Status](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+[![Build Status](https://travis-ci.org/jporobicg/ReactiveAtlantis.svg?branch=master)](https://travis-ci.org/jporobicg/ReactiveAtlantis)
 # ReactiveAtlantis
 *ReactiveAtlantis* is a R-package builded using the Shiny
 package as the main platform for the reactive programming approach.
