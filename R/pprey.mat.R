@@ -483,7 +483,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
-    ##browser()
     nc.out  <- nc_open(nc.file)
     m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
     Is.off  <- which(groups.csv$IsTurnedOn == 0)
@@ -580,8 +579,17 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
             }
         } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('CEP', 'PWN'))) {
             for(cohort in 1 : groups.csv$NumCohorts[code]){
+                #browser()
                 StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
+                if(all(is.na(StructN))){
+                    ## Some model don't have the values by box and layer,  they use the FillValue attribute
+                    StructN <- ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""), attname = "_FillValue")$value
+                }
                 ReservN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""))
+                if(all(is.na(ReservN))){
+                    ## Some model don't have the values by box and layer,  they use the FillValue attribute
+                    ReservN <- ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""), attname = "_FillValue")$value
+                }
                 Numb    <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_Nums", sep = ""))
                 if(length(dim(ReservN)) > 2){
                     StructN <- StructN[, , 1]
@@ -618,10 +626,18 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     names(over.sp)[ncol(over.sp)] <- paste(FGN[code], cohort, sep = '_')
                 }
-                Biom.N[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE)  +
-                                         max(colSums(ReservN,  na.rm = TRUE), na.rm = TRUE)) *
-                    sum(Numb, na.rm = TRUE)
-                Struct[code, cohort] <- (max(colSums(ReservN,  na.rm = TRUE), na.rm = TRUE))
+                ##browser()
+                Biom.N[code, cohort] <- sum(StructN + ReservN * Numb, na.rm = TRUE)
+                Struct[code, cohort] <- max(StructN, na.rm = TRUE)
+
+                ## Biom.N[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE)  +
+                ##                          max(colSums(ReservN,  na.rm = TRUE), na.rm = TRUE)) *
+                ##     sum(Numb, na.rm = TRUE)
+                #if(length(StructN) == 1)
+
+                ##         } else {
+                ## Struct[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE))
+                ##         }
             }
         }
     }
