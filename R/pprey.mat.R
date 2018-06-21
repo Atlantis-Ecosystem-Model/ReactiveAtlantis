@@ -483,8 +483,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
+    ##browser()
     nc.out  <- nc_open(nc.file)
-    browser()
+    m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
     Is.off  <- which(groups.csv$IsTurnedOn == 0)
     FG      <- as.character(groups.csv$Name)
     FGN     <- as.character(groups.csv$Code)
@@ -547,7 +548,8 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         N.tot   <- sum(N.tot * w.m2, na.rm = TRUE)
                     }
                     Biom.N[code, coh] <- sum(N.tot, na.rm = TRUE)
-                    Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
+                    Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
+                    #Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
                     if(code==1 && coh==1 && !(code %in% Is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
@@ -589,19 +591,23 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     Numb    <- Numb[, , 1]
                 }
                 if(code==1 && cohort==1 && !(code %in% Is.off)){
-                    Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
+                    ##Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
+                    Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb.tmp)){
                         if(numlayers[box, 2]  == 1) next()
-                        arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) : (max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
+                        arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) : (m.depth - 1))[1 : m.depth]
+                        #arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) : (max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
                     over.sp        <- melt(Numb.tmp)
                     names(over.sp) <- c('Layer', 'Box', paste(FGN[code], cohort, sep = '_'))
                 }else if(!(code %in% Is.off)){
-                    Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
+                    Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
+                    #Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
                     for(box in 1 : ncol(Numb)){
                         if(numlayers[box, 2]  == 1) next()
-                        arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) :(max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
+                        arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) :(m.depth - 1))[1 : m.depth]
+                        ##arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) :(max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
                     new.sp  <- as.vector(melt(Numb.tmp)[, 3])
@@ -640,7 +646,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
-    if(pattern == "pPREY")browser()
+    #if(pattern == "pPREY")browser()
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
