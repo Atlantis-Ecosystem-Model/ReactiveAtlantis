@@ -183,7 +183,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Binary values
     ad.sp.ov[ad.sp.ov > 1]   <- 1
     juv.sp.ov[juv.sp.ov > 1] <- 1
-    #browser()
     land      <- rep(numlayers[, 3], each = length(cum.depths))
     ad.sp.ov  <- data.frame (Stage = 'Adult', Land = land, ad.sp.ov)
     juv.sp.ov <- data.frame (Stage = 'Juvenile', Land = land, juv.sp.ov)
@@ -493,7 +492,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     Struct  <- Biom.N
     over.sp <- NULL
     for(code in 1 : length(FG)){
-        ##if(code == 50) browser()
         if(code %in% Is.off) next
         if(TY[code] %in% c('CEP', 'PWN') && groups.csv$NumCohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
@@ -548,7 +546,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     Biom.N[code, coh] <- sum(N.tot, na.rm = TRUE)
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
-                    #Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
                     if(code==1 && coh==1 && !(code %in% Is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
@@ -579,7 +576,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
             }
         } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('CEP', 'PWN'))) {
             for(cohort in 1 : groups.csv$NumCohorts[code]){
-                #browser()
                 StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
@@ -599,23 +595,19 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     Numb    <- Numb[, , 1]
                 }
                 if(code==1 && cohort==1 && !(code %in% Is.off)){
-                    ##Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb.tmp)){
                         if(numlayers[box, 2]  == 1) next()
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) : (m.depth - 1))[1 : m.depth]
-                        #arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) : (max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
                     over.sp        <- melt(Numb.tmp)
                     names(over.sp) <- c('Layer', 'Box', paste(FGN[code], cohort, sep = '_'))
                 }else if(!(code %in% Is.off)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
-                    #Numb.tmp <- matrix(NA, max(numlayers[, 3]), nrow(numlayers))
                     for(box in 1 : ncol(Numb)){
                         if(numlayers[box, 2]  == 1) next()
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) :(m.depth - 1))[1 : m.depth]
-                        ##arreg <- c(numlayers[box, 3] : 1, max(numlayers[, 3]), (numlayers[box, 3]  +  1) :(max(numlayers[, 3]) - 1))[1 : max(numlayers[, 3])]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
                     new.sp  <- as.vector(melt(Numb.tmp)[, 3])
@@ -626,18 +618,8 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     names(over.sp)[ncol(over.sp)] <- paste(FGN[code], cohort, sep = '_')
                 }
-                ##browser()
                 Biom.N[code, cohort] <- sum(StructN + ReservN * Numb, na.rm = TRUE)
                 Struct[code, cohort] <- max(StructN, na.rm = TRUE)
-
-                ## Biom.N[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE)  +
-                ##                          max(colSums(ReservN,  na.rm = TRUE), na.rm = TRUE)) *
-                ##     sum(Numb, na.rm = TRUE)
-                #if(length(StructN) == 1)
-
-                ##         } else {
-                ## Struct[code, cohort] <- (max(colSums(StructN,  na.rm = TRUE), na.rm = TRUE))
-                ##         }
             }
         }
     }
@@ -662,7 +644,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
-    #if(pattern == "pPREY")browser()
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
@@ -701,10 +682,8 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                #t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
                 t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-#                browser()
                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
