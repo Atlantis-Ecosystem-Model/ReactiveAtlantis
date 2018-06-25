@@ -122,7 +122,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     is.off   <- which(groups.csv$IsTurnedOn == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
-        age      <- age[-which(age$FG %in% groups.csv$Code[is.off]),]
+        out <- which(age$FG %in% groups.csv$Code[is.off])
+        if(sum(out) != 0) age      <- age[- out, ]
     }
     adu      <- data.frame(FG = groups.csv$Code, Adul = groups.csv$NumCohorts)
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
@@ -850,6 +851,10 @@ make.map <- function(bgm.file){
     bgm          <- readLines(bgm.file)
     numboxes     <- as.numeric(gsub('nbox', '', grep("nbox", bgm, value = TRUE)))
     proj         <- gsub("projection[[:space:]]+", "", grep("projection", bgm, value = TRUE))
+    if(!grepl('\\+', proj)){
+        proj <- gsub(' ', ' \\+', proj)
+        proj <- gsub('proj', '\\+proj', proj)
+    }
     map.vertices <- data.frame()
     for(i in 1 : numboxes){
         txt.find <- paste("box", i - 1, ".vert", sep = "")
@@ -863,6 +868,7 @@ make.map <- function(bgm.file){
             }
         }
     }
+
     ## Convert latlon coordinates!
     latlon    <- proj4::project(map.vertices[, 2 : 3], proj = proj, inverse = T)
     map       <- data.frame(Box = map.vertices[, 1],
