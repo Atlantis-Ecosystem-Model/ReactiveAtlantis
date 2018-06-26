@@ -93,10 +93,12 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 
     nc.ini    <- nc_open(ini.nc.file)
     group.csv <- read.csv(grp.file)
+    is.off    <- which(group.csv$IsTurnedOn == 0)
     nc.out    <- nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
     pp.grp    <- with(group.csv, which(GroupType %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG'))) ## Just primary producer
+    pp.grp    <- pp.grp[ - which(pp.grp %in% is.off)]
     cod.fg    <- with(group.csv, as.character(Code[pp.grp])) ## cod
     nam.fg    <- with(group.csv, as.character(Name[pp.grp])) ## name
     options(warn =  - 1)
@@ -128,8 +130,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     IRR      <- ncvar_get(nc.out, 'Light')
     l.space  <- l.light <- l.nut <- biom<- list()
     ## type of sediments
-
-    for(fg in 1:  length(nam.fg)){
+    for(fg in 1 : length(nam.fg)){
         biom[[fg]] <- ncvar_get(nc.out, paste0(nam.fg[fg], '_N'))
         ## nutrients
         if(flagnut$Value == 0){
@@ -241,7 +242,6 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 } else {
                     lim.eddy()}
             })
-
             ## STOP
             observeEvent(input$exitButton, {stopApp()})
             output$plot1 <- renderPlot({
@@ -288,13 +288,11 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
-#               browser()
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l',
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 legend("topright", inset = c(-0.1, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
                        fill = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers', bty = 'n')
-
             })
         }
     )
@@ -315,38 +313,52 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+            if(grepl('#', tmp[1])) next
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
             if(FG[1] == 'look') {
                 col1[i] <- tmp2[1]
             } else {
                 id.co   <- which(tmp2 %in% FG )
+                if(sum(id.co) == 0) next
                 col1[i] <- tmp2[id.co]
             }
             col2[i] <- as.numeric(tmp[2])
         }
         if(is.null(FG)) col1 <- rep('FG', length(col2))
-        return(data.frame(FG = col1, Value = col2))
+        out.t <- data.frame(FG = col1, Value = col2)
+        if(any(is.na(out.t[, 1]))){
+            out.t <- out.t[-which(is.na(out.t[, 1])), ]
+        }
+        return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
-        fg    <- vector()
-        pos   <- 1
-        for( i in 1 : length(nam)){
-            tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
-            fg[pos] <- tmp[1]
-            if(pos == 1) {
-                pp.mat <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
-                pos    <- pos + 1
-            } else {
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for', tmp[1], ' has ', ncol(pp.tmp))
-                pp.mat <- rbind(pp.mat, pp.tmp)
-                pos    <- pos + 1
+        if(length(l.pat) == 0){
+            warning(paste('you dont have values for the parameter', pattern, sep = ' '))
+
+        } else {
+            nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
+            fg    <- vector()
+            pos   <- 1
+            for( i in 1 : length(nam)){
+                tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
+                if(grepl('#', tmp[1])) next
+                fg[pos] <- tmp[1]
+                if(pos == 1) {
+                    t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                    pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
+                    pos    <- pos + 1
+                } else {
+                    t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                    pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+                    if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
+                    pp.mat <- rbind(pp.mat, pp.tmp)
+                    pos    <- pos + 1
+                }
             }
+            if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
+            row.names(pp.mat)                  <- fg
+            return(pp.mat)
         }
-        if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-        row.names(pp.mat)                  <- fg
-        return(pp.mat)
+        return()
     }
 }

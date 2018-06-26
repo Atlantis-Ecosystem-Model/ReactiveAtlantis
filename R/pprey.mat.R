@@ -652,7 +652,6 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
             if(grepl('#', tmp[1])) next
-#            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
             if(FG[1] == 'look') {
                 col1[i] <- tmp2[1]
@@ -675,8 +674,9 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         fg    <- vector()
         pos   <- 1
         for( i in 1 : length(nam)){
+
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
+            if(grepl('#', tmp[1])) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
                 t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
