@@ -22,7 +22,7 @@
 ##'       \item \emph{ERSEM WQI limitation \bold{flagnut = 2}}
 ##'       \deqn{\delta_{nutrients} = \frac{2}{\frac{DIN}{KN + DIN} * \frac{Si}{KS + Si}}}
 ##'     were \eqn{KS} is the growth half-saturation constant for the functional group.
-##'            }
+##'        }
 ##'   \item \bold{Light limitation}: In Atlantis photosynthesis in  primary producers
 ##'     can be limited by light. The light limitation factor \eqn{\delta_{light}} is calculated by:
 ##'  \deqn{\delta_{light} = min(\frac{IRR}{KI}, 1)} \cr
