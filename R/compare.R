@@ -106,10 +106,10 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if(!is.null(nc.out.old)) nc.old <- nc_open(nc.out.old)
     grp     <- grp[grp$IsTurnedOn == 1, c('Code', 'Name', 'LongName', 'GroupType', 'NumCohorts')]
     ## Getting the total biomass
-    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('CEP', 'PWN'), ]
+    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE'), ]
     pol.grp <- grp[grp$NumCohorts == 1, ]
     ## Some model use Agestructured biomass pools
-    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'CEP'), ]
+    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE'), ]
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
     if(nrow(age.grp) > 0){
@@ -194,7 +194,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                   fluidRow(
                                       column(2,
                                              wellPanel(
-                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$Code[grp$NumCohorts > 1])),
+                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$Code[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE')])),
                                                  checkboxInput('rn3a', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn3a', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num3a', label = strong("Numbers"), value = FALSE),
@@ -391,7 +391,13 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
         for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
             name.fg <- paste0(pwn.grp$Name[pwn], '_N', coh)
             b.coh   <- ncvar_get(nc.out, name.fg) * mg2t * x.cn
-            b.coh   <- apply(b.coh, 3, '*', box.info$Vol)
+            if(length(dim(b.coh)) > 2){
+                ## for Volumen
+                b.coh   <- apply(b.coh, 3, '*', box.info$Vol)
+            } else {
+                ## for area
+                b.coh   <- apply(b.coh, 2, '*', box.info$info$Area)
+            }
             b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
