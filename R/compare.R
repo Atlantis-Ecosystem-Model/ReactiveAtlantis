@@ -106,10 +106,10 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if(!is.null(nc.out.old)) nc.old <- nc_open(nc.out.old)
     grp     <- grp[grp$IsTurnedOn == 1, c('Code', 'Name', 'LongName', 'GroupType', 'NumCohorts')]
     ## Getting the total biomass
-    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE'), ]
+    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'), ]
     pol.grp <- grp[grp$NumCohorts == 1, ]
     ## Some model use Agestructured biomass pools
-    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE'), ]
+    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'), ]
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
     if(nrow(age.grp) > 0){
@@ -194,7 +194,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                   fluidRow(
                                       column(2,
                                              wellPanel(
-                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$Code[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE')])),
+                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$Code[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')])),
                                                  checkboxInput('rn3a', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn3a', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num3a', label = strong("Numbers"), value = FALSE),
