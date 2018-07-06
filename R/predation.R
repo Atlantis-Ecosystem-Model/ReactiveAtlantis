@@ -97,9 +97,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     if (!require('RColorBrewer', quietly = TRUE)) {
         stop('The package RColorBrewer was not installed')
     }
-    ## Colors
-    mycol             <- c(brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-    mycol             <- colorRampPalette(mycol)
+
+
     ## Reading Data
     cur.dat   <- data.frame(fread(biom.file, header = TRUE, sep = ' ', showProgress = FALSE))
     diet.data <- data.frame(fread(diet.file, header=TRUE, sep = ' ', showProgress = FALSE))
@@ -132,6 +131,11 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
         age.gr.pred   <- data.frame(fread(age.biomass, header=TRUE, sep = ' ', showProgress = FALSE))
         col.nam       <- str_extract(names(age.gr.pred), "[aA-zZ]+")
     }
+
+    ## Colors
+    g.col    <- c(brewer.pal(9, "BuPu") [2 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+    g.col    <- data.frame(grp, col = colorRampPalette(g.col)(length(grp)))
+
     ## Start the Shiny application
     shinyApp(
         ## Create the different tabs
@@ -275,26 +279,33 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             })
             output$plot1 <- renderPlot({
                 plot <- ggplot(biom.tot, aes(x = Time, y = value)) +
-                    geom_line(colour = 'firebrick3') + facet_wrap(~ variable, ncol = 4,  scale = 'free_y') + theme_bw()+
+                    geom_line(colour = 'darkorange3') + facet_wrap(~ variable, ncol = 4,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = mycol(2))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
             })
             output$plot1B <- renderPlot({
                 plot <- ggplot(rel.bio, aes(x = Time, y = value)) +
-                    geom_line(colour = 'firebrick3', na.rm = TRUE) + facet_wrap( ~ variable, ncol = 4) +
+                    geom_line(colour = 'darkorange3', na.rm = TRUE) + facet_wrap( ~ variable, ncol = 4) +
                     theme_bw() + ylim(0, 2) +
                     annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
                 plot
             })
             output$plot2 <- renderPlot({
-                colorpp  <- mycol(length(unique(predator()$variable)))
+                ## Colors
+                mycol      <- c(brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+                colorpp    <- colorRampPalette(mycol)(length(unique(predator()$variable)))
                 ggplot(predator(), aes(x = Time, y = consum, fill = variable, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp, name = 'Prey') +
                     labs(list(title = paste('Predator -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]'), colour = 'Prey'))
             })
             output$plot3 <- renderPlot({
-                colorpp <- mycol(length(unique(prey()$Predator)))
+                #browser()
+                validate(
+                    need(length(prey()$eff.pred) != 0,  'Apparently this functional group has no predators.')
+                )
+                mycol      <- c(brewer.pal(9, "YlGnBu")[1 : 3], brewer.pal(9, "BuPu") [2 : 9])
+                colorpp    <- colorRampPalette(mycol)(length(unique(prey()$Predator)))
                 ggplot(prey(), aes(x = Time, y = eff.pred, fill = Predator, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp) +
                     labs(list(title = paste('Prey -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]')))
             })
@@ -305,8 +316,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 with(age.diet.bio(), points(Time[Time == input$Time], Biomass[Time == input$Time], pch = 19, col = 'firebrick3', cex = 1.3))
             })
             output$plot4B <- renderPlot({
-                colorpp <- mycol(length(unique(age.diet()$variable)))
-                ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = colorpp) +
+                color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.diet()$variable))])
+                ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = color.pp) +
                     labs(list(title = paste('Predator  -', input$FG2, 'on Time step :', input$Time), x = 'AgeGroup', y = 'Proportion'))
             })
 
@@ -314,18 +325,18 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 validate(
                     need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
-                colorpp <- mycol(length(unique(age.bio.gr()$variable)))
+                color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
                 plot <- ggplot(prey.bio(), aes(x = Time, y = value)) +
                     geom_line(colour = 'firebrick3') + facet_wrap(~ variable, ncol = 5,  scale = 'free_y') + theme_bw()+
-                    scale_color_manual(values = colorpp)  + labs(list(title = paste('Prey(s) for', input$FG3, 'on Time step :', input$Time3), x = 'Time step', y = 'Biomass (tons)'))
+                    scale_color_manual(values = color.pp)  + labs(list(title = paste('Prey(s) for', input$FG3, 'on Time step :', input$Time3), x = 'Time step', y = 'Biomass (tons)'))
                 plot + geom_vline(xintercept = input$Time3, linetype = "dashed",  color = 'royalblue')
             })
             output$plot6 <- renderPlot({
                 validate(
                     need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
-                colorpp <- mycol(length(unique(age.bio.gr()$variable)))
-                ggplot(age.bio.gr(), aes(x = Cohort, y = eff.pred, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = colorpp)  +
+                color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
+                ggplot(age.bio.gr(), aes(x = Cohort, y = eff.pred, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = color.pp)  +
                     labs(list(title = paste('Predator  -', input$FG3, 'on Time step :', input$Time3), x = 'AgeGroup', y = 'Effective predation (tons)')) + theme_bw()
             })
 
