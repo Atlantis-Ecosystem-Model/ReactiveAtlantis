@@ -300,7 +300,6 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                     labs(list(title = paste('Predator -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]'), colour = 'Prey'))
             })
             output$plot3 <- renderPlot({
-                #browser()
                 validate(
                     need(length(prey()$eff.pred) != 0,  'Apparently this functional group has no predators.')
                 )
