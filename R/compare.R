@@ -155,11 +155,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                          tabPanel('Biomass',
                                   tabsetPanel(
                                       tabPanel('Total Biomass',
-                                               plotOutput('plot1', width = "100%", height = "1000px"),
+                                               plotOutput('plot1', height = "auto"),
                                                downloadButton("dwn.bio", "Download")
                                                ),
                                       tabPanel('Relative Biomass',
-                                               plotOutput('plot1B', width = "100%", height = "1000px"),
+                                               plotOutput('plot1B', height = "auto"),
                                                downloadButton("dwn.rel", "Download")
                                                ))),
                          tabPanel('Total',
@@ -262,6 +262,9 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
+            },
+            height = function() {
+                session$clientData$output_plot1_width
             })
             output$plot1B <- renderPlot({
                 plot <- ggplot(rel.bio, aes(x = Time, y = Relative, colour = Simulation)) +
@@ -270,6 +273,9 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
                 plot
+            },
+            height = function() {
+                session$clientData$output_plot1_width
             })
             output$plot2a <- renderPlot({
                 plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
