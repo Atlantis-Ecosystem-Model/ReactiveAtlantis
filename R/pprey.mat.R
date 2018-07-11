@@ -102,8 +102,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     groups.csv <- read.csv(grp.file)
     prm        <- readLines(prm.file, warn = FALSE)
     numlayers  <- find.z(bgm.file, cum.depths)
-    min.depth  <- text2num(prm, 'mindepth', FG = 'look')
-    max.depth  <- text2num(prm, 'maxdepth', FG = 'look')
+    min.depth  <- text2num(prm, '_mindepth', FG = 'look')
+    max.depth  <- text2num(prm, '_maxdepth', FG = 'look')
     depth.dst  <- data.frame(FG = min.depth[, 1], Min = min.depth[, 2], Max = max.depth[which(max.depth[, 1] %in% min.depth[,1]), 2])
     ## availability matrix
     Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE)
@@ -351,10 +351,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     juv.prd <- pred.juv[, 6]
                 }
                 ## Checking the gape overlap
-                    AoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5])))
-                    AoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5])))
-                    JoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5])))
-                    JoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
+                AoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5])))
+                AoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5])))
+                JoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5])))
+                JoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
                 ## Merging
                 ad.on.juv    <- data.frame(Land = prey.ad[, 4], Layer = prey.ad[, 1], Box = prey.ad[, 2], overlap = juv.pry  * pred.ad[, 6], Stage.prey = 'Juvenile - PREY',
                                            Stage.pred = 'Adult - PREDATOR', Gape.Overlap = AoJ)
@@ -494,7 +494,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     over.sp <- NULL
     for(code in 1 : length(FG)){
         if(code %in% Is.off) next
-        if(TY[code] %in% c('CEP', 'PWN') && groups.csv$NumCohorts[code] > 1){
+        if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES') && groups.csv$NumCohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
             sed     <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
             unit    <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
@@ -507,9 +507,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-        if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('CEP', 'PWN')){
+        if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')){
             for(coh in 1 : groups.csv$NumCohorts[code]){
-                if(TY[code] %in% c('CEP', 'PWN') && groups.csv$NumCohorts[code] > 1){
+                if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES') && groups.csv$NumCohorts[code] > 1){
                     N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
                     N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
@@ -523,7 +523,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     w.m2[is.infinite(w.m2)] <- NA
                     w.m2    <- sum(w.m2, na.rm=TRUE)
                     w.m3    <- sum(water.t, na.rm = TRUE)
-                    if(TY[code] %in% c('CEP', 'PWN')){
+                    if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')){
                         Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", coh, sep = ""), attname = "_FillValue")$value
                     } else {
                         Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "_FillValue")$value
@@ -575,7 +575,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                 }
             }
-        } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('CEP', 'PWN'))) {
+        } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'))) {
             for(cohort in 1 : groups.csv$NumCohorts[code]){
                 StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
@@ -855,6 +855,7 @@ make.map <- function(bgm.file){
         proj <- gsub(' ', ' \\+', proj)
         proj <- gsub('proj', '\\+proj', proj)
     }
+    proj <- gsub('#', '', proj, ignore.case = TRUE) ## some bgm file have the '#' symbol at the begining
     map.vertices <- data.frame()
     for(i in 1 : numboxes){
         txt.find <- paste("box", i - 1, ".vert", sep = "")
@@ -868,7 +869,10 @@ make.map <- function(bgm.file){
             }
         }
     }
-
+    ## in case you use alb for albers equal area (aes)
+    proj = gsub('alb', 'aea', proj)
+    ## in case someone is using grs and no GRS. case sensitive for R - proj4
+    proj = gsub('grs', 'GRS', proj)
     ## Convert latlon coordinates!
     latlon    <- proj4::project(map.vertices[, 2 : 3], proj = proj, inverse = T)
     map       <- data.frame(Box = map.vertices[, 1],
