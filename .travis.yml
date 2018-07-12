@@ -10,8 +10,13 @@ sudo: required
 
 addons:
   apt:
+    update: true
     sources:
       - debian-sid
+    packages:
+      - librdf0-dev
+      - libnetcdf-dev
+      - netcdf-bin
 
 apt_packages:
   - libudunits2-dev
