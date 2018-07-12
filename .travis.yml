@@ -3,10 +3,10 @@ language: r
 r:
   - oldrel
   - release
-
+  - devel
 warnings_are_errors: true
 
-sudo: required
+sudo: false
 
 addons:
   apt:
@@ -21,6 +21,7 @@ apt_packages:
 
 r_packages:
   - devtools
+  - ncdf4
 
 r_binary_packages:
   - proj4
