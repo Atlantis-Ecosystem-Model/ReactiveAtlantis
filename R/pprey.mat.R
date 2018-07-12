@@ -100,6 +100,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Reading files
     if(!quiet) cat('\n Reading files')
     groups.csv <- read.csv(grp.file)
+    if(any(grepl('isPredator', names(groups.csv)))){
+        names(groups.csv)[which(grepl('isPredator', names(groups.csv)))] <- 'IsPredator'
+    }
     prm        <- readLines(prm.file, warn = FALSE)
     numlayers  <- find.z(bgm.file, cum.depths)
     min.depth  <- text2num(prm, '_mindepth', FG = 'look')
@@ -310,7 +313,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 which(sort(colnames(Ava.mat)) == input$xcol)
             })
             liney <- reactive({
-                ##                which(sort(row.names(Ava.mat)) == input$ycol)
                 which(sort(row.names(Ava.mat)) == pred.name())
             })
             rff <- reactive({
@@ -392,7 +394,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 ggplot(data = melt(rff()),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
-                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
+                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
                     annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1,
                              alpha = .1, colour = 'royalblue') +
                     annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5,
@@ -674,9 +676,8 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         fg    <- vector()
         pos   <- 1
         for( i in 1 : length(nam)){
-
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1])) next
+            if(grepl('#', tmp[1]) || !grepl('^pPREY', tmp[1])) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
                 t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
