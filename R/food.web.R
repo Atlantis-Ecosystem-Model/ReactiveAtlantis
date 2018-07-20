@@ -79,7 +79,9 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
     ## Reading files
     if(!quiet) cat('\n Reading files')
     dat      <- data.frame(fread(diet.file, header = TRUE, sep = ' ', showProgress = FALSE))
+    if(any(names(dat) == 'Group')) names(dat)[which(names(dat) == 'Group')] <- 'Predator'
     time.stp <- round(range(dat$Time), 0)
+    lag      <- diff(unique(dat$Time))[1]
     grp.dat  <- read.csv(grp.file)
     stk      <- unique(dat$Stock)
     if(any(names(grp.dat) == 'isPredator')){
@@ -102,7 +104,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                                                  selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),
                                                  numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
                                                  numericInput("min", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
-                                                 numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = time.stp[1]),
+                                                 numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = lag),
                                                  selectInput('stock', 'Stock', stk),
                                                  downloadButton("Dwnl", "Download-data"))
                                              ),
@@ -133,7 +135,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 stg    <- 1
                 while(stg <= input$m.stg){
                     for(fg in foc){
-                        ## this approach remove not common prey but keeps the proportion
+                        ## approach remove not common prey but keeps the proportion
                         diet     <- colSums(time.prey()[time.prey()$Predator == fg, 2 : ncol(time.prey())])
                         diet     <- diet[diet > 0] / sum(diet, na.rm = TRUE)
                         if(length(diet) == 0) next
@@ -189,7 +191,6 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 TL$h.lev <- h.lev
                 TL$vpos <- NA
                 for(i in 1 : (length(brk) - 1)){
-                    #browser()
                     nfg.ly          <- which(TL$Tlevel > brk[i] & TL$Tlevel < brk[i + 1] )
                     tot.fg          <- length(nfg.ly)
                     vpos            <-  cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
