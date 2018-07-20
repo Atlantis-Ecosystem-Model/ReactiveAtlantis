@@ -336,6 +336,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
 ##' @author Demiurgo
 bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
     grp.bio <- NULL
+#    browser()
     for(age in 1 : nrow(age.grp)){
         cohort <- NULL
         for(coh in 1 : age.grp[age, 'NumCohorts']){
@@ -350,6 +351,7 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
     }
     return(grp.bio)
 }
+
 ##' @title Biomass for age groups
 ##' @param pol.grp Biomass pool groups
 ##' @param nc.out ncdf atlantis' output file
@@ -382,6 +384,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
     }
     return(grp.bio)
 }
+
 ##' @title Biomass for age groups
 ##' @param pwn.grp Biomass pools with age classes
 ##' @param nc.out ncdf atlantis' output file
@@ -411,6 +414,7 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
     }
     return(grp.bio)
 }
+
 ##' @title Calculate the value of a time serie based on the first value
 ##' @param df Data frame of biomass by FG
 ##' @return A vector of relative values
@@ -421,7 +425,7 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
     df$Relative  <- vector / vector[1]
     return(df)
 }
-## functions
+
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -436,17 +440,23 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+            if(grepl('#', tmp[1])) next
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
             if(FG[1] == 'look') {
                 col1[i] <- tmp2[1]
             } else {
                 id.co   <- which(tmp2 %in% FG )
+                if(sum(id.co) == 0) next
                 col1[i] <- tmp2[id.co]
             }
             col2[i] <- as.numeric(tmp[2])
         }
         if(is.null(FG)) col1 <- rep('FG', length(col2))
-        return(data.frame(FG = col1, Value = col2))
+        out.t <- data.frame(FG = col1, Value = col2)
+        if(any(is.na(out.t[, 1]))){
+            out.t <- out.t[-which(is.na(out.t[, 1])), ]
+        }
+        return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
         nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
@@ -454,14 +464,16 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         pos   <- 1
         for( i in 1 : length(nam)){
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
+            if(grepl('#', tmp[1]) || !grepl('^pPREY', tmp[1])) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                pp.mat <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
+                t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for', tmp[1], ' has ', ncol(pp.tmp))
+                t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }
@@ -471,6 +483,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         return(pp.mat)
     }
 }
+
 ##' @title Box information
 ##' @param bgm.file BGM file,  Atlantis input
 ##' @param depths Cummulative depths (de max depth of each layer)
@@ -503,6 +516,7 @@ boxes.prop <- function(bgm.file, depths){
                 VolInf = vol)
     return(out)
 }
+
 ##' @title Calculate the different weigt (estructural reserve) and number of indivduals
 ##' @param nc.out Netcdf out file. this is the traditional .nc file from atlantis
 ##' @param grp groups csv file
@@ -582,6 +596,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
                    Reserve    = RN,
                    Type       = type)
 }
+
 ##' @title Interactive Plot for biomass (structural and reserve nitrogen)
 ##' @param total Dataframe with the weight output from the nitro.weight function
 ##' @param rn2 True if active the plot of reserve nitrogen
@@ -709,6 +724,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
     if(!is.null(coh)){
         mtext(paste0("AgeClass - ", ifelse(coh>10, '', '0'), coh))}
 }
+
 ##' @title Function to save data
 ##' @param list object from the function
 ##' @param sn Structural weigth Object

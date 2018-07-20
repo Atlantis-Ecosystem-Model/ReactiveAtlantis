@@ -639,6 +639,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     over.sp[, 3 : ncol(over.sp)] <- mom.t
     return(list(Struct, Biom.N, over.sp))
 }
+
+
+
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -696,6 +699,10 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         return(pp.mat)
     }
 }
+
+
+
+
 ##' @title Calculate the gape limitation for each functional group
 ##' @param groups.csv Atlantis group file
 ##' @param Struct Structural weight by age group
