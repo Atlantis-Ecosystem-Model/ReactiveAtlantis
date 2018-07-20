@@ -515,7 +515,7 @@ BH.rec <- function(sp, bha, bhb, bio){
     recruit <- mapply('/', num,  den, SIMPLIFY = FALSE)
     return(recruit)
 }
-## functions
+
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -523,24 +523,30 @@ BH.rec <- function(sp, bha, bhb, bio){
 ##' @param Vector Logic argument, if the data is on vectors or not
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
+text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+            if(grepl('#', tmp[1])) next
             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
             if(FG[1] == 'look') {
                 col1[i] <- tmp2[1]
             } else {
                 id.co   <- which(tmp2 %in% FG )
+                if(sum(id.co) == 0) next
                 col1[i] <- tmp2[id.co]
             }
             col2[i] <- as.numeric(tmp[2])
         }
         if(is.null(FG)) col1 <- rep('FG', length(col2))
-        return(data.frame(FG = col1, Value = col2))
+        out.t <- data.frame(FG = col1, Value = col2)
+        if(any(is.na(out.t[, 1]))){
+            out.t <- out.t[-which(is.na(out.t[, 1])), ]
+        }
+        return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
         nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
@@ -548,14 +554,16 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         pos   <- 1
         for( i in 1 : length(nam)){
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(tmp[1] %in% c('#','##', '###')) next  ## check this part!!
+            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                pp.mat <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
+                t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(text[l.pat[i] + 1], split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for', tmp[1], ' has ', ncol(pp.tmp))
+                t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }

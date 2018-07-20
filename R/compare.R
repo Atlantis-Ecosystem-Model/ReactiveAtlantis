@@ -433,7 +433,7 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
 ##' @param Vector Logic argument, if the data is on vectors or not
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
+text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
@@ -464,7 +464,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         pos   <- 1
         for( i in 1 : length(nam)){
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1]) || !grepl('^pPREY', tmp[1])) next
+            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
                 t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])

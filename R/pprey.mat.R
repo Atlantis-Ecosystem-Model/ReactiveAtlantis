@@ -109,7 +109,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     max.depth  <- text2num(prm, '_maxdepth', FG = 'look')
     depth.dst  <- data.frame(FG = min.depth[, 1], Min = min.depth[, 2], Max = max.depth[which(max.depth[, 1] %in% min.depth[,1]), 2])
     ## availability matrix
-    Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE)
+    Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE, pprey = TRUE)
     colnames(Ava.mat)  <- c(as.character(groups.csv$Code), 'DLsed', 'DRsed', 'DCsed')
     if(!quiet) cat('          ...Done!')
     ## Biomass,  age and Gape size
@@ -474,6 +474,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
         }
     )
 }
+
 ## ~~~~~~~~~~~~~~~~~~~~~~ ##
 ## ~      FUNCTIONS!!   ~ ##
 ## ~~~~~~~~~~~~~~~~~~~~~~ ##
@@ -640,8 +641,6 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     return(list(Struct, Biom.N, over.sp))
 }
 
-
-
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
 ##' @param pattern Text that you are looking
@@ -649,7 +648,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
 ##' @param Vector Logic argument, if the data is on vectors or not
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
+text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
@@ -680,7 +679,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE){
         pos   <- 1
         for( i in 1 : length(nam)){
             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1]) || !grepl('^pPREY', tmp[1])) next
+            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
                 t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
