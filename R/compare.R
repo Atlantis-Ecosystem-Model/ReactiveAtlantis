@@ -134,7 +134,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if(nrow(pwn.grp) > 0){
         pwn.cur.bio <- bio.pwn(pwn.grp, nc.cur, 'Current', mg2t, x.cn, inf.box)
         if(!is.null(nc.out.old)){
-            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Current', mg2t, x.cn, inf.box)
+            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Previous', mg2t, x.cn, inf.box)
         }
         pwn.bio <- rbind(pwn.cur.bio, pwn.old.bio)
     }
