@@ -533,11 +533,12 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         n.coh <- grp[pos.fg, 'NumCohorts']
         for(coh in 1 : n.coh){
             name.fg <- paste0(grp$Name[pos.fg], coh)
-            resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
-            resN[which(resN == 0)] <- NA
-            strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
-            strN[which(strN == 0)] <- NA
             nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
+            resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
+            strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
+            ## removing RN and SN from areas without observations
+            resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
+            strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
             if(By %in% c('Total', 'Cohort')){
                 nums    <- apply(nums, 3, sum, na.rm = TRUE)
