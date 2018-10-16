@@ -876,6 +876,8 @@ make.map <- function(bgm.file){
             }
         }
     }
+    ## some datum are not included on the proj4 poject (NZ and AU)
+    proj = gsub('\\+datum=NZGD2000', '', proj)
     ## in case you use alb for albers equal area (aes)
     proj = gsub('alb', 'aea', proj)
     ## in case someone is using grs and no GRS. case sensitive for R - proj4
