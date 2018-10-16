@@ -891,7 +891,7 @@ make.map <- function(bgm.file){
 }
 ##' @title text separatror
 ##' @param text a string scalar
-##' @return 3 columns with names and stage of the predator and the prey
+##' @return data.frame with 3 columns with names and stage of the predator and the prey
 ##' @author Demiurgo
 sepText <- function(ortext){
     ortext      <- as.vector(ortext)
