@@ -423,7 +423,7 @@ stats <- function(obs, mod){
     tmp[is.infinite(tmp)] <- NA
     RI                    <-  exp(sqrt(mean(tmp, na.rm = TRUE)))
     ## Modeling efficiency
-    ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^ 2)
+    ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^2)
     if(COR$p.value == 0) COR$p.value <- '< 2.2e-16'
     out <- data.frame(Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
                                   'Average Absolute Error (AAE)', 'Mean Squared Error (RMSE)', 'Reliability index',
