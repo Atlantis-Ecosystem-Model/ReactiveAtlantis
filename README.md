@@ -29,7 +29,7 @@ What things you need to install To run *ReactiveAtlantis* on R.
 install.packages('devtools')   ## you need to do this step just once
 # running
 library("devtools")
-install_github('jporobicg/ReactiveAtlantis','jporobicg', force=TRUE, dependencies=TRUE)
+install_github('Atlantis-Ecosystem-Model/ReactiveAtlantis','Atlantis-Ecosystem-Model', force=TRUE, dependencies=TRUE)
 library("ReactiveAtlantis")
 ```
 
