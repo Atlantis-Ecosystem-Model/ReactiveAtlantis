@@ -278,6 +278,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 prey          <- prey[prey$eff.pred > trh.max, ]
             })
             output$plot1 <- renderPlot({
+                mycol  <- c(brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+                mycol  <- colorRampPalette(mycol)
                 plot <- ggplot(biom.tot, aes(x = Time, y = value)) +
                     geom_line(colour = 'darkorange3') + facet_wrap(~ variable, ncol = 4,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = mycol(2))

@@ -716,7 +716,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
     }
     if(is.null(coh) || coh > xtlab){
         axis(1, at = Time[tickx], labels = format.Date(Time[tickx], '%Y.%m'), lwd = 2,  col = 1)
-        mtext("Time (days)", side=1, line = 3)
+        mtext("Time (Year.month)", side=1, line = 3)
     }
     if(scl2){
         on <- seq(1:4)[c(bio2, num2, sn2, rn2)]

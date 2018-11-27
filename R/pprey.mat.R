@@ -876,6 +876,8 @@ make.map <- function(bgm.file){
             }
         }
     }
+    ## some datum are not included on the proj4 poject (NZ and AU)
+    proj = gsub('\\+datum=NZGD2000', '', proj)
     ## in case you use alb for albers equal area (aes)
     proj = gsub('alb', 'aea', proj)
     ## in case someone is using grs and no GRS. case sensitive for R - proj4
@@ -889,7 +891,7 @@ make.map <- function(bgm.file){
 }
 ##' @title text separatror
 ##' @param text a string scalar
-##' @return 3 columns with names and stage of the predator and the prey
+##' @return data.frame with 3 columns with names and stage of the predator and the prey
 ##' @author Demiurgo
 sepText <- function(ortext){
     ortext      <- as.vector(ortext)
