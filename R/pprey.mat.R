@@ -109,6 +109,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     max.depth  <- text2num(prm, '_maxdepth', FG = 'look')
     depth.dst  <- data.frame(FG = min.depth[, 1], Min = min.depth[, 2], Max = max.depth[which(max.depth[, 1] %in% min.depth[,1]), 2])
     ## availability matrix
+    ## debug(text2num)
+    ## browser()
     Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE, pprey = TRUE)
     colnames(Ava.mat)  <- c(as.character(groups.csv$Code), 'DLsed', 'DRsed', 'DCsed')
     if(!quiet) cat('          ...Done!')
@@ -117,6 +119,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Calculating Biomass and spatial distribution')
+    debug(Bio.func)
     out.Bio  <- Bio.func(nc.file, groups.csv, numlayers)
     Struct   <- out.Bio[[1]]
     Biom.N   <- out.Bio[[2]]
@@ -682,13 +685,15 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }
