@@ -10,7 +10,7 @@ sepText(ortext)
 \item{text}{a string scalar}
 }
 \value{
-3 columns with names and stage of the predator and the prey
+data.frame with 3 columns with names and stage of the predator and the prey
 }
 \author{
 Demiurgo
