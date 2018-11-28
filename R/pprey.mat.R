@@ -119,12 +119,14 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Calculating Biomass and spatial distribution')
-    debug(Bio.func)
+    #debug(Bio.func)
     out.Bio  <- Bio.func(nc.file, groups.csv, numlayers)
     Struct   <- out.Bio[[1]]
     Biom.N   <- out.Bio[[2]]
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
+
+    #debug(text2num)
     age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     is.off   <- which(groups.csv$IsTurnedOn == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
@@ -132,6 +134,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
         if(sum(out) != 0) age      <- age[- out, ]
     }
     adu      <- data.frame(FG = groups.csv$Code, Adul = groups.csv$NumCohorts)
+    #debug(gape.func)
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
@@ -176,7 +179,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Spatial Overlap functions and procedures
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if(!quiet) cat('\n Reading an preparing the spatial data for plotting')
+#    browser()
+    if(!quiet) cat('\n Reading and preparing the spatial data for plotting')
     juv.sp.ov <- unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
     ad.sp.ov  <- unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
@@ -718,11 +722,21 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
     ## Gape size and adult and young age
     KLP                     <- text2num(prm, 'KLP', FG = as.character(groups.csv$Code))
     KUP                     <- text2num(prm, 'KUP',  FG = as.character(groups.csv$Code))
+
     if(length(unique(KLP[,1])) != nrow(KLP)){
         stop('You have repeated values of KLP for ', KLP[which(duplicated(KLP[, 1])), 1], ', fix that and run again the tool')
     }
     if(length(unique(KUP[,1])) != nrow(KUP)){
         stop('You have repeated values of KUP for ', KLP[which(duplicated(KLP[, 1])), 1], ', fix that and run again the tool')
+    }
+
+    if(nrow(KUP) != nrow(KLP)) {
+        warning(cat('You have', nrow(KUP),  ' values of KUP_ and ', nrow(KLP),  'values of KLP_. Its a good idea to fix that. For now the extra values will not be considered'))
+        if(nrow(KUP) > nrow(KLP)){
+            KUP <- KUP[which(KLP[, 1] %in% KUP[, 1]), ]
+        } else {
+            KLP <- KLP[which(KUP[, 1] %in% KLP[, 1]), ]
+        }
     }
     age                     <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     Gape                    <- data.frame(FG = KLP$FG, KLP = KLP$Value, KUP = KUP$Value, Age.Adult = NA)
