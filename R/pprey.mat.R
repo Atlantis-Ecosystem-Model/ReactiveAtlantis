@@ -134,7 +134,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
         if(sum(out) != 0) age      <- age[- out, ]
     }
     adu      <- data.frame(FG = groups.csv$Code, Adul = groups.csv$NumCohorts)
-    debug(gape.func)
+    #debug(gape.func)
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
@@ -179,7 +179,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Spatial Overlap functions and procedures
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if(!quiet) cat('\n Reading an preparing the spatial data for plotting')
+#    browser()
+    if(!quiet) cat('\n Reading and preparing the spatial data for plotting')
     juv.sp.ov <- unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
     ad.sp.ov  <- unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
