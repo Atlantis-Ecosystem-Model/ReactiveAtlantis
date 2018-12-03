@@ -109,8 +109,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     max.depth  <- text2num(prm, '_maxdepth', FG = 'look')
     depth.dst  <- data.frame(FG = min.depth[, 1], Min = min.depth[, 2], Max = max.depth[which(max.depth[, 1] %in% min.depth[,1]), 2])
     ## availability matrix
-    ## debug(text2num)
-    ## browser()
     Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE, pprey = TRUE)
     colnames(Ava.mat)  <- c(as.character(groups.csv$Code), 'DLsed', 'DRsed', 'DCsed')
     if(!quiet) cat('          ...Done!')
@@ -126,7 +124,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
 
-    #debug(text2num)
     age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     is.off   <- which(groups.csv$IsTurnedOn == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
@@ -134,7 +131,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
         if(sum(out) != 0) age      <- age[- out, ]
     }
     adu      <- data.frame(FG = groups.csv$Code, Adul = groups.csv$NumCohorts)
-    #debug(gape.func)
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
@@ -179,7 +175,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Spatial Overlap functions and procedures
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#    browser()
     if(!quiet) cat('\n Reading and preparing the spatial data for plotting')
     juv.sp.ov <- unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
     ad.sp.ov  <- unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
@@ -681,7 +676,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
         return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
+        nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
         fg    <- vector()
         pos   <- 1
         for( i in 1 : length(nam)){
