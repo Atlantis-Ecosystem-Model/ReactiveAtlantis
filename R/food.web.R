@@ -84,6 +84,10 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
     lag      <- diff(unique(dat$Time))[1]
     grp.dat  <- read.csv(grp.file)
     stk      <- unique(dat$Stock)
+    if(any(names(grp.dat) == 'InvertType')){
+        names(grp.dat)[which(names(grp.dat) == 'InvertType')] <- 'GroupType'
+        warning('You should change the name of the column \'InvertType\' for \'GroupType\' on your group csv file')
+    }
     if(any(names(grp.dat) == 'isPredator')){
         names(grp.dat)[which(names(grp.dat) == 'isPredator')] <- 'IsPredator'
         warning('You should change the name of the column \'isPredator\' for \'IsPredator\' on your group csv file')
@@ -191,7 +195,7 @@ food.web <- function(diet.file, grp.file,  quiet = TRUE){
                 TL$h.lev <- h.lev
                 TL$vpos <- NA
                 for(i in 1 : (length(brk) - 1)){
-                    nfg.ly          <- which(TL$Tlevel > brk[i] & TL$Tlevel < brk[i + 1] )
+                    nfg.ly          <- which(TL$Tlevel >= brk[i] & TL$Tlevel < brk[i + 1] )
                     tot.fg          <- length(nfg.ly)
                     vpos            <-  cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
                     pos.or          <- vector('numeric', length(TL$FG[nfg.ly]))
