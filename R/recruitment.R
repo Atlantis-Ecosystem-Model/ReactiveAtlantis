@@ -549,7 +549,7 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
         return(out.t)
     } else {
         l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[ ]+' ,  '|',  text[l.pat])
+        nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
         fg    <- vector()
         pos   <- 1
         for( i in 1 : length(nam)){
@@ -557,13 +557,15 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                t.text <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), 'columns and should have ', ncol(pp.mat))
+                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
                 pp.mat <- rbind(pp.mat, pp.tmp)
                 pos    <- pos + 1
             }
