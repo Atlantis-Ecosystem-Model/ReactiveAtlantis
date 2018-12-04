@@ -14,6 +14,9 @@ stats(obs, mod)
 \value{
 metrics  =  AAE; AE; MEF; RMSE; COR
 }
+\description{
+Skill assessment of the model
+}
 \author{
 Demiurgo
 }

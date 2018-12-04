@@ -14,6 +14,9 @@ Tlevel(DC, TLp)
 \value{
 The trophic level of the predator
 }
+\description{
+Throphic level estimation. Equation based on Pauly et al 1998 [Diet composition and trophic levels of marine mammals]
+}
 \author{
 Demiurgo
 }

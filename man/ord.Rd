@@ -12,6 +12,9 @@ ord(vector)
 \value{
 A vector with the higest value in the center
 }
+\description{
+Piramid order
+}
 \author{
 Demiurgo
 }

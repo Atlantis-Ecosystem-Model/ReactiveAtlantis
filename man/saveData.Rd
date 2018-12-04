@@ -12,6 +12,9 @@ saveData(data)
 \value{
 a txt file of the pPREY matrix
 }
+\description{
+Save pPREY matrix
+}
 \author{
 Demiurgo
 }

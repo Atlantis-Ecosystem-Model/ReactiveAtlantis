@@ -14,6 +14,9 @@ boxes.prop(bgm.file, depths)
 \value{
 a dataframe with information (box-id, area (m), )
 }
+\description{
+Box information
+}
 \author{
 Demiurgo
 }

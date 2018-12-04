@@ -16,6 +16,9 @@ Bio.func(nc.file, groups.csv, numlayers)
 \value{
 The biomass for age class and the sturctural nitrogen by age class
 }
+\description{
+Biomass from nc file
+}
 \author{
 Demiurgo
 }

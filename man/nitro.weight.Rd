@@ -20,6 +20,9 @@ nitro.weight(nc.out, grp, FG, By = "Total", box.info, mg2t, x.cn)
 \value{
 List witht he weight (reserve and structural), total biomass (tons) and number
 }
+\description{
+Calculate the different weigt (estructural reserve) and number of indivduals
+}
 \author{
 Demiurgo
 }

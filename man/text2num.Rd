@@ -3,9 +3,6 @@
 %   R/recruitment.R
 \name{text2num}
 \alias{text2num}
-\alias{text2num}
-\alias{text2num}
-\alias{text2num}
 \title{Parameter file reader}
 \usage{
 text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
@@ -57,6 +54,15 @@ A matrix with the values from the .prm file
 A matrix with the values from the .prm file
 
 A matrix with the values from the .prm file
+}
+\description{
+Parameter file reader
+
+Parameter file reader
+
+Parameter file reader
+
+Parameter file reader
 }
 \author{
 Demiurgo

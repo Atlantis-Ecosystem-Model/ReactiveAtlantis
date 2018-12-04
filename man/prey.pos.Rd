@@ -15,6 +15,10 @@ prey.pos(FGs, grp.dat)
 \value{
 The trophic level of the Functional group
 }
+\description{
+Assing trophic level of the prey the values are based on Pauly et al 1998 [Diet composition and trophic levels of marine mammals]
+       And Tucket and Rogers 2014 [Examining predator–prey body size, trophic level and body mass across marine and terrestrial mammals]
+}
 \author{
 Demiurgo
 }

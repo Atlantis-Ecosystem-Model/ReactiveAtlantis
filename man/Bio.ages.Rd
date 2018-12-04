@@ -16,6 +16,9 @@ Bio.ages(Biom.N, age, Over.mat)
 \value{
 Biomass by adult and juveniles
 }
+\description{
+Biomass by age class
+}
 \author{
 Demiurgo
 }

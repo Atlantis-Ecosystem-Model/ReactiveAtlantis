@@ -18,6 +18,9 @@ BH.rec(sp, bha, bhb, bio)
 \value{
 The amout of recruit (Larvaes)
 }
+\description{
+Beverton Equation
+}
 \author{
 Demiurgo
 }

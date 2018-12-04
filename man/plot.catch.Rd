@@ -29,6 +29,9 @@
 \value{
 plot of the catch
 }
+\description{
+Plot catch function
+}
 \author{
 Demiurgo
 }
