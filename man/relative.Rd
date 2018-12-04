@@ -12,6 +12,9 @@ relative(df, biomass = TRUE, Vec = NULL)
 \value{
 A vector of relative values
 }
+\description{
+Calculate the value of a time serie based on the first value
+}
 \author{
 Demiurgo
 }

@@ -12,6 +12,9 @@ sepText(ortext)
 \value{
 data.frame with 3 columns with names and stage of the predator and the prey
 }
+\description{
+text separatror
+}
 \author{
 Demiurgo
 }

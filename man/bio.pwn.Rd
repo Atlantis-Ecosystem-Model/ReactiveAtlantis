@@ -20,6 +20,9 @@ bio.pwn(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info)
 \value{
 a dataframe with the biomass for all the functional groups with Biomass pool age classes
 }
+\description{
+Biomass for age groups
+}
 \author{
 Demiurgo
 }

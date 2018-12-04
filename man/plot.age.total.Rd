@@ -4,8 +4,8 @@
 \alias{plot.age.total}
 \title{Interactive Plot for biomass (structural and reserve nitrogen)}
 \usage{
-\method{plot}{age.total}(total, Time, rn2, sn2, num2, bio2, scl2, limit, right,
-  colors, coh = NULL, max.coh = NULL)
+\method{plot}{age.total}(total, Time, rn2, sn2, num2, bio2, scl2, limit,
+  right, colors, coh = NULL, max.coh = NULL)
 }
 \arguments{
 \item{total}{Dataframe with the weight output from the nitro.weight function}
@@ -26,6 +26,9 @@
 }
 \value{
 A interactive plot
+}
+\description{
+Interactive Plot for biomass (structural and reserve nitrogen)
 }
 \author{
 Demiurgo

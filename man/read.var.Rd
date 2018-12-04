@@ -20,6 +20,9 @@ read.var(FG, nc.data, is.C = NULL, grp, by.box = FALSE)
 \value{
 A list witht the information for all the functional groups
 }
+\description{
+Reading Discard and Catch by number and box
+}
 \author{
 Demiurgo
 }

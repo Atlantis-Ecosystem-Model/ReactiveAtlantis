@@ -26,6 +26,9 @@ var.fish(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE)
 \value{
 The information of the catch by biomass for all the FG
 }
+\description{
+Total catch and discard in biomass
+}
 \author{
 Demiurgo
 }
