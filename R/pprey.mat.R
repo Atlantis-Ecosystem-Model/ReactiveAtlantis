@@ -117,13 +117,11 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Calculating Biomass and spatial distribution')
-    #debug(Bio.func)
     out.Bio  <- Bio.func(nc.file, groups.csv, numlayers)
     Struct   <- out.Bio[[1]]
     Biom.N   <- out.Bio[[2]]
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
-
     age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
     is.off   <- which(groups.csv$IsTurnedOn == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
@@ -684,12 +682,10 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
             fg[pos] <- tmp[1]
             if(pos == 1) {
-                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
                 pos    <- pos + 1
             } else {
-                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))

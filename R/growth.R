@@ -89,8 +89,9 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         stop('The package stringr was not installed')
     }
     library(RColorBrewer)
-    color <- palette(brewer.pal(n = 12, name = "Paired"))
-
+    color    <- c(brewer.pal(9, "BuPu") [2 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+    color    <- colorRampPalette(color)(12)
+    ## reading information
     nc.ini    <- nc_open(ini.nc.file)
     group.csv <- read.csv(grp.file)
     is.off    <- which(group.csv$IsTurnedOn == 0)
@@ -107,16 +108,17 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
     ##Parameters needed
-    mum <- sp.dep <- KI <- KS <- KN <- NULL
+    Hdep <- mum <- sp.dep <- KI <- KS <- KN <- NULL
     Kiop.min <- Kiop.shift <- Ki.avail <- K.depth <- NULL
     for( i in 1: length(pp.grp)) {
-        #browser()
         KN     <- rbind(KN, text2num(prm, paste0('KN_', cod.fg[i]), FG = cod.fg[i]))
         mum    <- rbind(mum, text2num(prm, paste0('mum_', cod.fg[i], '_T15'), FG = cod.fg[i]))
         KS     <- rbind(KS, text2num(prm, paste0('KS_', cod.fg[i]), FG = cod.fg[i]))
         KI     <- rbind(KI, text2num(prm, paste0('KI_', cod.fg[i]), FG = cod.fg[i]))
-        #debug(text2num)
-        sp.dep <- rbind(sp.dep, text2num(prm, paste0('habitat_', cod.fg[i]), FG = cod.fg[i], Vector = TRUE))
+        Hdep   <- rbind(Hdep, text2num(prm, paste0(cod.fg[i], '_habdepend'), FG = cod.fg[i]))
+        if(Hdep$Value[i] != 0){
+            sp.dep <- rbind(sp.dep, text2num(prm, paste0('habitat_', cod.fg[i]), FG = cod.fg[i], Vector = TRUE))
+            }
         if(flaglight$Value == 1){
             Kiop.min   <-rbind(Kiop.min, text2num(prm, paste0('KIOP_min', cod.fg[i]), FG = cod.fg[i]))
             Kiop.shift <-rbind(Kiop.shift, text2num(prm, paste0('KIOP_shift', cod.fg[i]), FG = cod.fg[i]))
@@ -164,6 +166,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             ## removing nan and non - finite numbers
             tmp[!is.finite(tmp)] <- 0
             l.space[[fg]] <- tmp
+        } else {
+            l.space[[fg]] <- NA
         }
     }
     shinyApp(
@@ -189,10 +193,11 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                          )
                          ),
         function(input, output, session){
-            p.fg <- reactive({which(cod.fg %in% input$sp)})
+            p.fg <- reactive({
+                which(cod.fg %in% input$sp)})
             lay  <- reactive({
-                if(is.null(l.space[[p.fg()]])){
-                    ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]): (max(nlayers) + 1)
+                if(is.na(l.space[[p.fg()]])){
+                    ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1)
                 } else {
                     (((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1))[1]
                 }
@@ -204,13 +209,12 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                     c(paste0('Layer_', seq(from = 0, to = (length(lay()) - 2))), 'Sediment')
                 }
             })
-
             lim.nut   <- reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
             lim.light <- reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
             lim.eddy  <- reactive({l.eddy[as.numeric(input$box) + 1, ]})
             step1     <- reactive({mum$Value[p.fg()] * lim.nut() * lim.light()})
             step2     <- reactive({
-                if(!is.null(l.space[[p.fg()]])){
+                if(!is.na(l.space[[p.fg()]])){
                     temp1 <- unlist(step1() * unlist(biom[[p.fg()]][as.numeric(input$box) + 1, ]) * lim.eddy())
                     data.frame(temp1)
                 } else {
@@ -249,30 +253,15 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             ## STOP
             observeEvent(input$exitButton, {stopApp()})
             output$plot1 <- renderPlot({
-               par(mfrow = c(2, 2), mar = c(0, 3, 1, 5.1), oma = c(4, 4, 0.5, 2), xpd = TRUE)
+                par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
                 ran <- range(unlist(growth.fin()), finite = TRUE)
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
-                     lty = 1, pch = 19, col = color[1], ylab = '', main = 'Growth')
+                     lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 if(ncol(growth.fin()) > 1){
                     for( j in 2 : ncol(growth.fin())){
                         lines(growth.fin()[, j], type = 'l', pch = 19, lty = 1, col = color[j])
-                    }
-                }
-                ## Nutrients
-                ran <-range(lim.nut.fin(), finite = TRUE)
-                if(is.null(dim(lim.nut.fin()))){
-                    plt.nut <- matrix(lim.nut.fin(), nrow = 1)
-                } else {
-                    plt.nut <- lim.nut.fin()
-                }
-                plot(plt.nut[1, ], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
-                     lty = 1, pch = 19, col = color[1], ylab = '', main = 'Nutrients limitation')
-                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
-                if(nrow(plt.nut) > 1){
-                    for( j in 2 : nrow(plt.nut)){
-                        lines(plt.nut[j, ], type = 'l', pch = 19, lty = 1, col = color[j])
                     }
                 }
                 ## light
@@ -290,6 +279,22 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                         lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, col = color[j])
                     }
                 }
+                par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
+                ## Nutrients
+                ran <-range(lim.nut.fin(), finite = TRUE)
+                if(is.null(dim(lim.nut.fin()))){
+                    plt.nut <- matrix(lim.nut.fin(), nrow = 1)
+                } else {
+                    plt.nut <- lim.nut.fin()
+                }
+                plot(plt.nut[1, ], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
+                     lty = 1, pch = 19, col = color[1], ylab = '', main = 'Nutrients limitation')
+                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
+                if(nrow(plt.nut) > 1){
+                    for( j in 2 : nrow(plt.nut)){
+                        lines(plt.nut[j, ], type = 'l', pch = 19, lty = 1, col = color[j])
+                    }
+                }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l',
@@ -297,6 +302,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 legend("topright", inset = c(-0.1, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
                        fill = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers', bty = 'n')
+                mtext('Time step', 1, outer = TRUE, cex = 1.2, line = 2.5)
+                mtext('Scalar', 2, outer = TRUE, cex = 1.2, line = 2)
             })
         }
     )

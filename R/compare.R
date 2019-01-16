@@ -104,12 +104,13 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     }
     Time    <- as.Date(Time, origin = orign[3])
     if(!is.null(nc.out.old)) nc.old <- nc_open(nc.out.old)
-    grp     <- grp[grp$IsTurnedOn == 1, c('Code', 'Name', 'LongName', 'GroupType', 'NumCohorts')]
+    names(grp) <- tolower(names(grp))
+    grp     <- grp[grp$isturnedon == 1, c('code', 'name', 'longname', 'grouptype', 'numcohorts')]
     ## Getting the total biomass
-    age.grp <- grp[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'), ]
-    pol.grp <- grp[grp$NumCohorts == 1, ]
+    age.grp <- grp[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'), ]
+    pol.grp <- grp[grp$numcohorts == 1, ]
     ## Some model use Agestructured biomass pools
-    pwn.grp <- grp[grp$NumCohorts > 1 & grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'), ]
+    pwn.grp <- grp[grp$numcohorts > 1 & grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'), ]
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
     if(nrow(age.grp) > 0){
@@ -166,7 +167,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                   fluidRow(
                                       column(2,
                                              wellPanel(
-                                                 selectInput('FG2', 'Functional Group :', as.character(grp$Code)),
+                                                 selectInput('FG2', 'Functional Group :', as.character(grp$code)),
                                                  checkboxInput('rn2', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn2', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num2', label = strong("Numbers"), value = FALSE),
@@ -177,7 +178,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                              ),
                                              wellPanel(
                                                  checkboxInput('cur2', label = strong("Compare current output"), value = FALSE),
-                                                 selectInput('FG2b', 'Functional Group :', as.character(grp$Code)),
+                                                 selectInput('FG2b', 'Functional Group :', as.character(grp$code)),
                                                  checkboxInput('rn2b', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn2b', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num2b', label = strong("Numbers"), value = FALSE),
@@ -194,7 +195,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                   fluidRow(
                                       column(2,
                                              wellPanel(
-                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$Code[grp$NumCohorts > 1 & !grp$GroupType %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')])),
+                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$code[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')])),
                                                  checkboxInput('rn3a', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn3a', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num3a', label = strong("Numbers"), value = FALSE),
@@ -287,7 +288,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 plot.age.total(total2(), Time = Time, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
             })
             output$plot3a <- renderPlot({
-                n.coh <- grp$NumCohorts[grp$Code == input$FG3a]
+                n.coh <- grp$numcohorts[grp$code == input$FG3a]
                 par(mfrow = n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
                 for( i in 1 : n.coh){
                     plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
@@ -336,18 +337,17 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
 ##' @author Demiurgo
 bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
     grp.bio <- NULL
-#    browser()
     for(age in 1 : nrow(age.grp)){
         cohort <- NULL
-        for(coh in 1 : age.grp[age, 'NumCohorts']){
-            name.fg <- paste0(age.grp$Name[age], coh)
+        for(coh in 1 : age.grp[age, 'numcohorts']){
+            name.fg <- paste0(age.grp$name[age], coh)
             b.coh   <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
                         ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
                 ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
             b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$Code[age]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$code[age]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -365,10 +365,10 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
 bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
     grp.bio <- NULL
     for(pool in 1 : nrow(pol.grp)){
-        name.fg <- paste0(pol.grp$Name[pool], '_N')
+        name.fg <- paste0(pol.grp$name[pool], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom))== 3){
-           if(pol.grp$GroupType[pool] == 'LG_INF'){
+           if(pol.grp$grouptype[pool] == 'LG_INF'){
                biom <- apply(biom, 3, '*', box.info$VolInf)
            }else{
                biom <- apply(biom, 3, '*', box.info$Vol)
@@ -380,7 +380,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
         }
         biom    <- biom * mg2t * x.cn
         biom[1] <- biom[2]
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$Code[pool]), Biomass  = biom, Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$code[pool]), Biomass  = biom, Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -397,8 +397,8 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
     grp.bio <- NULL
     for(pwn in 1 : nrow(pwn.grp)){
         cohort <- NULL
-        for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
-            name.fg <- paste0(pwn.grp$Name[pwn], '_N', coh)
+        for(coh in 1 : pwn.grp[pwn, 'numcohorts']){
+            name.fg <- paste0(pwn.grp$name[pwn], '_N', coh)
             b.coh   <- ncvar_get(nc.out, name.fg) * mg2t * x.cn
             if(length(dim(b.coh)) > 2){
                 ## for Volumen
@@ -410,7 +410,7 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
             b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(pwn.grp$Code[pwn]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(pwn.grp$code[pwn]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -529,12 +529,12 @@ boxes.prop <- function(bgm.file, depths){
 ##' @author Demiurgo
 nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
     ## Age classes
-    pos.fg <- which(grp$Code == FG)
+    pos.fg <- which(grp$code == FG)
     Bio <- Num <- SN  <- RN  <- list()
-    if(grp[pos.fg, 'NumCohorts'] > 1 & grp[pos.fg, 'GroupType'] != 'PWN'){
-        n.coh <- grp[pos.fg, 'NumCohorts']
+    if(grp[pos.fg, 'numcohorts'] > 1 & !grp[pos.fg, 'grouptype'] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
+        n.coh <- grp[pos.fg, 'numcohorts']
         for(coh in 1 : n.coh){
-            name.fg <- paste0(grp$Name[pos.fg], coh)
+            name.fg <- paste0(grp$name[pos.fg], coh)
             nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
             resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
             strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
@@ -560,11 +560,11 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
             Num <- rowSums(matrix(unlist(Num), ncol = n.coh))
         }
         type <- 'AgeClass'
-    } else if (grp[pos.fg, 'NumCohorts'] == 1){ ## Biomass pool
-        name.fg <- paste0(grp$Name[pos.fg], '_N')
+    } else if (grp[pos.fg, 'numcohorts'] == 1){ ## Biomass pool
+        name.fg <- paste0(grp$name[pos.fg], '_N')
         biom    <- ncvar_get(nc.out, name.fg)
         if(length(dim(biom)) == 3){
-            if(grp$GroupType[pos.fg] == 'LG_INF'){
+            if(grp$grouptype[pos.fg] == 'LG_INF'){
                 biom <- apply(biom, 3, '*', box.info$VolInf)
             }else{
                 biom <- apply(biom, 3, '*', box.info$Vol)
@@ -580,16 +580,24 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
         }
         Bio <- biom
         type <- 'BioPool'
-    } else if(grp[pos.fg, 'NumCohorts'] > 1 & grp[pos.fg, 'GroupType']  == 'PWN'){
+    } else if(grp[pos.fg, 'numcohorts'] > 1 & grp[pos.fg, 'grouptype']  %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
         ## Some model use Agestructured biomass pools
-        for(coh in 1 : pwn.grp[pwn, 'NumCohorts']){
-            name.fg <- paste0(grp$Name[pos.fg],'_N', coh)
+        n.coh <- grp[pos.fg, 'numcohorts']
+        for(coh in 1 : n.coh){
+            name.fg <- paste0(grp$name[pos.fg],'_N', coh)
             biom    <- ncvar_get(nc.out, name.fg)
-            biom    <- apply(biom, 3, '*', box.info$Vol)
+            if(length(dim(biom)) > 2){
+                biom    <- apply(biom, 3, '*', box.info$Vol)
+            } else {
+                biom <- apply(biom, 2, function(x) x * box.info$info$Area)
+            }
             if(By == 'Total'){
                 biom <- apply(biom, 2, sum, na.rm = TRUE)
             }
             Bio[[coh]] <- biom
+        }
+        if(By ==  'Total'){
+            Bio <- rowSums(matrix(unlist(Bio), ncol = n.coh))
         }
         type <- 'AgeBioPool'
     }
@@ -614,10 +622,11 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
 plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right, colors, coh = NULL, max.coh = NULL){
     ## Definig limits and general configuration of plots
     l.lab  <- 4 * ifelse(scl2, 1, sum(rn2, sn2, num2, bio2))
-    yli    <- cbind(c(0, 3), sapply(total[-5], range, na.rm = TRUE))
-    yli    <- yli[, c(TRUE, bio2, num2, sn2, rn2)]
+    rem    <- c(which(sapply(total, length) == 0), 5)
+    yli    <- cbind(c(0, 3), sapply(total[-rem], range, na.rm = TRUE))
+    yli    <- yli[, which(c(TRUE, bio2, num2, sn2, rn2) == 1)]
     yli    <- cbind(range(yli), yli)
-    tickx <- seq(from = 1, to = length(Time), length = 5)
+    tickx  <- seq(from = 1, to = length(Time), length = 5)
     par(mar = c(5, l.lab, 4, 4) + 0.1)
     if(!is.null(coh)){
         xtlab  <- max.coh - rev(n2mfrow(max.coh))[1]
