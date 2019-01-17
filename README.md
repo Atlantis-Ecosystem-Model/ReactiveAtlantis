@@ -63,11 +63,11 @@ predation(biom, grp.csv, diet.file, bio.age = NULL)
 ### Exploring predator-prey interactions from the initial conditions
 ```R
 prm.file    <- 'your_prm_file.prm'
-nc.file     <- 'your_current_output.nc'
+nc.initial  <- 'your_initial_conditions.nc'
 grp.csv     <- 'your_groups_definition_file.csv'
 bgm.file    <- 'your_spatial_configuration_file.bgm'
 cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
-feeding.mat(prm.file, grp.file, nc.file, bgm.file, cum.depths)
+feeding.mat(prm.file, grp.file, nc.initial, bgm.file, cum.depths)
 ```
 
 ### Atlantis food web and trophic level composition
