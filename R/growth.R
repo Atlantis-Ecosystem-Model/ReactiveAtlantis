@@ -104,13 +104,15 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     }
     cod.fg    <- with(group.csv, as.character(Code[pp.grp])) ## cod
     nam.fg    <- with(group.csv, as.character(Name[pp.grp])) ## name
+    coh.fg    <- with(group.csv, NumCohorts[pp.grp]) ## name
     options(warn =  - 1)
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
     ##Parameters needed
     Hdep <- mum <- sp.dep <- KI <- KS <- KN <- NULL
     Kiop.min <- Kiop.shift <- Ki.avail <- K.depth <- NULL
-    for( i in 1: length(pp.grp)) {
+
+    for(i in 1: length(pp.grp)) {
         KN     <- rbind(KN, text2num(prm, paste0('KN_', cod.fg[i]), FG = cod.fg[i]))
         mum    <- rbind(mum, text2num(prm, paste0('mum_', cod.fg[i], '_T15'), FG = cod.fg[i]))
         KS     <- rbind(KS, text2num(prm, paste0('KS_', cod.fg[i]), FG = cod.fg[i]))

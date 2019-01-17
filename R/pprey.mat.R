@@ -497,7 +497,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     over.sp <- NULL
     for(code in 1 : length(FG)){
         if(code %in% Is.off) next
-        if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES') && groups.csv$NumCohorts[code] > 1){
+        if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
             sed     <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
             unit    <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
@@ -510,9 +510,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-        if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')){
+        if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
             for(coh in 1 : groups.csv$NumCohorts[code]){
-                if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES') && groups.csv$NumCohorts[code] > 1){
+                if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
                     N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
                     N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
@@ -526,7 +526,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     w.m2[is.infinite(w.m2)] <- NA
                     w.m2    <- sum(w.m2, na.rm=TRUE)
                     w.m3    <- sum(water.t, na.rm = TRUE)
-                    if(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES')){
+                    if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
                         Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", coh, sep = ""), attname = "_FillValue")$value
                     } else {
                         Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "_FillValue")$value
@@ -578,7 +578,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                 }
             }
-        } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES'))) {
+        } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'))) {
             for(cohort in 1 : groups.csv$NumCohorts[code]){
                 StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
