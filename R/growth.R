@@ -108,19 +108,28 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     options(warn =  - 1)
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
+    flaghabd <- text2num(prm, 'flaghabdepend ', FG = 'look')
+
     ##Parameters needed
-    Hdep <- mum <- sp.dep <- KI <- KS <- KN <- NULL
+    mum <- matrix(NA, length(pp.grp), max(coh.fg))
+    Hdep  <- sp.dep <- KI <- KS <- KN <- NULL
     Kiop.min <- Kiop.shift <- Ki.avail <- K.depth <- NULL
 
     for(i in 1: length(pp.grp)) {
         KN     <- rbind(KN, text2num(prm, paste0('KN_', cod.fg[i]), FG = cod.fg[i]))
-        mum    <- rbind(mum, text2num(prm, paste0('mum_', cod.fg[i], '_T15'), FG = cod.fg[i]))
+        if(coh.fg[i] == 1){
+            mum[i, 1]              <- text2num(prm, paste0('mum_', cod.fg[i], '_T15'), FG = cod.fg[i])$Value
+        } else {
+            mum[i, 1 : coh.fg[i]]    <- text2num(prm, paste0('mum_', cod.fg[i]), FG = cod.fg[i] , Vector=TRUE)
+        }
         KS     <- rbind(KS, text2num(prm, paste0('KS_', cod.fg[i]), FG = cod.fg[i]))
         KI     <- rbind(KI, text2num(prm, paste0('KI_', cod.fg[i]), FG = cod.fg[i]))
-        Hdep   <- rbind(Hdep, text2num(prm, paste0(cod.fg[i], '_habdepend'), FG = cod.fg[i]))
-        if(Hdep$Value[i] != 0){
-            sp.dep <- rbind(sp.dep, text2num(prm, paste0('habitat_', cod.fg[i]), FG = cod.fg[i], Vector = TRUE))
+        if(flaghabd == 1){
+            Hdep   <- rbind(Hdep, text2num(prm, paste0(cod.fg[i], '_habdepend'), FG = cod.fg[i]))
+            if(Hdep$Value[i] != 0){
+                sp.dep <- rbind(sp.dep, text2num(prm, paste0('habitat_', cod.fg[i]), FG = cod.fg[i], Vector = TRUE))
             }
+        }
         if(flaglight$Value == 1){
             Kiop.min   <-rbind(Kiop.min, text2num(prm, paste0('KIOP_min', cod.fg[i]), FG = cod.fg[i]))
             Kiop.shift <-rbind(Kiop.shift, text2num(prm, paste0('KIOP_shift', cod.fg[i]), FG = cod.fg[i]))
@@ -139,7 +148,6 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     l.space  <- l.light <- l.nut <- biom<- list()
     ## type of sediments
     for(fg in 1 : length(nam.fg)){
-        biom[[fg]] <- ncvar_get(nc.out, paste0(nam.fg[fg], '_N'))
         ## nutrients
         if(flagnut$Value == 0){
             l.nut[[fg]] <- pmin((DIN / (KN$Value[fg] + DIN)) ,  (Si /(KS$Value[fg] + Si)), na.rm = TRUE)
@@ -164,10 +172,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         if(group.csv$GroupType[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS')){
             ratio <- 1 # I used this value just to avoid the calculation of area
             SPmax   <- text2num(prm, paste0(cod.fg[fg], 'max'), FG = 'look')[, 2]
-            tmp     <- biom[[fg]] / (SPmax * ratio)
             ## removing nan and non - finite numbers
-            tmp[!is.finite(tmp)] <- 0
-            l.space[[fg]] <- tmp
+            l.space[[fg]] <- (SPmax * ratio)
         } else {
             l.space[[fg]] <- NA
         }
@@ -180,6 +186,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                                              wellPanel(
                                                  tags$h3('Functional Group'),
                                                  selectInput('sp', 'Functional Group', as.character(cod.fg)),
+                                                 selectInput('coh', 'Age-Class', seq(1, max(coh.fg))),
                                                  selectInput('box', 'Box', seq(0, (length(nlayers) - 1))),
                                                  checkboxInput("log", "Logarithmic scale", FALSE)
                                              )
@@ -195,6 +202,15 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                          )
                          ),
         function(input, output, session){
+            p.fg <- reactive({
+                which(cod.fg %in% input$sp)})
+            biom <- reactive({
+                if(coh.fg[p.fg()] == 1){
+                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
+                } else {
+                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
+                }
+            })
             p.fg <- reactive({
                 which(cod.fg %in% input$sp)})
             lay  <- reactive({
@@ -214,13 +230,15 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             lim.nut   <- reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
             lim.light <- reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
             lim.eddy  <- reactive({l.eddy[as.numeric(input$box) + 1, ]})
-            step1     <- reactive({mum$Value[p.fg()] * lim.nut() * lim.light()})
+            step1     <- reactive({mum[p.fg(), as.numeric(input$coh)] * lim.nut() * lim.light()})
             step2     <- reactive({
                 if(!is.na(l.space[[p.fg()]])){
-                    temp1 <- unlist(step1() * unlist(biom[[p.fg()]][as.numeric(input$box) + 1, ]) * lim.eddy())
+                    biom.tm <- biom() / l.space[[p.fg()]]
+                    if(any(is.finite(biom.tm))) biom.tm[which(is.finite(biom.tm))] <- 0
+                    temp1 <- unlist(step1() * unlist(biom()[as.numeric(input$box) + 1, ]) * lim.eddy())
                     data.frame(temp1)
                 } else {
-                    temp <- step1() * biom[[p.fg()]][lay(), as.numeric(input$box) + 1, ]
+                    temp <- step1() * biom()[lay(), as.numeric(input$box) + 1, ]
                     apply(temp, 1, FUN = function(x) x * lim.eddy())
                 }
             })
@@ -321,6 +339,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
+        if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
