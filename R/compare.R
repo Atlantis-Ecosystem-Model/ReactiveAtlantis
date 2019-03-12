@@ -168,6 +168,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                                       column(2,
                                              wellPanel(
                                                  selectInput('FG2', 'Functional Group :', as.character(grp$code)),
+                                                 checkboxInput('bpol', label = strong("By polygon"), value = FALSE),
+                                                 conditionalPanel(
+                                                     condition = "input.bpol == '1'",
+                                                     selectInput('poln', 'Polygon', inf.box$info$Boxid)
+                                                 ),
                                                  checkboxInput('rn2', label = strong("Reserve Nitrogen"), value = FALSE),
                                                  checkboxInput('sn2', label = strong("Structural Nitrogen"), value = FALSE),
                                                  checkboxInput('num2', label = strong("Numbers"), value = FALSE),
@@ -217,8 +222,14 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         ## Create the plots
         function(input, output, session){
             total <- reactive({
-                total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Total', inf.box, mg2t, x.cn)
-                if(input$scl2){
+                if(isTRUE(input$bpol)){
+                    ## debug(nitro.weight)
+                    total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Poly', inf.box, mg2t, x.cn, polnum = (as.numeric(input$poln) + 1))
+                } else {
+                    total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Total', inf.box, mg2t, x.cn)
+                }
+                if(input$scl2 && !isTRUE(input$bpol)){
+                    #browser()
                     rmv         <- which(sapply(total, function(x) length(x) == 0 || is.null(x) || is.character(x)))
                     total.tmp   <- total[-rmv]
                     total.tmp   <- lapply(total.tmp, function(x) x / x[1])
@@ -234,7 +245,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                         total2 <- nitro.weight(nc.old, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
                     }
                     if(input$scl2b){
-                        rmv         <- which(sapply(total2, function(x) length(x) == 0 || is.null(x) || is.character(x)))
+                        rmv          <- which(sapply(total2, function(x) length(x) == 0 || is.null(x) || is.character(x)))
                         total2.tmp   <- total2[-rmv]
                         total2.tmp   <- lapply(total2.tmp, function(x) x / x[1])
                         total2[-rmv] <- total2.tmp
@@ -244,6 +255,25 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 }
                 total2
             })
+            ## totalp <- reactive({
+            ##     total.temp  = total()
+            ##     browser()
+            ##     totalp <- list(Biomass    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
+            ##                    Numbers    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
+            ##                    Structural = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
+            ##                    Reserve    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
+            ##                    Type       = total()$Type)
+            ##     if(input$scl2){
+            ##         rmv         <- which(sapply(totalp, function(x) length(x) == 0 || is.null(x) || is.character(x)))
+            ##         totalp.tmp   <- totalp[-rmv]
+            ##         totalp.tmp   <- lapply(totalp.tmp, function(x) x / x[1])
+            ##         totalp[-rmv] <- totalp.tmp
+            ##     }
+            ##     totalp
+            ## })
+
+
+
             coho <- reactive({
                 coho <- nitro.weight(nc.cur, grp, FG = input$FG3a, By = 'Cohort', inf.box, mg2t, x.cn)
                 if(input$scl3a){
@@ -279,7 +309,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 session$clientData$output_plot1_width
             })
             output$plot2a <- renderPlot({
+                ## if(isTRUE(input$bpol)){
+                ##     plot.age.total(totalp(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
+                ## } else {
+                if(input$bpol) debug(plot.age.total)
                 plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
+                ## }
             })
             output$plot2b <- renderPlot({
                 validate(
@@ -527,7 +562,7 @@ boxes.prop <- function(bgm.file, depths){
 ##' @param box.info Internal function
 ##' @return List witht he weight (reserve and structural), total biomass (tons) and number
 ##' @author Demiurgo
-nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
+nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, polnum = NULL){
     ## Age classes
     pos.fg <- which(grp$code == FG)
     Bio <- Num <- SN  <- RN  <- list()
@@ -538,10 +573,17 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn){
             nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
             resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
             strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
+            if(By == 'Poly'){
+                ### IM HERE!!!
+                nums    <- nums[, polnum, ]
+                resN    <- resN[, polnum, ]
+                strN    <- strN[, polnum, ]
+            }
             ## removing RN and SN from areas without observations
             resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
             strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
+            #browser()
             if(By %in% c('Total', 'Cohort')){
                 nums    <- apply(nums, 3, sum, na.rm = TRUE)
                 b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
