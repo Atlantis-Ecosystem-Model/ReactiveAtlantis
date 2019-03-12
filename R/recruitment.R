@@ -132,8 +132,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             rownames(FSPB)[t]   <- as.character(sps[fg.r])
             t                   <- t + 1
         } else if(rec$Value[fg.r] == 1 || rec$Value[fg.r] == 12){ ## constant recruitment
-            rec$Alpha[fg.r]     <- text2num(prm, paste0('KDENR_', sps[fg.r]), FG = 'look', Vector = TRUE)[1]
-            fspb.tmp            <- text2num(prm, paste0('FSPB_', sps[fg.r]), FG = sps[fg.r], Vector = TRUE)
+            rec$Alpha[fg.r]     <- text2num(prm, paste0('\\bKDENR_', sps[fg.r],  '\\b'), FG = 'look', Vector = TRUE)[1]
+            fspb.tmp            <- text2num(prm, paste0('\\bFSPB_', sps[fg.r], '\\b'), FG = sps[fg.r], Vector = TRUE)
             fspb.tmp            <- fspb.tmp[!is.na(fspb.tmp)]
             fspb.tmp            <- c(fspb.tmp, rep(0, (max.gr - length(fspb.tmp))))
             FSPB                <- rbind(FSPB, fspb.tmp)
@@ -242,11 +242,13 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             spw.coh[[coh]] <- spawn    ## spawning by time step and cohort
             ssb.coh[[coh]] <- SSB.tmp ## Biomass by time step and cohort
             if(length(dim(spawn)) > 2){
-                spawn   <- apply(spawn, 3, sum, na.rm = TRUE)
+                if(!length(spawn) == 0) spawn   <- apply(spawn, 3, sum, na.rm = TRUE)
+                if(!length(num.sp) == 0) num.sp  <- apply(num.sp, 3, sum, na.rm = TRUE)
+                #spawn   <- apply(spawn, 3, sum, na.rm = TRUE)
                 SSB.tmp <- apply(SSB.tmp, 3, sum, na.rm = TRUE)
-                num.tmp <- apply(num.sp, 3, sum, na.rm = TRUE)
+                #num.tmp <- apply(num.sp, 3, sum, na.rm = TRUE)
             }
-            num.fg      <- rbind(num.fg, num.tmp)
+            num.fg      <- rbind(num.fg, num.sp)
             sp.tmp      <- rbind(sp.tmp, spawn)   ## Spawning by functional group and Age class
             SSB.fg      <- rbind(SSB.fg, SSB.tmp) ## Spawning Stock by functional group and Age class
         }
