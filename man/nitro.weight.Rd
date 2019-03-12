@@ -4,7 +4,8 @@
 \alias{nitro.weight}
 \title{Calculate the different weigt (estructural reserve) and number of indivduals}
 \usage{
-nitro.weight(nc.out, grp, FG, By = "Total", box.info, mg2t, x.cn)
+nitro.weight(nc.out, grp, FG, By = "Total", box.info, mg2t, x.cn,
+  polnum = NULL)
 }
 \arguments{
 \item{nc.out}{Netcdf out file. this is the traditional .nc file from atlantis}
