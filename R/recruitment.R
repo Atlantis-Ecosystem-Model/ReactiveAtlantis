@@ -153,7 +153,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Primary producers section
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~
-    pp.pos  <- with(group.csv, which(GroupType %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG') & IsTurnedOn == 1))
+    pp.pos  <- with(group.csv, which(GroupType %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & IsTurnedOn == 1))
     pp.fg   <- group.csv$Name[pp.pos]
     pp.cod  <- as.character(group.csv$Code[pp.pos])
     pp.list <- list()
