@@ -4,7 +4,7 @@
 \alias{BH.rec}
 \title{Beverton Equation}
 \usage{
-BH.rec(sp, bha, bhb, bio)
+BH.rec(sp, bha, bhb, bio, ver = "N")
 }
 \arguments{
 \item{sp}{spawning power}
@@ -19,7 +19,10 @@ BH.rec(sp, bha, bhb, bio)
 The amout of recruit (Larvaes)
 }
 \description{
-Beverton Equation
+.. content for \description{} (no empty lines) ..
+}
+\details{
+.. content for \details{} ..
 }
 \author{
 Demiurgo

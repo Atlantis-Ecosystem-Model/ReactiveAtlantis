@@ -5,13 +5,13 @@
 \alias{text2num}
 \title{Parameter file reader}
 \usage{
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE)
 }
 \arguments{
 \item{text}{Biological parametar file for Atlatnis}
@@ -56,13 +56,10 @@ A matrix with the values from the .prm file
 A matrix with the values from the .prm file
 }
 \description{
-Parameter file reader
-
-Parameter file reader
-
-Parameter file reader
-
-Parameter file reader
+.. content for \description{} (no empty lines) ..
+}
+\details{
+.. content for \details{} ..
 }
 \author{
 Demiurgo
