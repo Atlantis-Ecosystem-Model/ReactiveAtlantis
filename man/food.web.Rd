@@ -4,7 +4,7 @@
 \alias{food.web}
 \title{Trophic level}
 \usage{
-food.web(diet.file, grp.file, quiet = TRUE)
+food.web(diet.file, diet.file.bypol = NULL, grp.file, quiet = TRUE)
 }
 \arguments{
 \item{diet.file}{Character string with the path to the Diet output file. This
@@ -13,6 +13,8 @@ step. If the Atlantis simulation is for several years, it is highly
 recommended that a low frequency of recording of this output is used (set
 using toutinc) otherwise file sizes can become substantial (which can be
 very difficult to handle in R).}
+
+\item{diet.file.bypol}{Detailed diet check file, this can be obtained as an extra output from Atlantis \emph{"DetailedDietCheck.txt"}. To get this file from Atlatnis turn on the option \emph{flagdietcheck} on the \emph{Run.prm} file on Atlantis.}
 
 \item{grp.file}{Character string with the path to the groups \emph{*.csv} file (Atlantis input file).}
 
