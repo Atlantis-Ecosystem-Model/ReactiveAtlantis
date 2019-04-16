@@ -334,6 +334,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 ##' @param pattern Text that you are looking
 ##' @param FG Name of the functional groups
 ##' @param Vector Logic argument, if the data is on vectors or not
+##' @param pprey Logic argument, if the data is a pprey matrix or not
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){

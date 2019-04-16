@@ -5,13 +5,13 @@
 \alias{text2num}
 \title{Parameter file reader}
 \usage{
-text2num(text, pattern, FG = NULL, Vector = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
 
-text2num(text, pattern, FG = NULL, Vector = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
 }
 \arguments{
 \item{text}{Biological parametar file for Atlatnis}
@@ -22,13 +22,7 @@ text2num(text, pattern, FG = NULL, Vector = FALSE)
 
 \item{Vector}{Logic argument, if the data is on vectors or not}
 
-\item{text}{Biological parametar file for Atlatnis}
-
-\item{pattern}{Text that you are looking}
-
-\item{FG}{Name of the functional groups}
-
-\item{Vector}{Logic argument, if the data is on vectors or not}
+\item{pprey}{Logic argument, if the data is a pprey matrix or not}
 
 \item{text}{Biological parametar file for Atlatnis}
 
@@ -38,6 +32,8 @@ text2num(text, pattern, FG = NULL, Vector = FALSE)
 
 \item{Vector}{Logic argument, if the data is on vectors or not}
 
+\item{pprey}{Logic argument, if the data is a pprey matrix or not}
+
 \item{text}{Biological parametar file for Atlatnis}
 
 \item{pattern}{Text that you are looking}
@@ -45,6 +41,18 @@ text2num(text, pattern, FG = NULL, Vector = FALSE)
 \item{FG}{Name of the functional groups}
 
 \item{Vector}{Logic argument, if the data is on vectors or not}
+
+\item{pprey}{Logic argument, if the data is a pprey matrix or not}
+
+\item{text}{Biological parametar file for Atlatnis}
+
+\item{pattern}{Text that you are looking}
+
+\item{FG}{Name of the functional groups}
+
+\item{Vector}{Logic argument, if the data is on vectors or not}
+
+\item{pprey}{Logic argument, if the data is a pprey matrix or not}
 }
 \value{
 A matrix with the values from the .prm file
@@ -56,10 +64,13 @@ A matrix with the values from the .prm file
 A matrix with the values from the .prm file
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+Parameter file reader
+
+Parameter file reader
+
+Parameter file reader
+
+Parameter file reader
 }
 \author{
 Demiurgo
