@@ -466,11 +466,13 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
 ##' @param pattern Text that you are looking
 ##' @param FG Name of the functional groups
 ##' @param Vector Logic argument, if the data is on vectors or not
+##' @param pprey Logic argument, if the data is a pprey matrix or not
 ##' @return A matrix with the values from the .prm file
 ##' @author Demiurgo
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
     if(!isTRUE(Vector)){
         text <- text[grep(pattern = pattern, text)]
+        if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
         col1 <- col2 <- vector()
         for( i in 1 : length(txt)){
