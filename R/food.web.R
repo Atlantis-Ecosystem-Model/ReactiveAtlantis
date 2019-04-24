@@ -43,7 +43,7 @@
 ##' @author Demiurgo
 ##' @importFrom Rdpack reprompt
 ##' @export
-food.web <- function(diet.file, diet.file.bypol = NULL, grp.file,  quiet = TRUE){
+food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
     txtHelp <- paste(txtHelp, "<p>This bit of code help to visualize the food web change during the simulation output from <b>Atlantis</b> run. </p>")
     txtHelp <- paste(txtHelp, "<p>It calculate the trophic position of each functional group at each time step</p>")
