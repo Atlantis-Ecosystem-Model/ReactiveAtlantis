@@ -223,13 +223,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         function(input, output, session){
             total <- reactive({
                 if(isTRUE(input$bpol)){
-                    ## debug(nitro.weight)
                     total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Poly', inf.box, mg2t, x.cn, polnum = (as.numeric(input$poln) + 1))
                 } else {
                     total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Total', inf.box, mg2t, x.cn)
                 }
                 if(input$scl2 && !isTRUE(input$bpol)){
-                    #browser()
                     rmv         <- which(sapply(total, function(x) length(x) == 0 || is.null(x) || is.character(x)))
                     total.tmp   <- total[-rmv]
                     total.tmp   <- lapply(total.tmp, function(x) x / x[1])
@@ -255,25 +253,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 }
                 total2
             })
-            ## totalp <- reactive({
-            ##     total.temp  = total()
-            ##     browser()
-            ##     totalp <- list(Biomass    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
-            ##                    Numbers    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
-            ##                    Structural = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
-            ##                    Reserve    = rowSums(sapply(total()$Biomass, function(x) colSums(x[, (as.numeric(input$poln) + 1), ], na.rm = TRUE))),
-            ##                    Type       = total()$Type)
-            ##     if(input$scl2){
-            ##         rmv         <- which(sapply(totalp, function(x) length(x) == 0 || is.null(x) || is.character(x)))
-            ##         totalp.tmp   <- totalp[-rmv]
-            ##         totalp.tmp   <- lapply(totalp.tmp, function(x) x / x[1])
-            ##         totalp[-rmv] <- totalp.tmp
-            ##     }
-            ##     totalp
-            ## })
-
-
-
             coho <- reactive({
                 coho <- nitro.weight(nc.cur, grp, FG = input$FG3a, By = 'Cohort', inf.box, mg2t, x.cn)
                 if(input$scl3a){
@@ -546,10 +525,11 @@ boxes.prop <- function(bgm.file, depths){
     }
     vol                <- cbind(out$Area, vol) # to include the sediment layer for later calculations
     vol                <- t(vol[, ncol(vol) : 1])
+    vol[1, ]           <- 0 # removing area from the boundary box
     vol2               <- vol ## arrange not for infauna
     vol2[nrow(vol2), ] <- 0
     if(any(out$Area < 1)) warning('\nOne (or more) of the boxes areas is less than 1m2,  Check if the right BGM file in xy coordinates')
-    out[out$Depth <= 0, 2 : ncol(out)] <- 0
+    out[c(1, out$Depth <= 0), 2 : ncol(out)] <- 0
     out <- list(info   = out,
                 Vol    = vol2,
                 VolInf = vol)
@@ -584,6 +564,10 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
             ## removing RN and SN from areas without observations
             resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
             strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
+            ## Removind information from the land and boundary boxes
+            resN[, which(box.info$info$Depth == 0), ] <- NA
+            strN[, which(box.info$info$Depth == 0), ] <- NA
+            num[, which(box.info$info$Depth == 0), ]  <- NA
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
             #browser()
             if(By %in% c('Total', 'Cohort')){
