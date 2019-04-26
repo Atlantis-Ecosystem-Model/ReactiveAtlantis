@@ -76,7 +76,9 @@ grp.csv     <- 'your_groups_definition_file.csv'
 prm.file    <- 'your_prm_file.prm'
 diet.file   <- 'your_DietCheck.txt'
 food.web(diet.file, grp.file)
-
+## optional you can explore the food web by polygon
+food.web(diet.file, grp.file, diet.file.bypol)
+## diet.file.bypol Detailed diet check file, this can be obtained as an extra output from Atlantis \emph{"DetailedDietCheck.txt"}. To get this file from Atlatnis turn on the option \emph{flagdietcheck} on the \emph{Run.prm} file on Atlantis.
 ```
 
 ### Growth of primary producers and limiting factors
