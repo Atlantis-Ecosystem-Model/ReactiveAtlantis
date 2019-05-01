@@ -509,9 +509,6 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         }
     )
 }
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
 ##' @title Beverton Equation
 ##' @param sp spawning power
 ##' @param bha Alpha parameter

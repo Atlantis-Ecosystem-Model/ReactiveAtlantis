@@ -19,10 +19,7 @@ BH.rec(sp, bha, bhb, bio, ver = "N")
 The amout of recruit (Larvaes)
 }
 \description{
-.. content for \description{} (no empty lines) ..
-}
-\details{
-.. content for \details{} ..
+Beverton Equation
 }
 \author{
 Demiurgo

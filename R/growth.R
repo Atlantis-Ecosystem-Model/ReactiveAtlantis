@@ -89,7 +89,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         stop('The package stringr was not installed')
     }
     library(RColorBrewer)
-    color    <- c(brewer.pal(9, "BuPu") [2 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+    color    <- c(brewer.pal(9, "BuPu") [4 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
     color    <- colorRampPalette(color)(12)
     ## reading information
     nc.ini    <- nc_open(ini.nc.file)
@@ -98,7 +98,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     nc.out    <- nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
-    pp.grp    <- with(group.csv, which(GroupType %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', "TURF"))) ## Just primary producer
+    pp.grp    <- with(group.csv, which(GroupType %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
     if(length(which(pp.grp %in% is.off)) > 0){
         pp.grp    <- pp.grp[ - which(pp.grp %in% is.off)]
     }
@@ -169,7 +169,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         }
 
         ## space limitation for Phytobentos and seagrass
-        if(group.csv$GroupType[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS')){
+        if(group.csv$GroupType[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS', 'TURF')){
             ratio <- 1 # I used this value just to avoid the calculation of area
             SPmax   <- text2num(prm, paste0(cod.fg[fg], 'max'), FG = 'look')[, 2]
             ## removing nan and non - finite numbers
@@ -178,6 +178,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             l.space[[fg]] <- NA
         }
     }
+
     shinyApp(
         ui <- navbarPage('Growth primary producers',
                          tabPanel('Growth  - Limiting factors',
@@ -205,7 +206,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             p.fg <- reactive({
                 which(cod.fg %in% input$sp)})
             biom <- reactive({
-                if(coh.fg[p.fg()] == 1){
+                 if(coh.fg[p.fg()] == 1){
                     biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
                 } else {
                     biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
