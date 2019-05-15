@@ -81,6 +81,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
     ## Reading files
     if(!quiet) cat('\n Reading files')
     dat        <- data.frame(fread(diet.file, header = TRUE, sep = ' ', showProgress = FALSE))
+    dat.bp     <- pol <- NA
     if(!is.null(diet.file.bypol)){
         dat.bp <- data.frame(fread(diet.file.bypol, header = TRUE, sep = ' ', showProgress = FALSE))
         pol    <- unique(dat.bp$Box)
@@ -154,16 +155,16 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                 time.prey <- dat[dat$Time == input$time & dat$Stock  == input$stock, c(2, 6 : ncol(dat))]
             })
             time.prey.bp <- reactive({
-                time.prey.bp <- dat.bp[dat.bp$Time == input$time.bp & dat.bp$Box  == input$poly.bp, c(2, 6 : ncol(dat.bp))]
+                if(any(!is.na(dat.bp)))
+                    time.prey.bp <- dat.bp[dat.bp$Time == input$time.bp & dat.bp$Box  == input$poly.bp, c(2, 6 : ncol(dat.bp))]
             })
             ## Original Recruitment
             t.prey <- reactive({
                 t.prey <- tot.prey(input$foc.fg, input$m.stg, code.fg, time.prey(), input$min, grp.dat)
             })
             t.prey.bp <- reactive({
-                                        #  browser()
-                                        # debug(tot.prey)
-                t.prey.bp <- tot.prey(input$foc.fg.bp, input$m.stg.bp, code.fg, time.prey.bp(), input$min.bp, grp.dat)
+                if(any(!is.na(dat.bp)))
+                    t.prey.bp <- tot.prey(input$foc.fg.bp, input$m.stg.bp, code.fg, time.prey.bp(), input$min.bp, grp.dat)
             })
             ## assing the value of trophic level for the prey
             TL <- reactive({
@@ -173,8 +174,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                 }
             })
             TL.bp <- reactive({
-                ## browser()
-                ## debug(trophic.lvl)
+                if(any(!is.na(dat.bp)))
                 TL.bp <- NULL
                 if(!is.null(t.prey.bp())){
                     TL.bp <- trophic.lvl(t.prey.bp(), grp.dat)
@@ -188,7 +188,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
             })
             output$plot.bp <- renderPlot({
                 validate(
-                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '.'))
+                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
                 )
                 plot.tlvl(TL.bp(), t.prey.bp(), input$foc.fg.bp, pol = input$poly.bp, color.p)
             })
@@ -200,7 +200,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
             })
             output$table.bp <- renderTable({
                 validate(
-                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '.'))
+                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
                 )
                 table    <- with(TL.bp(), data.frame(Functional.group = FG, Trophic.Level = Tlevel))
             })
