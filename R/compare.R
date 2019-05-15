@@ -546,6 +546,7 @@ boxes.prop <- function(bgm.file, depths){
 ##' @author Demiurgo
 nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, polnum = NULL){
     ## Age classes
+    #browser()
     pos.fg <- which(grp$code == FG)
     Bio <- Num <- SN  <- RN  <- list()
     if(grp[pos.fg, 'numcohorts'] > 1 & !grp[pos.fg, 'grouptype'] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
@@ -567,7 +568,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
             ## Removind information from the land and boundary boxes
             resN[, which(box.info$info$Depth == 0), ] <- NA
             strN[, which(box.info$info$Depth == 0), ] <- NA
-            num[, which(box.info$info$Depth == 0), ]  <- NA
+            nums[, which(box.info$info$Depth == 0), ]  <- NA
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
             #browser()
             if(By %in% c('Total', 'Cohort')){
