@@ -168,7 +168,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Plot output
     real.feed <- real.feed * Ava.mat
     ## Gape overlap for spatial output
-    ntrans   <- melt(t.o.mat)
+    ntrans   <- reshape::melt(t.o.mat)
     over.tmp <- do.call(rbind.data.frame, apply(ntrans, 1, sepText))
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Spatial Overlap functions and procedures
@@ -192,8 +192,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     juv.sp.ov <- data.frame (Stage = 'Juvenile', Land = land, juv.sp.ov)
     ad.sp.ov  <- cbind(out.Bio[[3]][, 1 : 2], ad.sp.ov)
     juv.sp.ov <- cbind(out.Bio[[3]][, 1 : 2], juv.sp.ov)
-    sp.ov     <- rbind(melt(ad.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')),
-                       melt(juv.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')))
+    sp.ov     <- rbind(reshape::melt(ad.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')),
+                       reshape::melt(juv.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')))
     sediment  <- max(sp.ov$Layer, na.rm = TRUE)
     ## Geting the map from the bgm file
     map <- make.map(bgm.file)
@@ -316,7 +316,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 which(sort(row.names(Ava.mat)) == pred.name())
             })
             rff <- reactive({
-                t(log(real.feed * N.mat$Ava))
+                rff <- log(real.feed * N.mat$Ava)
+                rff[!is.finite(rff)] <- 0
+                t(rff)
             })
             rff2 <- reactive({
                 t((real.feed * N.mat$Ava) / rowSums(real.feed * N.mat$Ava, na.rm=TRUE)) * 100
@@ -391,7 +393,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 stopApp()
             })
             output$plot1 <- renderPlot({
-                ggplot(data = melt(rff()),
+                ggplot(data = reshape::melt(rff()),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
@@ -401,7 +403,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot2 <- renderPlot({
-                ggplot(data = melt(t.o.mat),
+                ggplot(data = reshape::melt(t.o.mat),
                        aes(x = X1, y = X2, fill = value)) + geom_tile(aes( fill = factor(value))) +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
                     scale_fill_grey(start = .9, end = 0, name = 'Gape overlap', labels = c('No', 'Yes')) +
@@ -411,7 +413,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot3 <- renderPlot({
-                ggplot(data = melt(t(N.mat$Ava)),
+                ggplot(data = reshape::melt(t(N.mat$Ava)),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
@@ -421,7 +423,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot4 <- renderPlot({
-                ggplot(data = melt(rff2()),
+                ggplot(data = reshape::melt(rff2()),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, 100), name = 'Precentage of pressure', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
@@ -486,7 +488,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
-    nc.out  <- nc_open(nc.file)
+    nc.out  <- ncdf4::nc_open(nc.file)
     m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
     Is.off  <- which(groups.csv$IsTurnedOn == 0)
     FG      <- as.character(groups.csv$Name)
@@ -499,13 +501,13 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         if(code %in% Is.off) next
         if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
-            sed     <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
-            unit    <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
-            epi     <- ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "epibenthos")$value == 'epibenthos'
+            sed     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
+            unit    <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
+            epi     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "epibenthos")$value == 'epibenthos'
         } else {
-            sed     <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "insed")$value
-            unit    <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "units")$value
-            epi     <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "bmtype")$value == 'epibenthos'
+            sed     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "insed")$value
+            unit    <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "units")$value
+            epi     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "bmtype")$value == 'epibenthos'
         }
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
@@ -527,9 +529,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     w.m2    <- sum(w.m2, na.rm=TRUE)
                     w.m3    <- sum(water.t, na.rm = TRUE)
                     if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
-                        Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", coh, sep = ""), attname = "_FillValue")$value
+                        Biom.N[code, 1] <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", coh, sep = ""), attname = "_FillValue")$value
                     } else {
-                        Biom.N[code, 1] <- ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "_FillValue")$value
+                        Biom.N[code, 1] <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "_FillValue")$value
                     }
                     Biom.N[code, 1] <- ifelse(sed == 1 || epi, Biom.N[code, 1] * w.m2, Biom.N[code, 1] * w.m3)
                 } else {
@@ -560,7 +562,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        over.sp        <- melt(Numb.tmp)
+                        over.sp        <- reshape::melt(Numb.tmp)
                         names(over.sp) <- c('Layer', 'Box', paste(FGN[code], coh, sep = '_'))
                     } else if(!(code %in% Is.off)){
                         if(length(dim(Temp.N)) == 1){
@@ -572,7 +574,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        new.sp  <- as.vector(melt(Numb.tmp)[, 3])
+                        new.sp  <- as.vector(reshape::melt(Numb.tmp)[, 3])
                         over.sp <- cbind(over.sp, new.sp)
                         names(over.sp)[ncol(over.sp)] <- paste(FGN[code], coh, sep = '_')
                     }
@@ -583,12 +585,12 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                 StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
-                    StructN <- ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""), attname = "_FillValue")$value
+                    StructN <- ncdf4::ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""), attname = "_FillValue")$value
                 }
                 ReservN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""))
                 if(all(is.na(ReservN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
-                    ReservN <- ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""), attname = "_FillValue")$value
+                    ReservN <- ncdf4::ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""), attname = "_FillValue")$value
                 }
                 Numb    <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_Nums", sep = ""))
                 if(length(dim(ReservN)) > 2){
@@ -605,7 +607,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) : (m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    over.sp        <- melt(Numb.tmp)
+                    over.sp        <- reshape::melt(Numb.tmp)
                     names(over.sp) <- c('Layer', 'Box', paste(FGN[code], cohort, sep = '_'))
                 }else if(!(code %in% Is.off)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
@@ -614,7 +616,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) :(m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    new.sp  <- as.vector(melt(Numb.tmp)[, 3])
+                    new.sp  <- as.vector(reshape::melt(Numb.tmp)[, 3])
                     if(is.null(over.sp)){
                         over.sp <- new.sp
                     } else {
@@ -879,7 +881,7 @@ make.map <- function(bgm.file){
         txt.find <- paste("box", i - 1, ".vert", sep = "")
         j <- grep(txt.find, bgm)
         for (jj in 1 : length(j)) {
-            text.split <- unlist(str_split(
+            text.split <- unlist(stringr::str_split(
                 gsub(pattern = "[\t ]+", x = bgm[j[jj]], replacement = " "), " "))
             if (text.split[1] == txt.find) {
                 map.vertices <- rbind(map.vertices, cbind(i - 1, as.numeric(text.split[2]),
