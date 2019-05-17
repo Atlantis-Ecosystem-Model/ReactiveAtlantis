@@ -895,6 +895,8 @@ make.map <- function(bgm.file){
     proj = gsub('alb', 'aea', proj)
     ## in case someone is using grs and no GRS. case sensitive for R - proj4
     proj = gsub('grs', 'GRS', proj)
+    ## In case the file have some spaces after or before any variable setting
+    proj = gsub(' = ', '=', proj); proj = gsub('= ', '=', proj); proj = gsub(' =', '=', proj)
     ## Convert latlon coordinates!
     latlon    <- proj4::project(map.vertices[, 2 : 3], proj = proj, inverse = T)
     map       <- data.frame(Box = map.vertices[, 1],
