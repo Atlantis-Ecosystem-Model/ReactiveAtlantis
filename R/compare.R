@@ -288,12 +288,8 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 session$clientData$output_plot1_width
             })
             output$plot2a <- renderPlot({
-                ## if(isTRUE(input$bpol)){
-                ##     plot.age.total(totalp(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
-                ## } else {
-                if(input$bpol) debug(plot.age.total)
+                #if(input$bpol) debug(plot.age.total)
                 plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
-                ## }
             })
             output$plot2b <- renderPlot({
                 validate(
@@ -556,19 +552,20 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
             nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
             resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
             strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
-            if(By == 'Poly'){
-                ### IM HERE!!!
-                nums    <- nums[, polnum, ]
-                resN    <- resN[, polnum, ]
-                strN    <- strN[, polnum, ]
-            }
             ## removing RN and SN from areas without observations
             resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
             strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
             ## Removind information from the land and boundary boxes
             resN[, which(box.info$info$Depth == 0), ] <- NA
             strN[, which(box.info$info$Depth == 0), ] <- NA
-            nums[, which(box.info$info$Depth == 0), ]  <- NA
+            nums[, which(box.info$info$Depth == 0), ] <- NA
+            if(By == 'Poly'){
+                ## IM HERE!!!
+                nums    <- colSums(nums[, polnum, ], na.rm = TRUE)
+                resN    <- colSums(resN[, polnum, ], na.rm = TRUE)
+                strN    <- colSums(strN[, polnum, ], na.rm = TRUE)
+            }
+
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
             #browser()
             if(By %in% c('Total', 'Cohort')){
@@ -582,7 +579,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
                 Bio[[coh]] <- b.coh
                 Num[[coh]] <- nums
         }
-        if(By ==  'Total'){
+        if(By %in% c('Total', 'Poly')){
             RN  <- rowSums(matrix(unlist(RN), ncol = n.coh))
             SN  <- rowSums(matrix(unlist(SN), ncol = n.coh))
             Bio <- rowSums(matrix(unlist(Bio), ncol = n.coh))
