@@ -174,8 +174,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Spatial Overlap functions and procedures
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(!quiet) cat('\n Reading and preparing the spatial data for plotting')
-    juv.sp.ov <- unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
-    ad.sp.ov  <- unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_')))
+    juv.sp.ov <- as.character(unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
+    ad.sp.ov  <- as.character(unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
     juv.sp.ov <- out.Bio[[3]][juv.sp.ov]
     juv.sp.ov <- sapply(as.character(age$FG), function(x) rowSums(juv.sp.ov[, grep(x, names(juv.sp.ov)), drop = FALSE]))
@@ -535,7 +535,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     Biom.N[code, 1] <- ifelse(sed == 1 || epi, Biom.N[code, 1] * w.m2, Biom.N[code, 1] * w.m3)
                 } else {
-                    if(length(dim(N.tot)) > 3){
+                    if(length(dim(N.tot)) >= 3){
                         N.tot <- N.tot[, , 1]
                     } else if(unit == "mg N m-3"){
                         water.t <- ncvar_get(nc.out, 'volume')
