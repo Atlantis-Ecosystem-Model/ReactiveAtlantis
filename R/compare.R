@@ -130,6 +130,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box)
         old.bio      <- rbind(pool.old.bio, age.old.bio)
     }
+
     pwn.bio      <- NULL
     pwn.old.bio  <- NULL
     if(nrow(pwn.grp) > 0){
@@ -288,7 +289,6 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 session$clientData$output_plot1_width
             })
             output$plot2a <- renderPlot({
-                #if(input$bpol) debug(plot.age.total)
                 plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
             })
             output$plot2b <- renderPlot({
@@ -507,7 +507,11 @@ boxes.prop <- function(bgm.file, depths){
     bgm       <- readLines(bgm.file, warn = FALSE)
     boxes     <- text2num(bgm, 'nbox', FG = 'look')
     out       <- NULL
-    depths    <- depths[ - which(depths == 0)]
+    if(all(depths[1 : 2] == 0)){
+        depths <- depths[-1]
+    } else {
+        depths <- depths[ - which(depths == 0)]
+    }
     max.nlyrs <- length(depths)              ## maximum number of water layers
     vol       <- array(NA, dim = c(boxes$Value, length(depths)))
     for(b in 1 : boxes$Value){
@@ -542,7 +546,6 @@ boxes.prop <- function(bgm.file, depths){
 ##' @author Demiurgo
 nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, polnum = NULL){
     ## Age classes
-    #browser()
     pos.fg <- which(grp$code == FG)
     Bio <- Num <- SN  <- RN  <- list()
     if(grp[pos.fg, 'numcohorts'] > 1 & !grp[pos.fg, 'grouptype'] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
@@ -567,7 +570,6 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
             }
 
             b.coh   <- (resN  + strN)  * nums * mg2t * x.cn
-            #browser()
             if(By %in% c('Total', 'Cohort')){
                 nums    <- apply(nums, 3, sum, na.rm = TRUE)
                 b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
