@@ -178,6 +178,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ad.sp.ov  <- as.character(unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
     juv.sp.ov <- out.Bio[[3]][juv.sp.ov]
+
     juv.sp.ov <- sapply(as.character(age$FG), function(x) rowSums(juv.sp.ov[, grep(x, names(juv.sp.ov)), drop = FALSE]))
     ## Adults
     ## removing groups that are not in the matrix
