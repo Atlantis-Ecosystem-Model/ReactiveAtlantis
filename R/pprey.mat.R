@@ -103,6 +103,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(any(grepl('isPredator', names(groups.csv)))){
         names(groups.csv)[which(grepl('isPredator', names(groups.csv)))] <- 'IsPredator'
     }
+    if(any(grepl('InvertType', names(groups.csv)))){
+        names(groups.csv)[which(grepl('InvertType', names(groups.csv)))] <- 'GroupType'
+    }
     prm        <- readLines(prm.file, warn = FALSE)
     numlayers  <- find.z(bgm.file, cum.depths)
     min.depth  <- text2num(prm, '_mindepth', FG = 'look')
@@ -178,7 +181,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ad.sp.ov  <- as.character(unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
     juv.sp.ov <- out.Bio[[3]][juv.sp.ov]
-
     juv.sp.ov <- sapply(as.character(age$FG), function(x) rowSums(juv.sp.ov[, grep(x, names(juv.sp.ov)), drop = FALSE]))
     ## Adults
     ## removing groups that are not in the matrix
