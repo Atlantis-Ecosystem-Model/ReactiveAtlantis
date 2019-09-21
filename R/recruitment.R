@@ -92,6 +92,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     nc.ini    <- nc_open(ini.nc.file)
     yoy       <- read.csv(yoy.file, sep = ' ')
     group.csv <- read.csv(grp.file)
+    colnames(group.csv) <- tolower(colnames(group.csv))
     ## remove here those that are turned off!!
     nc.out    <- nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
@@ -101,7 +102,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n Processing')
-    sp.dat    <- with(group.csv, which(IsTurnedOn == 1 & NumCohorts > 1)) ## Age structure groups
+    sp.dat    <- with(group.csv, which(isturnedon == 1 & numcohorts > 1)) ## Age structure groups
     options(warn =  - 1)
     rec       <- text2num(prm, '^flagrecruit', FG = 'look') ## Avoinding the annoying warnings
     options(warn =  0)
@@ -111,7 +112,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                        XRS = text2num(prm, 'X_RS', FG = 'look')[1, 2], Rec.SNW = NA, Rec.RNW = NA)
     sps    <- gsub(pattern = '^flagrecruit', '', rec$FG)
     rec$FG <- sps
-    max.gr <- with(group.csv, max(NumCohorts[IsTurnedOn == 1]))
+    max.gr <- with(group.csv, max(numcohorts[isturnedon == 1]))
     FSPB   <- NULL
     n.fg   <- NULL
                                         #m.spw  <- with(group.csv, Code[which(NumSpawns > 1)]) ## special option for multiple spawn
@@ -153,7 +154,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Primary producers section
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~
-    pp.pos  <- with(group.csv, which(GroupType %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & IsTurnedOn == 1))
+    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & isturnedon == 1))
     pp.fg   <- group.csv$Name[pp.pos]
     pp.cod  <- as.character(group.csv$Code[pp.pos])
     pp.list <- list()

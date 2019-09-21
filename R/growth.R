@@ -89,22 +89,22 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         stop('The package stringr was not installed')
     }
     library(RColorBrewer)
-    color    <- c(brewer.pal(9, "BuPu") [4 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
-    color    <- colorRampPalette(color)(12)
+    color    <- brewer.pal(9, "BrBG")[2 : 9]
     ## reading information
     nc.ini    <- nc_open(ini.nc.file)
     group.csv <- read.csv(grp.file)
-    is.off    <- which(group.csv$IsTurnedOn == 0)
+    colnames(group.csv) <- tolower(colnames(group.csv))
+    is.off    <- which(group.csv$isturnedon == 0)
     nc.out    <- nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
-    pp.grp    <- with(group.csv, which(GroupType %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
+    pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
     if(length(which(pp.grp %in% is.off)) > 0){
         pp.grp    <- pp.grp[ - which(pp.grp %in% is.off)]
     }
-    cod.fg    <- with(group.csv, as.character(Code[pp.grp])) ## cod
-    nam.fg    <- with(group.csv, as.character(Name[pp.grp])) ## name
-    coh.fg    <- with(group.csv, NumCohorts[pp.grp]) ## name
+    cod.fg    <- with(group.csv, as.character(code[pp.grp])) ## cod
+    nam.fg    <- with(group.csv, as.character(name[pp.grp])) ## name
+    coh.fg    <- with(group.csv, numcohorts[pp.grp]) ## name
     options(warn =  - 1)
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
@@ -146,6 +146,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     nlayers  <- ncvar_get(nc.out, 'numlayers')[, 1]
     IRR      <- ncvar_get(nc.out, 'Light')
     l.space  <- l.light <- l.nut <- biom<- list()
+    color    <- colorRampPalette(color)(max(nlayers, na.rm = TRUE))
     ## type of sediments
     for(fg in 1 : length(nam.fg)){
         ## nutrients
@@ -167,9 +168,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             ## not implemented
             stop('Option: ', flagnut$Value, 'for light limitation, not implemented yet\n')
         }
-
         ## space limitation for Phytobentos and seagrass
-        if(group.csv$GroupType[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS', 'TURF')){
+        if(group.csv$grouptype[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS', 'TURF')){
             ratio <- 1 # I used this value just to avoid the calculation of area
             SPmax   <- text2num(prm, paste0(cod.fg[fg], 'max'), FG = 'look')[, 2]
             ## removing nan and non - finite numbers
@@ -179,6 +179,19 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         }
     }
 
+    ## Primary producer by boc ## it would be nice to checlk this tool
+    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & isturnedon == 1))
+    pp.fg   <- group.csv$name[pp.pos]
+    pp.cod  <- as.character(group.csv$code[pp.pos])
+    pp.list <- list()
+    for(l.pp in 1 : length(pp.fg)){
+        pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
+        names(pp.list)[l.pp] <- pp.cod[l.pp]
+    }
+    pp.list[['Light']] <- ncvar_get(nc.out, 'Light')
+    pp.list[['Eddy']]  <- ncvar_get(nc.out, 'eddy')
+    numlay             <- ncvar_get(nc.out, 'numlayers')
+    n.box              <- dim(pp.list[['Light']])[2]
     shinyApp(
         ui <- navbarPage('Growth primary producers',
                          tabPanel('Growth  - Limiting factors',
@@ -197,6 +210,24 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                                              )
                                   )
                                   ),
+                         tabPanel('Growth curves Zoo and PPs',
+                                  fluidRow(
+                                      column(2,
+                                             wellPanel(
+                                                 tags$h3('Functional Group'),
+                                                 selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
+                                                 selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 selectInput('s.box', 'Box', 0 : (n.box - 1)),
+                                                 checkboxInput('l.prop', 'Layer-Proportion', TRUE),
+                                                 checkboxInput('b.prop', 'Box-Proportion', FALSE),
+                                                 checkboxInput('log.v', 'Logarithm', FALSE)
+                                             )
+                                             ),
+                                      column(10,
+                                             plotOutput('plot3', width = "100%", height = "800px")
+                                             )
+                                  )
+                                  ),
                          ## -- Exit --
                          tabPanel(
                              actionButton("exitButton", "Exit")
@@ -212,8 +243,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                     biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
                 }
             })
-            p.fg <- reactive({
-                which(cod.fg %in% input$sp)})
+            ## p.fg <- reactive({
+            ##     which(cod.fg %in% input$sp)})
             lay  <- reactive({
                 if(is.na(l.space[[p.fg()]])){
                     ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1)
@@ -271,18 +302,69 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 } else {
                     lim.eddy()}
             })
+
+            ## Out Primary producers List
+            o.pp <- reactive({
+                box         <- as.numeric(input$s.box) + 1
+                ly.box      <- numlay[box]
+                out.pp.list <- list()
+                nam.plot    <- paste0('layer ', c(ly.box : 1))
+                nam.plot    <- c('Time', 'FG', paste0(nam.plot[1], ' [Deepest]'), nam.plot[c( - 1,  - ly.box)],
+                                 paste0(nam.plot[ly.box], ' [Surface]'))
+                for( i in 1 : length(pp.list)){
+                    if(length(dim(pp.list[[i]])) == 3){
+                        nr               <- nrow(pp.list[[i]])
+                        out.pp.list[[i]] <- pp.list[[i]][c((nr - ly.box) : (nr - 1)), box, ]
+                    } else {
+                        out.pp.list[[i]]       <- array(0, dim = c(ly.box, length(pp.list[[i]][box, ])))
+                        out.pp.list[[i]][1, ]  <- pp.list[[i]][box, ]
+                        if(names(pp.list)[i]  == 'Eddy'){
+                            out.pp.list[[i]] <- matrix(rep(pp.list[[i]][box, ], ly.box), nrow = ly.box, byrow = TRUE)
+                        }
+                    }
+                    out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing ceros from atlatnis
+                    if(input$l.prop == TRUE & input$b.prop == FALSE){
+                        out.pp.list[[i]] <- out.pp.list[[i]] / apply(out.pp.list[[i]] , 1, max, na.rm = TRUE)
+                    } else if (input$l.prop == FALSE & input$b.prop == TRUE){
+                        out.pp.list[[i]] <- out.pp.list[[i]] / max(out.pp.list[[i]] , na.rm = TRUE)
+                    } else {
+                        warning('\nYou need to choose between proportion by box or proportion by layer, but you cannot use both\n')
+                    }
+                    if(input$log.v == TRUE){
+                        out.pp.list[[i]] <- log(out.pp.list[[i]])
+                    }
+                    out.pp.list[[i]]           <- t(out.pp.list[[i]])
+                    out.pp.list[[i]]           <- data.frame(1 : nrow(out.pp.list[[i]]), names(pp.list)[i], out.pp.list[[i]])
+                    colnames(out.pp.list[[i]]) <- nam.plot
+                    names(out.pp.list)[i]      <- names(pp.list)[i]
+                }
+                ## To get the proper plot in the right order
+                ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
+                out.pp.list <- out.pp.list[ordn]
+                ## getting ready for ggplot
+                sel.data <- do.call(rbind.data.frame, out.pp.list)
+                sel.data <- melt(sel.data, id = c('Time', 'FG'))
+            })
+
             ## STOP
             observeEvent(input$exitButton, {stopApp()})
+            output$plot3 <- renderPlot({
+                ## colors
+                colo  <- c(rep('grey', (length(pp.list) - 2)), color[c(1, 4)])
+                ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE, size = 1.5) +
+                    facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
+                    scale_colour_manual(values = colo)
+            })
             output$plot1 <- renderPlot({
                 par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
                 ran <- range(unlist(growth.fin()), finite = TRUE)
-                plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
+                plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 if(ncol(growth.fin()) > 1){
                     for( j in 2 : ncol(growth.fin())){
-                        lines(growth.fin()[, j], type = 'l', pch = 19, lty = 1, col = color[j])
+                        lines(growth.fin()[, j], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
                 ## light
@@ -292,12 +374,12 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 } else {
                     plt.light <- lim.light.fin()
                 }
-                plot(plt.light[1, ], yaxt = 'n', ylim = ran, bty = 'n', type = 'l',
+                plot(plt.light[1, ], yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Light limitation')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 if(nrow(plt.light) > 1){
                     for( j in 2 : nrow(plt.light)){
-                        lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, col = color[j])
+                        lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
                 par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
@@ -308,17 +390,17 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 } else {
                     plt.nut <- lim.nut.fin()
                 }
-                plot(plt.nut[1, ], axes = FALSE, ylim = ran, bty = 'n', type = 'l',
+                plot(plt.nut[1, ], axes = FALSE, ylim = ran, bty = 'n', type = 'l',lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Nutrients limitation')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 if(nrow(plt.nut) > 1){
                     for( j in 2 : nrow(plt.nut)){
-                        lines(plt.nut[j, ], type = 'l', pch = 19, lty = 1, col = color[j])
+                        lines(plt.nut[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
-                plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l',
+                plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
                 legend("topright", inset = c(-0.1, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
@@ -329,6 +411,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         }
     )
 }
+
+
 
 ##' @title Parameter file reader
 ##' @param text Biological parametar file for Atlatnis
