@@ -88,6 +88,9 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     if (!require('stringr', quietly = TRUE)) {
         stop('The package stringr was not installed')
     }
+    if (!require('scales', quietly = TRUE)) {
+        stop('The package scales was not installed')
+    }
     library(RColorBrewer)
     color    <- brewer.pal(9, "BrBG")[2 : 9]
     ## reading information
@@ -359,16 +362,18 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
                 ran <- range(unlist(growth.fin()), finite = TRUE)
+                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
-                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
+                axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
                 if(ncol(growth.fin()) > 1){
                     for( j in 2 : ncol(growth.fin())){
                         lines(growth.fin()[, j], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
                 ## light
-                ran <- range(lim.light.fin(), finite = TRUE)
+                ran     <- range(lim.light.fin(), finite = TRUE)
+                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.light.fin()))){
                     plt.light <- matrix(lim.light.fin(), nrow = 1)
                 } else {
@@ -376,7 +381,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 plot(plt.light[1, ], yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Light limitation')
-                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
+                axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
                 if(nrow(plt.light) > 1){
                     for( j in 2 : nrow(plt.light)){
                         lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
@@ -385,6 +390,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
                 ## Nutrients
                 ran <-range(lim.nut.fin(), finite = TRUE)
+                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.nut.fin()))){
                     plt.nut <- matrix(lim.nut.fin(), nrow = 1)
                 } else {
@@ -392,7 +398,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 plot(plt.nut[1, ], axes = FALSE, ylim = ran, bty = 'n', type = 'l',lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Nutrients limitation')
-                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
+                axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
                 if(nrow(plt.nut) > 1){
                     for( j in 2 : nrow(plt.nut)){
                         lines(plt.nut[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
@@ -400,9 +406,10 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
+                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
-                axis(2, at = round(seq(ran[1], ran[2], length.out = 5), 3), las = 1, line =  - .7)
+                axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
                 legend("topright", inset = c(-0.1, 0), legend= c(paste0('Layer - ', 1 : (ncol(growth.fin())-1)), 'Sediment', 'all-Layers'),
                        fill = c(color[1 : ncol(growth.fin())], 'orangered2'), title = 'Water Layers', bty = 'n')
                 mtext('Time step', 1, outer = TRUE, cex = 1.2, line = 2.5)
