@@ -118,7 +118,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                                         #m.spw  <- with(group.csv, Code[which(NumSpawns > 1)]) ## special option for multiple spawn
     if(!quiet) cat('\n Reading parameters')
     for(fg.r in 1 : length(sps)){
-        if(!sps[fg.r] %in% group.csv$Code[sp.dat]) next()
+        if(!sps[fg.r] %in% group.csv$code[sp.dat]) next()
         if(rec$Value[fg.r] == 3){  ## Beverton Holt Recruitment
             rec$Alpha[fg.r]     <- text2num(prm, paste0('BHalpha_', sps[fg.r]), FG = 'look')[1, 2]
             rec$Beta[fg.r]      <- text2num(prm, paste0('BHbeta_', sps[fg.r]), FG = 'look')[1, 2]
@@ -155,8 +155,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ## Primary producers section
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~
     pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & isturnedon == 1))
-    pp.fg   <- group.csv$Name[pp.pos]
-    pp.cod  <- as.character(group.csv$Code[pp.pos])
+    pp.fg   <- group.csv$name[pp.pos]
+    pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
     for(l.pp in 1 : length(pp.fg)){
         pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
@@ -171,11 +171,11 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
     ##    YOY file array       ##
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
-    pwn.op   <- group.csv$Name[which(group.csv$GroupType == 'PWN')]
-    tmp.code <- paste0(group.csv$Code[sp.dat], '.0')
+    pwn.op   <- group.csv$name[which(group.csv$groupType == 'PWN')]
+    tmp.code <- paste0(group.csv$code[sp.dat], '.0')
     tmp.code <- tmp.code[tmp.code %in% names(yoy)]
     cod.yoy  <- data.frame(Code = tmp.code, Initial = NA)
-    nam.fg   <- group.csv$Name[sp.dat]
+    nam.fg   <- group.csv$name[sp.dat]
     yoy.tmp  <- yoy * 0
     for(c in cod.yoy$Code){
         yoy.tmp[, c]   <- (yoy[, c] / yoy[1, c])
@@ -186,8 +186,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
     ## Number and weight of individual at age in each reproduction perior  ##
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
-    coh.fg  <- group.csv$NumCohorts[sp.dat]
-    cod.fg  <- group.csv$Code[sp.dat]
+    coh.fg  <- group.csv$numcohorts[sp.dat]
+    cod.fg  <- group.csv$code[sp.dat]
     time    <- ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
     spw     <- NULL
     nam     <- NULL

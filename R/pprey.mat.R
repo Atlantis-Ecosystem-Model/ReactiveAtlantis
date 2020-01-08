@@ -96,6 +96,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if (!require('stringr', quietly = TRUE)) {
         stop('The package stringr was not installed')
     }
+    if (!require('proj4', quietly = TRUE)) {
+        stop('The package proj4 was not installed')
+    }
+
     if(!quiet) cat('      ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
