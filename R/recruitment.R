@@ -171,7 +171,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
     ##    YOY file array       ##
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
-    pwn.op   <- group.csv$name[which(group.csv$groupType == 'PWN')]
+    pwn.op   <- group.csv$name[which(group.csv$grouptype == 'PWN')]
     tmp.code <- paste0(group.csv$code[sp.dat], '.0')
     tmp.code <- tmp.code[tmp.code %in% names(yoy)]
     cod.yoy  <- data.frame(Code = tmp.code, Initial = NA)
