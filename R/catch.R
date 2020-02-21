@@ -97,7 +97,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
     grp      <- read.csv(grp.csv)
     if(!is.null(ext.catch.f)){
         ext.f  <- scan(ext.catch.f, nlines = 1, what = character(), sep = ',')
-        ext.c  <- read.table(ext.catch.f, skip = 1, header = TRUE, sep = ',')
+        ext.c  <- read.table(ext.catch.f, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
     }
     grp      <- grp[grp$IsImpacted == 1, ]
     fsh      <- read.csv(fsh.csv)
@@ -124,7 +124,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  downloadButton("DL_Biomass", "Download")
                                                  )),
                                       column(10,
-                                             plotOutput('plotB', width = "100%", height = "700px")
+                                             plotOutput('plotB', width = "100%", height = "800px")
                                              ))),
                          tabPanel('Numbers',
                                   fluidRow(
@@ -138,7 +138,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  downloadButton("DL_Abun", "Download")
                                              )),
                                       column(10,
-                                             plotOutput('plot1', width = "100%", height = "700px")
+                                             plotOutput('plot1', width = "100%", height = "800px")
                                              ))),
                          tabPanel('Compare',
                                   fluidRow(
@@ -151,7 +151,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  downloadButton("DL.cp.dat", "Download")
                                              )),
                                       column(10,
-                                             plotOutput('plotC', width = "100%", height = "700px"),
+                                             plotOutput('plotC', width = "100%", height = "800px"),
                                              p(strong("\nModel skill assessment (quantitative metrics)")),
                                              dataTableOutput('TabStat'),
                                              downloadButton("DL.cp.stat", "Download")
@@ -167,7 +167,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
             num <- reactive({
                 num <- read.var(input$FG, nc.data, input$is.catch, grp)
                 if(input$rem.ab){
-                    rep <- 1 : length(num[[1]])
+                    rep <- rep(1, length(num[[1]]))
                     rep[c(1 : input$lag.ab)] <- NA
                     num <- lapply(num, function(x) x * rep)
                 }
@@ -181,6 +181,10 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHB, nc.data, fsh = fsh, is.C = input$is.CB, grp = grp, by.box = FALSE)
                 }
                 colnames(arry) <- grp$Code[cat.obs]
+                rem <- which(colSums(arry) == 0)
+                if(length(rem) > 0){
+                    arry <- arry[, -rem]
+                    }
                 if(input$rem.cb){
                     arry[c(1 : input$lag.cb), ] <- NA
                 }
@@ -198,19 +202,28 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     C.arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHC, nc.data, fsh = fsh, is.C = 'Catch', grp = grp, by.box = FALSE)
                 }
                 colnames(C.arry) <- grp$Code[cat.obs]
+
                 if(input$rem.CC){
                     C.arry[c(1 : input$lag.CC), ] <- NA
+                }
+
+                rem <- which(colSums(C.arry, na.rm = TRUE) == 0)
+                if(length(rem) > 0){
+                    C.arry <- C.arry[, -rem]
                 }
                 C.arry <- rowsum(C.arry, format(Time, '%Y'), na.rm = TRUE)
                 ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
                 ext    <- list(A.catch = C.arry, external.c = ext)
+                ext$Stats <- NULL
                 for(i in  2 : ncol(ext$external.c)){
                    pos <- which(colnames(ext$A.catch) %in% colnames(ext$external.c)[i])
                    if(length(pos) == 0) next()
+                   FG <- colnames(ext$external.c)[i]
                    na.rmv    <- which(!is.na(ext$external.c[, i]))
                    t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
                    t.mat.ext <- which(ext$external.c$Time %in% unique(format(Time, '%Y'))[t.match])
-                   ext$Stats <- stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]))
+                   if(sum(ext$A.catch[t.match, pos]) == 0 | sum(ext$external.c[t.mat.ext, i]) == 0) next()
+                   ext$Stats <- rbind(ext$Stats, stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]), FG))
                 }
                 ext
             })
@@ -222,30 +235,38 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 rp           <- length(num())
                 ylm          <- NULL
                 if(input$gen) ylm <- range(sapply(num(), range, na.rm = TRUE))
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(1, 1, 1, 1))
+                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(num()[[i]], Time, ylm, coh = i, col.bi)
                 }
+                mtext("Time (days)", side = 1, outer = TRUE, cex = 2)
+                mtext("Numbers", side = 2, outer = TRUE, line = 2, cex = 2)
             })
             output$plotB <- renderPlot({
+                #browser()
                 rp       <- ncol(bio())
                 col.cur  <- col.bi[2]
                 ylm      <- NULL
                 if(input$is.CB == 'Discards'){
                     col.cur <- col.bi[1]
                 }
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(1, 1, 1, 1))
+                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(bio()[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(bio())[i], by.year = input$b.year)
                 }
+                mtext(2, text = 'Biomass (t)', outer = TRUE, cex = 2)
+                mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
+
             })
             output$plotC <- renderPlot({
                 rp       <- ncol(ext()$A.catch)
                 col.cur  <- col.bi[2]
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(1, 1, 1, 1))
+                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(ext()$A.catch[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(ext()$A.catch)[i], by.year = TRUE, external = ext()$external.c)
                 }
+                mtext("Biomass", side=2, outer = TRUE, cex = 2)
+                mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
             })
             output$TabStat <- renderDataTable(ext()$Stats)
             ## Save data
@@ -368,19 +389,31 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
 ##' @return plot of the catch
 ##' @author Demiurgo
 plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL, by.year = FALSE, external = NULL, ...){
-    par(mar = c(1, 4, 1, 1) + 0.1)
+#    browser()
+    par(mar = c(1, 4, 3, 1) + 0.1)
     if(is.null(ylm)) ylm <- range(ctch, na.rm = TRUE)
     if(!is.null(external)){
         plp <- which(colnames(external) %in% bio.n)
+        if(length(plp) == 0){  ## creating a fake variable to avoid problems
+            external[, ncol(external) + 1] <- 0
+            colnames(external)[ncol(external)] <- bio.n
+            plp <- ncol(external)
+            }
         ylm <- c(0, max(c(range(ctch, na.rm = TRUE), range(external[, plp], na.rm = TRUE))))
+
     }
     if(by.year){
         Time <- as.Date(unique(format(Time, '%Y')), format = '%Y')
     }
-    yticks <- seq(ylm[1], round(ylm[2], 3), by = round(ylm[2], 3) / 5)
+    if(is.null(bio.n)){
+        main.lab <- paste0("AgeClass - ", ifelse(coh > 10, '', '0'), coh)
+    } else{
+        main.lab <- as.character(bio.n)
+    }
+#    yticks <- seq(ylm[1], round(ylm[2], 3), by = round(ylm[2], 3) / 5)
     tickx  <- seq(from = 1, to = length(Time), length = 5)
     plot(Time, ctch, type = 'l', xlab = '', ylab = '', yaxt = 'n', xaxt = 'n',
-         ylim = ylm, bty = 'n', lwd = 2, col = col.bi[1])
+         ylim = ylm, bty = 'n', lwd = 2, col = col.bi[1], main = main.lab)
     if(!is.null(external)){
         plp   <- which(colnames(external) %in% bio.n)
         Time2 <- as.Date(as.character(external$Time), '%Y')
@@ -391,15 +424,10 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
     } else {
         axis(1, at = Time[tickx], labels = format.Date(Time[tickx], '%Y.%m'), lwd = 2,  col = 1)
     }
-    axis(2, at = yticks , labels = format(yticks, digits = 2), lwd = 2)
-    mtext("Time (days)", side=1, line = 3)
-    if(is.null(bio.n)){
-        mtext(2, text = paste0('(Number)'), line = 3)
-        mtext(paste0("AgeClass - ", ifelse(coh > 10, '', '0'), coh))
-    } else {
-        mtext(bio.n)
-        mtext(2, text = 'Biomass (t)', line = 3)
-    }
+    axis(side = 2, at = pretty(ylm), lwd = 2)
+    ## axis(2, at = yticks , labels = format(yticks, digits = 2), lwd = 2)
+    #mtext("Time (days)", side=1, line = 3)
+
 }
 
 ##' @title Skill assessment of the model
@@ -407,7 +435,8 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @param mod modeled values
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo
-stats <- function(obs, mod){
+stats <- function(obs, mod, FG){
+    #browser()
     ## Stimation of Correlation
     COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
     ## Average error
@@ -425,7 +454,8 @@ stats <- function(obs, mod){
     ## Modeling efficiency
     ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^2)
     if(COR$p.value == 0) COR$p.value <- '< 2.2e-16'
-    out <- data.frame(Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
+    out <- data.frame( FGroup = c(FG, NA, NA, NA, NA, NA),
+                      Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
                                   'Average Absolute Error (AAE)', 'Mean Squared Error (RMSE)', 'Reliability index',
                                   'Model Efficiency (ME)'),
                       Results = c(COR$estimate, AE, AAE, RMSE, RI, ME),

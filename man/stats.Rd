@@ -4,7 +4,7 @@
 \alias{stats}
 \title{Skill assessment of the model}
 \usage{
-stats(obs, mod)
+stats(obs, mod, FG)
 }
 \arguments{
 \item{obs}{Observed values}
