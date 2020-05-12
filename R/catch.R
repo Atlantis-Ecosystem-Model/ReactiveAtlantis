@@ -436,9 +436,9 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo
 stats <- function(obs, mod, FG){
-    #browser()
+    browser()
     ## Stimation of Correlation
-    COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
+    COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs",  exact = FALSE)
     ## Average error
     AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
     ## Average absolute error
