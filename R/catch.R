@@ -243,7 +243,6 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 mtext("Numbers", side = 2, outer = TRUE, line = 2, cex = 2)
             })
             output$plotB <- renderPlot({
-                #browser()
                 rp       <- ncol(bio())
                 col.cur  <- col.bi[2]
                 ylm      <- NULL
@@ -389,7 +388,6 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
 ##' @return plot of the catch
 ##' @author Demiurgo
 plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL, by.year = FALSE, external = NULL, ...){
-#    browser()
     par(mar = c(1, 4, 3, 1) + 0.1)
     if(is.null(ylm)) ylm <- range(ctch, na.rm = TRUE)
     if(!is.null(external)){
@@ -436,9 +434,8 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo
 stats <- function(obs, mod, FG){
-    #browser()
     ## Stimation of Correlation
-    COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs")
+    COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs",  exact = FALSE)
     ## Average error
     AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
     ## Average absolute error
