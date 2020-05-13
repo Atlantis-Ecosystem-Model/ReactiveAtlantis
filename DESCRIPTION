@@ -1,12 +1,12 @@
 Package: ReactiveAtlantis
 Title: Multiple Reactive HTML tools to help in the calibration of the Atlantis ecosystem model (AEM)
-Version: 0.0.1.1
+Version: 0.0.1.2
 Authors@R: person("Javier", "Porobic", email = "jporobicg@gmail.com", role = c("aut", "cre"))
 Description: This package has tools that help in the calibration of an AEM. These tools are reactive HTML pages that help you analyze AEM data outputs and inputs during the calibration process.
 Depends:
     R (>= 3.2.3)
 License: GPL-3.0
-Imports: shiny, ncdf4, tidyverse, stringr, data.table, RColorBrewer, Rdpack, reshape
+Imports: shiny, ncdf4, tidyverse, stringr, data.table, RColorBrewer, Rdpack, reshape, plotrix
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
