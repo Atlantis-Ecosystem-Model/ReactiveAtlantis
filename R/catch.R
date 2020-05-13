@@ -449,7 +449,8 @@ stats <- function(obs, mod, FG){
     tmp[is.infinite(tmp)] <- NA
     RI                    <-  exp(sqrt(mean(tmp, na.rm = TRUE)))
     ## Modeling efficiency
-    ME <- 1 - (RMSE ^ 2) / (var(obs, na.rm = TRUE) ^2)
+    ME <- 1 - (RMSE ^ 2) / var(obs, na.rm = TRUE) #option 1
+    ## ME <- (sum((obs - mean(obs, na.rm = TRUE)) ^ 2, na.rm = TRUE) - sum((mod - obs) ^ 2, na.rm = TRUE)) / sum((obs - mean(obs, na.rm = TRUE)) ^ 2, na.rm = TRUE)
     if(COR$p.value == 0) COR$p.value <- '< 2.2e-16'
     out <- data.frame( FGroup = c(FG, NA, NA, NA, NA, NA),
                       Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
