@@ -153,7 +153,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                       column(10,
                                              plotOutput('plotC', width = "100%", height = "800px"),
                                              p(strong("\nModel skill assessment (quantitative metrics)")),
-                                             dataTableOutput('TabStat'),
+                                             DT::dataTableOutput('TabStat'),
                                              downloadButton("DL.cp.stat", "Download")
                                              ))),
                          ## -- Exit --
@@ -267,7 +267,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 mtext("Biomass", side=2, outer = TRUE, cex = 2)
                 mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
             })
-            output$TabStat <- renderDataTable(ext()$Stats)
+            output$TabStat <- DT::renderDataTable(ext()$Stats)
             ## Save data
             output$DL_Biomass <- downloadHandler(
                 filename = function(){
