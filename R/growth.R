@@ -91,14 +91,16 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     if (!require('scales', quietly = TRUE)) {
         stop('The package scales was not installed')
     }
-    library(RColorBrewer)
-    color    <- brewer.pal(9, "BrBG")[2 : 9]
+    if (!require('RColorBrewer', quietly = TRUE)) {
+        stop('The package RColorBrewer was not installed')
+    }
+    color    <- RColorBrewer::brewer.pal(9, "BrBG")[2 : 9]
     ## reading information
-    nc.ini    <- nc_open(ini.nc.file)
+    nc.ini    <- ncdf4::nc_open(ini.nc.file)
     group.csv <- read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     is.off    <- which(group.csv$isturnedon == 0)
-    nc.out    <- nc_open(out.nc.file)
+    nc.out    <- ncdf4::nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
     pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
@@ -111,7 +113,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     options(warn =  - 1)
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
-    flaghabd <- text2num(prm, 'flaghabdepend ', FG = 'look')
+    flaghabd  <- text2num(prm, 'flaghabdepend ', FG = 'look')
 
     ##Parameters needed
     mum <- matrix(NA, length(pp.grp), max(coh.fg))
@@ -143,11 +145,11 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ed.scl   <- text2num(prm, 'eddy_scale', FG = 'look')[, 2]
     options(warn =  0)
     ## nutrient
-    DIN      <- ncvar_get(nc.out, 'NO3')  * ncvar_get(nc.out, 'NH3')
-    Si       <- ncvar_get(nc.out, 'Si')
-    l.eddy   <- ncvar_get(nc.out, 'eddy') * ed.scl
-    nlayers  <- ncvar_get(nc.out, 'numlayers')[, 1]
-    IRR      <- ncvar_get(nc.out, 'Light')
+    DIN      <- ncdf4::ncvar_get(nc.out, 'NO3')  * ncdf4::ncvar_get(nc.out, 'NH3')
+    Si       <- ncdf4::ncvar_get(nc.out, 'Si')
+    l.eddy   <- ncdf4::ncvar_get(nc.out, 'eddy') * ed.scl
+    nlayers  <- ncdf4::ncvar_get(nc.out, 'numlayers')[, 1]
+    IRR      <- ncdf4::ncvar_get(nc.out, 'Light')
     l.space  <- l.light <- l.nut <- biom<- list()
     color    <- colorRampPalette(color)(max(nlayers, na.rm = TRUE))
     ## type of sediments
@@ -188,12 +190,12 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
     for(l.pp in 1 : length(pp.fg)){
-        pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
+        pp.list[[l.pp]]      <- ncdf4::ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
         names(pp.list)[l.pp] <- pp.cod[l.pp]
     }
-    pp.list[['Light']] <- ncvar_get(nc.out, 'Light')
-    pp.list[['Eddy']]  <- ncvar_get(nc.out, 'eddy')
-    numlay             <- ncvar_get(nc.out, 'numlayers')
+    pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
+    pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
+    numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
     n.box              <- dim(pp.list[['Light']])[2]
     shinyApp(
         ui <- navbarPage('Growth primary producers',
@@ -241,13 +243,11 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 which(cod.fg %in% input$sp)})
             biom <- reactive({
                  if(coh.fg[p.fg()] == 1){
-                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
+                    biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
                 } else {
-                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
+                    biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
                 }
             })
-            ## p.fg <- reactive({
-            ##     which(cod.fg %in% input$sp)})
             lay  <- reactive({
                 if(is.na(l.space[[p.fg()]])){
                     ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1)
@@ -361,7 +361,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             output$plot1 <- renderPlot({
                 par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
-                ran <- range(unlist(growth.fin()), finite = TRUE)
+                ran     <- range(unlist(growth.fin()), finite = TRUE)
                 sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
@@ -389,7 +389,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
                 ## Nutrients
-                ran <-range(lim.nut.fin(), finite = TRUE)
+                ran     <- range(lim.nut.fin(), finite = TRUE)
                 sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.nut.fin()))){
                     plt.nut <- matrix(lim.nut.fin(), nrow = 1)
