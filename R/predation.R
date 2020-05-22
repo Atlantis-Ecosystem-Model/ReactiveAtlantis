@@ -100,16 +100,16 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
 
 
     ## Reading Data
-    cur.dat   <- data.frame(fread(biom.file, header = TRUE, sep = ' ', showProgress = FALSE))
-    diet.data <- data.frame(fread(diet.file, header=TRUE, sep = ' ', showProgress = FALSE))
+    cur.dat   <- data.frame(data.table::fread(biom.file, header = TRUE, sep = ' ', showProgress = FALSE))
+    diet.data <- data.frame(data.table::fread(diet.file, header=TRUE, sep = ' ', showProgress = FALSE))
     grp       <- read.csv(groups.csv)
     grp.prd   <- grp[grp$IsTurnedOn == 1 & grp$NumCohorts > 1, ]$Code
     grp       <- grp[grp$IsTurnedOn == 1, ]$Code
     sub.cur   <- cbind(cur.dat[c('Time', as.character(grp))])
     sp.name   <- c("Time", paste0('Rel', grp),"PelDemRatio", "PiscivPlankRatio")
-    sp.name2  <-  c("Time", as.character(grp))
-    biom.tot  <- melt(cur.dat[, sp.name2], id.vars = 'Time')
-    rel.bio   <- melt(cur.dat[, sp.name], id.vars = 'Time')
+    sp.name2  <- c("Time", as.character(grp))
+    biom.tot  <- reshape::melt(cur.dat[, sp.name2], id.vars = 'Time')
+    rel.bio   <- reshape::melt(cur.dat[, sp.name], id.vars = 'Time')
     if(any('Updated' == colnames(diet.data))){
         rem       <- which(names(diet.data) == 'Updated')
         diet.data <- diet.data[,  - rem]
@@ -123,17 +123,17 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     time              <- unique(diet.data$Time)
     stocks            <- unique(diet.data$Stock)
     sub.cur           <- cbind(Time = sub.cur$Time, sub.cur[, names(sub.cur) %in% predators])
-    new.bio           <- melt(sub.cur, id = c('Time'))    ## current Biomass of the functional groups
+    new.bio           <- reshape::melt(sub.cur, id = c('Time'))    ## current Biomass of the functional groups
     colnames(new.bio) <- c('Time', 'Predator', 'Biomass') ## This is the current Biomass
     new.bio$Predator  <- as.character(new.bio$Predator)   ## Removing factors
     ## Thes bit was done by Sieme,  she was trying to look for the impact of each age class on predation
     if(!is.null(age.biomass)){
-        age.gr.pred   <- data.frame(fread(age.biomass, header=TRUE, sep = ' ', showProgress = FALSE))
-        col.nam       <- str_extract(names(age.gr.pred), "[aA-zZ]+")
+        age.gr.pred   <- data.frame(data.table::fread(age.biomass, header=TRUE, sep = ' ', showProgress = FALSE))
+        col.nam       <- stringr::str_extract(names(age.gr.pred), "[aA-zZ]+")
     }
 
     ## Colors
-    g.col    <- c(brewer.pal(9, "BuPu") [2 : 9], brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+    g.col    <- c(RColorBrewer::brewer.pal(9, "BuPu") [2 : 9], RColorBrewer::brewer.pal(9, "BrBG")[1 : 3],  RColorBrewer::brewer.pal(9, "OrRd") [2 : 9])
     g.col    <- data.frame(grp, col = colorRampPalette(g.col)(length(grp)))
 
     ## Start the Shiny application
@@ -218,7 +218,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 age.diet <- diet.data[diet.data$Predator ==  input$FG2 & diet.data$Stock == as.numeric(input$Stocks2) & diet.data$Time == as.numeric(input$Time), ]
                 age.diet <- age.diet[,  -which(names(age.diet) %in% c('Predator','Time', 'Stock'))]
                 age.diet <- age.diet[, (colSums(age.diet, na.rm = TRUE) > input$Thr2)]
-                age.diet <- melt(age.diet, id = 'Cohort') ## Biomass of the predator, so we have an idea of the total pressure
+                age.diet <- reshape::melt(age.diet, id = 'Cohort') ## Biomass of the predator, so we have an idea of the total pressure
                 age.diet[age.diet$value > input$Thr2, ]
             })
 
@@ -230,16 +230,16 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 age.bio.gr <- reactive({
                     age.gr          <- age.gr.pred[, col.nam %in% c('Time', input$FG3)]
                     age.gr          <- age.gr[age.gr$Time == input$Time3, ]
-                    age.gr          <- melt(age.gr, id.vars = c("Time"))
-                    age.gr$variable <- as.numeric(str_extract(age.gr$variable, "[0-9]+"))
+                    age.gr          <- reshape::melt(age.gr, id.vars = c("Time"))
+                    age.gr$variable <- as.numeric(stringr::str_extract(age.gr$variable, "[0-9]+"))
                     names(age.gr)   <- c('Time', 'Cohort', 'Biomass')
                     ## diet
                     diet <- diet.data[diet.data$Predator == input$FG3 & diet.data$Stock == input$Stock3 & diet.data$Time == input$Time3,  ]
                     diet <- diet[, -which(names(diet) %in% c('Time', 'Predator', 'Stock'))]
                     diet <- diet[, (colSums(diet, na.rm = TRUE) > input$Thr3)]
-                    diet <- melt(diet, id = 'Cohort')
+                    diet <- reshape::melt(diet, id = 'Cohort')
                     diet <- diet[diet$value > input$Thr3, ]
-                    out  <- left_join(age.gr, diet,  by = 'Cohort')
+                    out  <- dplyr::left_join(age.gr, diet,  by = 'Cohort')
                     out$eff.pred <- out$Biomass * out$value
                     out <- out[complete.cases(out), ]
                     out
@@ -258,8 +258,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 predator        <- predator[,  -which(names(predator) %in% c('Predator', 'Cohort', 'Stock'))]
                 predator        <- predator[, (colSums(predator, na.rm = TRUE) > input$Thr)]
                 predator[which(predator < input$Thr,  arr.ind = TRUE)] <- NA
-                predator        <- melt(predator, id.vars = "Time", na.rm = TRUE)
-                predator        <- left_join(predator, new.bio[new.bio$Predator == input$FG, ],  by = 'Time')
+                predator        <- reshape::melt(predator, id.vars = "Time", na.rm = TRUE)
+                predator        <- dplyr::left_join(predator, new.bio[new.bio$Predator == input$FG, ],  by = 'Time')
                 predator$consum <- with(predator, value * Biomass)
                 if(input$merT) predator$Time <- predator$Time / diff(unique(predator$Time))[1]
                 predator        <- as.data.frame(predator)
@@ -271,23 +271,23 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             prey <- reactive({
                 prey          <- diet.data[, names(diet.data) %in% c('Time', 'Predator', input$FG)]
                 prey          <- prey[prey[, input$FG] > 0, ] ## removing zero values, faster now
-                prey          <- left_join(prey, new.bio, by = c('Predator', 'Time')) ## Biomass of the predator, so we have an idea of the total pressure
+                prey          <- dplyr::left_join(prey, new.bio, by = c('Predator', 'Time')) ## Biomass of the predator, so we have an idea of the total pressure
                 prey$eff.pred <- prey[, input$FG] * prey$Biomass
                 trh.max       <- max(prey$eff.pred) * input$Thr
                 if(input$merT) prey$Time <- prey$Time / diff(unique(prey$Time))[1]
                 prey          <- prey[prey$eff.pred > trh.max, ]
             })
             output$plot1 <- renderPlot({
-                mycol  <- c(brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+                mycol  <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
                 mycol  <- colorRampPalette(mycol)
-                plot <- ggplot(biom.tot, aes(x = Time, y = value)) +
+                plot   <- ggplot2::ggplot(biom.tot, aes(x = Time, y = value)) +
                     geom_line(colour = 'darkorange3') + facet_wrap(~ variable, ncol = 4,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = mycol(2))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
             })
             output$plot1B <- renderPlot({
-                plot <- ggplot(rel.bio, aes(x = Time, y = value)) +
+                plot <- ggplot2::ggplot(rel.bio, aes(x = Time, y = value)) +
                     geom_line(colour = 'darkorange3', na.rm = TRUE) + facet_wrap( ~ variable, ncol = 4) +
                     theme_bw() + ylim(0, 2) +
                     annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
@@ -296,18 +296,18 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             })
             output$plot2 <- renderPlot({
                 ## Colors
-                mycol      <- c(brewer.pal(9, "BrBG")[1 : 3],  brewer.pal(9, "OrRd") [2 : 9])
+                mycol      <- c(RColorBrewer::brewer.pal(9, "BrBG")[1 : 3],  RColorBrewer::brewer.pal(9, "OrRd") [2 : 9])
                 colorpp    <- colorRampPalette(mycol)(length(unique(predator()$variable)))
-                ggplot(predator(), aes(x = Time, y = consum, fill = variable, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp, name = 'Prey') +
+                ggplot2::ggplot(predator(), aes(x = Time, y = consum, fill = variable, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp, name = 'Prey') +
                     labs(list(title = paste('Predator -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]'), colour = 'Prey'))
             })
             output$plot3 <- renderPlot({
                 validate(
                     need(length(prey()$eff.pred) != 0,  'Apparently this functional group has no predators.')
                 )
-                mycol      <- c(brewer.pal(9, "YlGnBu")[1 : 3], brewer.pal(9, "BuPu") [2 : 9])
+                mycol      <- c(RColorBrewer::brewer.pal(9, "YlGnBu")[1 : 3], RColorBrewer::brewer.pal(9, "BuPu") [2 : 9])
                 colorpp    <- colorRampPalette(mycol)(length(unique(prey()$Predator)))
-                ggplot(prey(), aes(x = Time, y = eff.pred, fill = Predator, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp) +
+                ggplot2::ggplot(prey(), aes(x = Time, y = eff.pred, fill = Predator, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp) +
                     labs(list(title = paste('Prey -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]')))
             })
 
@@ -318,7 +318,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             })
             output$plot4B <- renderPlot({
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.diet()$variable))])
-                ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = color.pp) +
+                ggplot2::ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = color.pp) +
                     labs(list(title = paste('Predator  -', input$FG2, 'on Time step :', input$Time), x = 'AgeGroup', y = 'Proportion'))
             })
 
@@ -327,7 +327,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                     need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
-                plot <- ggplot(prey.bio(), aes(x = Time, y = value)) +
+                plot <- ggplot2::ggplot(prey.bio(), aes(x = Time, y = value)) +
                     geom_line(colour = 'firebrick3') + facet_wrap(~ variable, ncol = 5,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = color.pp)  + labs(list(title = paste('Prey(s) for', input$FG3, 'on Time step :', input$Time3), x = 'Time step', y = 'Biomass (tons)'))
                 plot + geom_vline(xintercept = input$Time3, linetype = "dashed",  color = 'royalblue')
@@ -337,7 +337,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                     need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
-                ggplot(age.bio.gr(), aes(x = Cohort, y = eff.pred, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = color.pp)  +
+                ggplot2::ggplot(age.bio.gr(), aes(x = Cohort, y = eff.pred, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = color.pp)  +
                     labs(list(title = paste('Predator  -', input$FG3, 'on Time step :', input$Time3), x = 'AgeGroup', y = 'Effective predation (tons)')) + theme_bw()
             })
 
