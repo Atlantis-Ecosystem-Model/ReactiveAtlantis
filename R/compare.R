@@ -82,6 +82,9 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if (!require('data.table', quietly = TRUE)) {
         stop('The package data.table was not installed')
     }
+    if (!require('plotly', quietly = TRUE)) {
+        stop('The package plotly was not installed')
+    }
     if (!require('RColorBrewer', quietly = TRUE)) {
         stop('The package RColorBrewer was not installed')
     }
@@ -94,16 +97,16 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     ## Reading data
     grp     <- read.csv(grp.csv)
     inf.box <- boxes.prop(bgm.file,  cum.depths)
-    nc.cur  <- nc_open(nc.out.current)
+    nc.cur  <- ncdf4::nc_open(nc.out.current)
     ## Time Vector
-    orign   <- unlist(strsplit(ncatt_get(nc.cur, 't')$units, ' ', fixed = TRUE))
+    orign   <- unlist(strsplit(ncdf4::ncatt_get(nc.cur, 't')$units, ' ', fixed = TRUE))
     if(orign[1] == 'seconds') {
-        Time <- ncvar_get(nc.cur, 't') / 86400
+        Time <- ncdf4::ncvar_get(nc.cur, 't') / 86400
     } else {
-        Time <- ncvar_get(nc.cur, 't')
+        Time <- ncdf4::ncvar_get(nc.cur, 't')
     }
     Time    <- as.Date(Time, origin = orign[3])
-    if(!is.null(nc.out.old)) nc.old <- nc_open(nc.out.old)
+    if(!is.null(nc.out.old)) nc.old <- ncdf4::nc_open(nc.out.old)
     names(grp) <- tolower(names(grp))
     grp     <- grp[grp$isturnedon == 1, c('code', 'name', 'longname', 'grouptype', 'numcohorts')]
     ## Getting the total biomass
@@ -268,7 +271,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 stopApp()
             })
             output$plot1 <- renderPlot({
-                plot <- ggplot(t.biomass, aes(x = Time, y = Biomass, colour = Simulation)) +
+                plot <- ggplot2::ggplot(t.biomass, aes(x = Time, y = Biomass, colour = Simulation)) +
                     geom_line() + facet_wrap(~ FG, ncol = 4,  scale = 'free_y') + theme_minimal() +
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
@@ -278,7 +281,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 session$clientData$output_plot1_width
             })
             output$plot1B <- renderPlot({
-                plot <- ggplot(rel.bio, aes(x = Time, y = Relative, colour = Simulation)) +
+                plot <- ggplot2::ggplot(rel.bio, aes(x = Time, y = Relative, colour = Simulation)) +
                     geom_line() + facet_wrap( ~ FG, ncol = 4) + ylim(0, 2) + theme_minimal()  +
                     annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue') +
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
@@ -351,9 +354,9 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
         cohort <- NULL
         for(coh in 1 : age.grp[age, 'numcohorts']){
             name.fg <- paste0(age.grp$name[age], coh)
-            b.coh   <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
-                        ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
-                ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
+            b.coh   <- (ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
+                        ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
+                ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
             b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
@@ -376,7 +379,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
     grp.bio <- NULL
     for(pool in 1 : nrow(pol.grp)){
         name.fg <- paste0(pol.grp$name[pool], '_N')
-        biom    <- ncvar_get(nc.out, name.fg)
+        biom    <- ncdf4::ncvar_get(nc.out, name.fg)
         if(length(dim(biom))== 3){
            if(pol.grp$grouptype[pool] == 'LG_INF'){
                biom <- apply(biom, 3, '*', box.info$VolInf)
@@ -409,7 +412,7 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
         cohort <- NULL
         for(coh in 1 : pwn.grp[pwn, 'numcohorts']){
             name.fg <- paste0(pwn.grp$name[pwn], '_N', coh)
-            b.coh   <- ncvar_get(nc.out, name.fg) * mg2t * x.cn
+            b.coh   <- ncdf4::ncvar_get(nc.out, name.fg) * mg2t * x.cn
             if(length(dim(b.coh)) > 2){
                 ## for Volumen
                 b.coh   <- apply(b.coh, 3, '*', box.info$Vol)
@@ -552,9 +555,9 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
         n.coh <- grp[pos.fg, 'numcohorts']
         for(coh in 1 : n.coh){
             name.fg <- paste0(grp$name[pos.fg], coh)
-            nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))
-            resN    <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))
-            strN    <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))
+            nums    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums'))
+            resN    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))
+            strN    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))
             ## removing RN and SN from areas without observations
             resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
             strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
@@ -590,7 +593,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
         type <- 'AgeClass'
     } else if (grp[pos.fg, 'numcohorts'] == 1){ ## Biomass pool
         name.fg <- paste0(grp$name[pos.fg], '_N')
-        biom    <- ncvar_get(nc.out, name.fg)
+        biom    <- ncdf4::ncvar_get(nc.out, name.fg)
         if(length(dim(biom)) == 3){
             if(grp$grouptype[pos.fg] == 'LG_INF'){
                 biom <- apply(biom, 3, '*', box.info$VolInf)
@@ -613,7 +616,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
         n.coh <- grp[pos.fg, 'numcohorts']
         for(coh in 1 : n.coh){
             name.fg <- paste0(grp$name[pos.fg],'_N', coh)
-            biom    <- ncvar_get(nc.out, name.fg)
+            biom    <- ncdf4::ncvar_get(nc.out, name.fg)
             if(length(dim(biom)) > 2){
                 biom    <- apply(biom, 3, '*', box.info$Vol)
             } else {
