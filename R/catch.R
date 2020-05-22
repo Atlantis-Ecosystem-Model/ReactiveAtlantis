@@ -90,10 +90,10 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
         stop('The package RColorBrewer was not installed')
     }
     ## General setting
-    mycol    <- c(brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+    mycol    <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
     mycol    <- colorRampPalette(mycol)
     col.bi   <- mycol(15)[c(14, 13, 12, 10)]
-    nc.data  <- nc_open(catch.nc)
+    nc.data  <- ncdf4::nc_open(catch.nc)
     grp      <- read.csv(grp.csv)
     if(!is.null(ext.catch.f)){
         ext.f  <- scan(ext.catch.f, nlines = 1, what = character(), sep = ',')
@@ -102,11 +102,11 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
     grp      <- grp[grp$IsImpacted == 1, ]
     fsh      <- read.csv(fsh.csv)
     nam.var  <- names(nc.data$var)
-    orign    <- unlist(strsplit(ncatt_get(nc.data, 't')$units, ' ', fixed = TRUE))
+    orign    <- unlist(strsplit(ncdf4::ncatt_get(nc.data, 't')$units, ' ', fixed = TRUE))
     if(orign[1] == 'seconds') {
-        Time <- ncvar_get(nc.data, 't') / 86400
+        Time <- ncdf4::ncvar_get(nc.data, 't') / 86400
     } else {
-        Time <- ncvar_get(nc.data, 't')
+        Time <- ncdf4::ncvar_get(nc.data, 't')
     }
     Time     <- as.Date(Time, origin = orign[3])
     shinyApp(
@@ -337,7 +337,7 @@ var.fish <- function(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE){
     pos     <- which(grp$Code == FG)
     f.pos   <- which(fsh$Code == FISH)
     name.fg <- paste0(grp$Code[pos], '_', is.C, '_FC', f.pos)
-    B.catch <- ncvar_get(nc.data, name.fg)
+    B.catch <- ncdf4::ncvar_get(nc.data, name.fg)
     if(!by.box){
         B.catch <- colSums(B.catch, na.rm = TRUE)
     }
@@ -359,7 +359,7 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
     if(n.coh > 1){
         for(coh in 1 : n.coh){
             name.fg <- paste0(grp$Name[pos], coh,'_', is.C)
-            tmp    <- ncvar_get(nc.data, name.fg)
+            tmp    <- ncdf4::ncvar_get(nc.data, name.fg)
             if(!by.box){
                 tmp <- colSums(tmp, na.rm=TRUE)
             }
@@ -367,7 +367,7 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
         }
     } else {
         name.fg <- paste0(grp$Name[pos], ifelse(is.C, '_Catch', '_Discard'))
-        tmp     <- ncvar_get(nc.data, name.fg)
+        tmp     <- ncdf4::ncvar_get(nc.data, name.fg)
         if(!by.box){
             tmp <- colSums(tmp, na.rm=TRUE)
         }
@@ -423,9 +423,6 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
         axis(1, at = Time[tickx], labels = format.Date(Time[tickx], '%Y.%m'), lwd = 2,  col = 1)
     }
     axis(side = 2, at = pretty(ylm), lwd = 2)
-    ## axis(2, at = yticks , labels = format(yticks, digits = 2), lwd = 2)
-    #mtext("Time (days)", side=1, line = 3)
-
 }
 
 ##' @title Skill assessment of the model
