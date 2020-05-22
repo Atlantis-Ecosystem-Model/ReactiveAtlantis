@@ -343,12 +343,12 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 }
             })
             spatial <- reactive({
-                gp.pred  <- filter(over.tmp, Predator == input$pred, Prey == input$prey)
+                gp.pred  <- dplyr::filter(over.tmp, Predator == input$pred, Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
-                pred.ad  <- filter(sp.ov, variable == input$pred, Stage == 'Adult', Layer == input.layer)
-                pred.juv <- filter(sp.ov, variable == input$pred, Stage == 'Juvenile', Layer == input.layer)
-                prey.ad  <- filter(sp.ov, variable == input$prey, Stage == 'Adult', Layer == input.layer)
-                prey.juv <- filter(sp.ov, variable == input$prey, Stage == 'Juvenile', Layer == input.layer)
+                pred.ad  <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Adult', Layer == input.layer)
+                pred.juv <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Juvenile', Layer == input.layer)
+                prey.ad  <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Adult', Layer == input.layer)
+                prey.juv <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Juvenile', Layer == input.layer)
                 ## Checking for Juveniles on the biomass pools
                 ## avoiding inf problems
                 if(length(prey.juv[, 6]) == 0){
@@ -362,10 +362,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     juv.prd <- pred.juv[, 6]
                 }
                 ## Checking the gape overlap
-                AoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5])))
-                AoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5])))
-                JoA <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5])))
-                JoJ <- ifelse(length(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
+                AoA <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5])))
+                AoJ <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5])))
+                JoA <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5])))
+                JoJ <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
                 ## Merging
                 ad.on.juv    <- data.frame(Land = prey.ad[, 4], Layer = prey.ad[, 1], Box = prey.ad[, 2], overlap = juv.pry  * pred.ad[, 6], Stage.prey = 'Juvenile - PREY',
                                            Stage.pred = 'Adult - PREDATOR', Gape.Overlap = AoJ)
@@ -384,10 +384,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                                        ifelse(overlap == 0 & Gape.Overlap == 0, 'No Gape - No Spatial',
                                                        ifelse(overlap == 0 & Gape.Overlap == 1, 'Gape - No Spatial',
                                                        ifelse(overlap == 1 & Gape.Overlap == 0, 'No Gape - Spatial', 'Gape - Spatial')))))))
-                overlap.pred.prey <- suppressMessages(left_join(map, pred.tot))
+                overlap.pred.prey <- suppressMessages(dplyr::left_join(map, pred.tot))
             })
             dpt <- reactive({
-                dpt <- rbind(filter(depth.dst, FG == input$pred), filter(depth.dst, FG == input$prey))
+                dpt <- rbind(dplyr::filter(depth.dst, FG == input$pred), dplyr::filter(depth.dst, FG == input$prey))
             })
             title <- reactive({
                 paste('Realized Spatial overlap between the predator', groups.csv$Long.Name[which(groups.csv$Code %in% input$pred)] ,'and the prey',
@@ -400,7 +400,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 stopApp()
             })
             output$plot1 <- renderPlot({
-                ggplot(data = reshape::melt(rff()),
+                ggplot2::ggplot(data = reshape::melt(rff()),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
@@ -410,7 +410,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot2 <- renderPlot({
-                ggplot(data = reshape::melt(t.o.mat),
+                ggplot2::ggplot(data = reshape::melt(t.o.mat),
                        aes(x = X1, y = X2, fill = value)) + geom_tile(aes( fill = factor(value))) +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
                     scale_fill_grey(start = .9, end = 0, name = 'Gape overlap', labels = c('No', 'Yes')) +
@@ -420,7 +420,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot3 <- renderPlot({
-                ggplot(data = reshape::melt(t(N.mat$Ava)),
+                ggplot2::ggplot(data = reshape::melt(t(N.mat$Ava)),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
@@ -430,7 +430,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot4 <- renderPlot({
-                ggplot(data = reshape::melt(rff2()),
+                ggplot2::ggplot(data = reshape::melt(rff2()),
                        aes(x = X1, y = X2, fill = value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, 100), name = 'Precentage of pressure', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
@@ -440,19 +440,19 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                              alpha = .1, colour = 'royalblue')
             })
             output$plot5 <- renderPlot({
-                ggplot(data = b.juv, aes(x = FG, y = log(Biomass), fill=FG)) +
+                ggplot2::ggplot(data = b.juv, aes(x = FG, y = log(Biomass), fill=FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
             output$plot6 <- renderPlot({
-                ggplot(data = b.adl, aes(x = FG, y = log(Biomass), fill=FG)) +
+                ggplot2::ggplot(data = b.adl, aes(x = FG, y = log(Biomass), fill=FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
             output$plot10 <- renderPlot({
-                ggplot(data = spatial(), aes(x = lon, y = lat, group = Box, fill = Rel.overlap)) +
+                ggplot2::ggplot(data = spatial(), aes(x = lon, y = lat, group = Box, fill = Rel.overlap)) +
                     geom_polygon(colour = "black", size = 0.25, na.rm = TRUE) +
                     scale_fill_manual('Realized overlap\n', values = c('No Gape - No Spatial'              = 'azure1',
                                                                        'No Gape - Spatial'                 = 'royalblue',
@@ -522,14 +522,14 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
             for(coh in 1 : groups.csv$NumCohorts[code]){
                 if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
-                    N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
+                    N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
-                    N.tot <- ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
+                    N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
                 }
                 if(all(is.na(N.tot)) || all(N.tot == 0) || sum(N.tot, na.rm = TRUE) == 0){
                     ## Getting the total volumen
-                    water.t <- ncvar_get(nc.out, 'volume')
-                    w.depth <- ncvar_get(nc.out, 'nominal_dz')
+                    water.t <- ncdf4::ncvar_get(nc.out, 'volume')
+                    w.depth <- ncdf4::ncvar_get(nc.out, 'nominal_dz')
                     w.depth[is.na(w.depth)] <- 0
                     w.m2    <- colSums(water.t,na.rm=TRUE) / apply(w.depth, 2, function(x) max(x, na.rm = TRUE))
                     w.m2[is.infinite(w.m2)] <- NA
@@ -545,12 +545,12 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     if(length(dim(N.tot)) >= 3){
                         N.tot <- N.tot[, , 1]
                     } else if(unit == "mg N m-3"){
-                        water.t <- ncvar_get(nc.out, 'volume')
+                        water.t <- ncdf4::ncvar_get(nc.out, 'volume')
                         N.tot   <- N.tot * water.t
                         Temp.N  <- N.tot
                     } else if (unit == 'mg N m-2'){
-                        water.t <- ncvar_get(nc.out, 'volume')
-                        w.depth <- ncvar_get(nc.out, 'nominal_dz')
+                        water.t <- ncdf4::ncvar_get(nc.out, 'volume')
+                        w.depth <- ncdf4::ncvar_get(nc.out, 'nominal_dz')
                         w.depth[is.na(w.depth)] <- 0
                         w.m2    <- colSums(water.t,na.rm=TRUE) / apply(w.depth, 2, function(x) max(x, na.rm = TRUE))
                         w.m2[is.infinite(w.m2)] <- NA
@@ -589,17 +589,17 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
             }
         } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'))) {
             for(cohort in 1 : groups.csv$NumCohorts[code]){
-                StructN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
+                StructN <- ncdf4::ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
                     StructN <- ncdf4::ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""), attname = "_FillValue")$value
                 }
-                ReservN <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""))
+                ReservN <- ncdf4::ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""))
                 if(all(is.na(ReservN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
                     ReservN <- ncdf4::ncatt_get(nc.out, paste(FG[code], as.character(cohort), "_ResN", sep = ""), attname = "_FillValue")$value
                 }
-                Numb    <- ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_Nums", sep = ""))
+                Numb    <- ncdf4::ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_Nums", sep = ""))
                 if(length(dim(ReservN)) > 2){
                     StructN <- StructN[, , 1]
                     ReservN <- ReservN[, , 1]
@@ -607,7 +607,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                 if(length(dim(Numb)) > 2){
                     Numb    <- Numb[, , 1]
                 }
-                if(code==1 && cohort==1 && !(code %in% Is.off)){
+                if(code == 1 && cohort == 1 && !(code %in% Is.off)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb.tmp)){
                         if(numlayers[box, 2]  == 1) next()
