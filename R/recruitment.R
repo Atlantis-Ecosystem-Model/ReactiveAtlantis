@@ -85,18 +85,18 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         stop('The package stringr was not installed')
     }
     ## general settings
-    colors    <- brewer.pal(n = 8, name = "Set1")
+    colors    <- RColorBrewer::brewer.pal(n = 8, name = "Set1")
     if(!quiet) cat('  ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
-    nc.ini    <- nc_open(ini.nc.file)
+    nc.ini    <- ncdf4::nc_open(ini.nc.file)
     yoy       <- read.csv(yoy.file, sep = ' ')
     group.csv <- read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     ## remove here those that are turned off!!
-    nc.out    <- nc_open(out.nc.file)
+    nc.out    <- ncdf4::nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
-    mg2t      <-  0.00000002 ## mg C converted to wet weight in tonnes == 20 / 1000000000
+    mg2t      <- 0.00000002 ## mg C converted to wet weight in tonnes == 20 / 1000000000
     if(!quiet) cat('      ...Done!')
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n # -     Step 2    -   #')
@@ -159,12 +159,12 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
     for(l.pp in 1 : length(pp.fg)){
-        pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
+        pp.list[[l.pp]]      <- ncdf4::ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
         names(pp.list)[l.pp] <- pp.cod[l.pp]
     }
-    pp.list[['Light']] <- ncvar_get(nc.out, 'Light')
-    pp.list[['Eddy']]  <- ncvar_get(nc.out, 'eddy')
-    numlay             <- ncvar_get(nc.out, 'numlayers')
+    pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
+    pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
+    numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
     n.box              <- dim(pp.list[['Light']])[2]
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Reading YOY from Atlantis')
@@ -188,7 +188,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
     coh.fg  <- group.csv$numcohorts[sp.dat]
     cod.fg  <- group.csv$code[sp.dat]
-    time    <- ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
+    time    <- ncdf4::ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
     spw     <- NULL
     nam     <- NULL
     SSB.tot <- NULL
@@ -216,24 +216,24 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         for(coh in 1 : coh.fg[fg]){
             if(nam.fg[fg] %in% pwn.op){
                 name.fg <- paste0(nam.fg[fg], '_N', coh)
-                nums    <- ncvar_get(nc.out, name.fg)[, , time.stp]
+                nums    <- ncdf4::ncvar_get(nc.out, name.fg)[, , time.stp]
                 SSB.tmp <- nums
                 spawn   <- nums *  FSPB[pos.fspb, coh]
                 num.sp  <- spawn
             } else {
                 name.fg <- paste0(nam.fg[fg], coh)
-                nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
+                nums    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
                 mask    <- ifelse(nums > 1.e-16, 1, 0)
                 nums    <- nums * mask
-                rn      <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp] * mask
-                sn      <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp] * mask
+                rn      <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp] * mask
+                sn      <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp] * mask
                 wspi    <- sn * (1 + xrs)       ## minimum weigth for spawning
                 rat     <- ((rn  + sn ) - wspi) ## weight deficit
                 rat[(rat < 0)]   <- 0
                 spawn            <- ((wspi * FSP - KSPA)  -  rat)
-                SSB.tmp <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp]  +
-                            ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp])  *
-                    ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
+                SSB.tmp <- (ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp]  +
+                            ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp])  *
+                    ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
                 spawn[spawn < 0] <- 0
                 spawn  <- spawn *  FSPB[pos.fspb, coh] ## individual spawn
                 spawn  <- spawn * nums      ## total spawn
@@ -316,7 +316,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                                       column(10,
                                              plotOutput('plot1', width = "100%", height = "400px"),
                                              plotOutput('plot2', width = "100%", height = "400px"),
-                                             tableOutput('table')
+                                             DT::dataTableOutput('table')
                                              )
                                   )
                                   ),
@@ -451,7 +451,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 ## To get the proper plot in the right order
                 ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
                 out.pp.list <- out.pp.list[ordn]
-                ## getting ready for ggplot
+                ## getting ready for ggplot2 ::ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
                 sel.data <- melt(sel.data, id = c('Time', 'FG'))
             })
@@ -498,11 +498,11 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             output$plot3 <- renderPlot({
                 ## colors
                 colo  <- c(rep('grey', (length(pp.list) - 2)), colors[c(1, 2)])
-                ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE) +
+                ggplot2::ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE) +
                     facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
                     scale_colour_manual(values = colo)
             })
-            output$table <- renderTable({
+            output$table <- DT::renderDataTable({
                 table <- with(rec.bio(), data.frame(Time.Larv = time.stp(), TimeYOY = TYOY, Larvaes.Atlantis = Rec, YOY.Atlantis = BYOY, Diff.Prop = P.diff * 100, Est.Larvaes = N.Rec, Est.YOY = N.YOY))
                 if(rec.bio()$Model[1] %in% c(3, 10, 19)) table$Ratio <- rec.bio()$Ratio
                 table <- as.data.frame(table)
