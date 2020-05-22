@@ -77,7 +77,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
         stop('The package RColorBrewer was not installed')
     }
     if(!quiet) cat('  ...Done!')
-    color.p <- brewer.pal(8, 'RdYlBu')[c(7, 2)]
+    color.p <- RColorBrewer::brewer.pal(8, 'RdYlBu')[c(7, 2)]
     ## Reading files
     if(!quiet) cat('\n Reading files')
     dat        <- data.frame(fread(diet.file, header = TRUE, sep = ' ', showProgress = FALSE))
@@ -122,7 +122,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                                       column(10,
                                              plotOutput('plot1', width = "100%", height = "800px"),
                                              downloadButton("Dwnl.tl", "Download-table"),
-                                             tableOutput('table')
+                                             DT::dataTableOutput('table')
                                              )
                                   )
                                   ),
@@ -141,7 +141,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                                       column(10,
                                              plotOutput('plot.bp', width = "100%", height = "800px"),
                                              downloadButton("Dwnl.tl.bp", "Download-table"),
-                                             tableOutput('table.bp')
+                                             DT::dataTableOutput('table.bp')
                                              )
                                   )
                                   ),
@@ -192,13 +192,13 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                 )
                 plot.tlvl(TL.bp(), t.prey.bp(), input$foc.fg.bp, pol = input$poly.bp, color.p)
             })
-            output$table <- renderTable({
+            output$table <- DT::renderDataTable({
                 validate(
                     need((length(TL()) != 0),  'Apparently there is no interaction between predators and prey.')
                 )
                 table    <- with(TL(), data.frame(Functional.group = FG, Trophic.Level = Tlevel))
             })
-            output$table.bp <- renderTable({
+            output$table.bp <- DT::renderDataTable({
                 validate(
                     need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
                 )
@@ -389,7 +389,7 @@ trophic.lvl <- function(rel.prey, grp.dat){
     for(i in 1 : (length(brk) - 1)){
         nfg.ly          <- which(TL$Tlevel >= brk[i] & TL$Tlevel < brk[i + 1] )
         tot.fg          <- length(nfg.ly)
-        vpos            <-  cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
+        vpos            <- cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
         pos.or          <- vector('numeric', length(TL$FG[nfg.ly]))
         ## it's necesary to order the fg to get a nice plot
         for(i in 1 : length(TL$FG[nfg.ly])){
@@ -410,7 +410,7 @@ trophic.lvl <- function(rel.prey, grp.dat){
 ##' @return A food web plot
 ##' @author Javier Porobic
 plot.tlvl <- function(T.lvl, rel.prey, foc.fg, pol = NULL, color.p){
-    rad     <- 0.25
+    rad   <- 0.25
     y.lab <- "Trophic-level"
     if(!is.null(pol)) y.lab <- paste0("Trophic-level at polygon ",  as.numeric(pol))
     plot(1, type = "n", xlab = '', ylab = y.lab,
