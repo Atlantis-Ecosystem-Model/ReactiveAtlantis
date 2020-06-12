@@ -21,7 +21,7 @@ very difficult to handle in R).}
 \item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
 \value{
-Reactive output with the plot of the food web for the specific time step,
+Shiny::Reactive output with the plot of the food web for the specific time step,
     and a table with the trophic level of each prey and predator in the food web
 }
 \description{

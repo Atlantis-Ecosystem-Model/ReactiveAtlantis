@@ -2,11 +2,11 @@
 ##'     predator-prey interaction. In Atlantis, interaction between the predator and
 ##'     the prey is mainly defined by the predator-prey matrix which represents the
 ##'     maximum availability of each prey (age) group to a specific predator (age
-##'     group). This consumption can be strongly affected by different processes such
+##'     group). This consumption can be shiny::strongly affected by different processes such
 ##'     as the spatial overlap, the biomass of the prey and the gape limitation of
 ##'     the predator. With this tool you can explore the availability matrix and the
 ##'     processes that affect consumption. This tool also allows you to explore new
-##'     values for the predator-prey matrix and observe online how these new values
+##'     values for the predator-prey matrix and shiny::observe online how these new values
 ##'     affect the predator-prey interaction.
 ##' @title Atlantis feeding tool
 ##' @param prm.file Character string with the path to the biological parameter \emph{*.prm} file (Atlantis input file).
@@ -18,7 +18,7 @@
 ##' @param cum.depths Vector with the cumulative depths of the different layers
 ##'     (e.g. \emph{cum.depths <- c(0, 20, 100, 200, 500)})
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
-##' @return Reactive HTML that displays predator-prey information such as: the ppPREY
+##' @return Shiny::Reactive shiny::HTML that displays predator-prey information such as: the ppPREY
 ##'     matrix, the initial abundance of prey, the overlap matrix based on gape size,
 ##'     predator preference and predator prey spatial overlap. All this information
 ##'     is divided into two different tabs:
@@ -59,6 +59,7 @@
 ##'     on the values in the initial conditions file and the parameterized gape
 ##'     limitation.
 ##'}
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
@@ -103,7 +104,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('      ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
-    groups.csv <- read.csv(grp.file)
+    groups.csv <- utils::read.csv(grp.file)
     if(any(grepl('isPredator', names(groups.csv)))){
         names(groups.csv)[which(grepl('isPredator', names(groups.csv)))] <- 'IsPredator'
     }
@@ -213,90 +214,90 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Plotting \n\n')
     ## Shiny Application
-    shinyApp(
-        ui <- navbarPage('Atlantis Diet Tool',
-                         tabPanel('Non-Spatial',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Predator'),
-                                                 selectInput('ycol', 'Functional Group', as.character(groups.csv$Code[which(groups.csv$IsPredator == 1)])),
-                                                 selectInput('y1col', 'Stage', c('Juvenile', 'Adult', 'Biomass pool')),
-                                                 tags$h3('Prey'),
-                                                 selectInput('xcol', 'Functional Group', colnames(Ava.mat)),
-                                                 selectInput('x1col', 'Stage', c('Juvenile', 'Adult')),
-                                                 mainPanel("Original Value: ", verbatimTextOutput("numPoints")),
-                                                 mainPanel("Current Value: ", verbatimTextOutput("CurPoints")),
-                                                 numericInput("num", label = "New Value", value = 0, min = 0, max = 1, step = 0.00001)
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Atlantis Diet Tool',
+                         shiny::tabPanel('Non-Spatial',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Predator'),
+                                                 shiny::selectInput('ycol', 'Functional Group', as.character(groups.csv$Code[which(groups.csv$IsPredator == 1)])),
+                                                 shiny::selectInput('y1col', 'Stage', c('Juvenile', 'Adult', 'Biomass pool')),
+                                                 shiny::tags$h3('Prey'),
+                                                 shiny::selectInput('xcol', 'Functional Group', colnames(Ava.mat)),
+                                                 shiny::selectInput('x1col', 'Stage', c('Juvenile', 'Adult')),
+                                                 shiny::mainPanel("Original Value: ", shiny::verbatimTextOutput("numPoints")),
+                                                 shiny::mainPanel("Current Value: ", shiny::verbatimTextOutput("CurPoints")),
+                                                 shiny::numericInput("num", label = "New Value", value = 0, min = 0, max = 1, step = 0.00001)
                                              ),
-                                             actionButton("do", label = "Change Value"),
-                                             br(),
-                                             br(),
-                                             actionButton("save", label = "Write pPPREY Matrix")
+                                             shiny::actionButton("do", label = "Change Value"),
+                                             shiny::br(),
+                                             shiny::br(),
+                                             shiny::actionButton("save", label = "Write pPPREY Matrix")
                                              ),
-                                      column(10,
-                                             wellPanel(
-                                                 tabsetPanel(
-                                                     tabPanel('Effective Predation',#
-                                                              plotOutput('plot1', width = plotWidth, height = plotHeigh)
+                                      shiny::column(10,
+                                             shiny::wellPanel(
+                                                 shiny::tabsetPanel(
+                                                     shiny::tabPanel('Effective Predation',#
+                                                              shiny::plotOutput('plot1', width = plotWidth, height = plotHeigh)
                                                               ),
-                                                     tabPanel('Availability matrix',#
-                                                              plotOutput('plot3', width = plotWidth, height = plotHeigh)
+                                                     shiny::tabPanel('Availability matrix',#
+                                                              shiny::plotOutput('plot3', width = plotWidth, height = plotHeigh)
                                                               ),
-                                                     tabPanel('Overlap matrix',#
-                                                              plotOutput('plot2', width = plotWidth, height = plotHeigh)
+                                                     shiny::tabPanel('Overlap matrix',#
+                                                              shiny::plotOutput('plot2', width = plotWidth, height = plotHeigh)
                                                               ),
-                                                     tabPanel('% of predation pressure',#
-                                                              plotOutput('plot4', width = plotWidth, height = plotHeigh)
+                                                     shiny::tabPanel('% of predation pressure',#
+                                                              shiny::plotOutput('plot4', width = plotWidth, height = plotHeigh)
                                                               ),
-                                                     tabPanel('Total biomass prey',#
-                                                              h3('Juvenile biomass'),
-                                                              plotOutput('plot5', width = "100%", height = "400px"),
-                                                              br(),
-                                                              h3('Adult biomass'),
-                                                              plotOutput('plot6', width = "100%", height = "400px")
+                                                     shiny::tabPanel('Total biomass prey',#
+                                                              shiny::h3('Juvenile biomass'),
+                                                              shiny::plotOutput('plot5', width = "100%", height = "400px"),
+                                                              shiny::br(),
+                                                              shiny::h3('Adult biomass'),
+                                                              shiny::plotOutput('plot6', width = "100%", height = "400px")
                                                               )
                                                  )
                                              )
                                              )
                                   )
                                   ),
-                         tabPanel('Spatial Overlap',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('pred', 'Predator',  groups.csv$Code),
-                                                 selectInput('prey', 'Prey', groups.csv$Code),
-                                                 selectInput("layer", "Layer:", c(1 : (sediment - 1), 'Sediment')),
-                                                 br(),
-                                                 br(),
-                                                 plotOutput('plot11', height = "300px")
+                         shiny::tabPanel('Spatial Overlap',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('pred', 'Predator',  groups.csv$Code),
+                                                 shiny::selectInput('prey', 'Prey', groups.csv$Code),
+                                                 shiny::selectInput("layer", "Layer:", c(1 : (sediment - 1), 'Sediment')),
+                                                 shiny::br(),
+                                                 shiny::br(),
+                                                 shiny::plotOutput('plot11', height = "300px")
                                              )
                                              ),
-                                      column(10,
-                                             wellPanel(
-                                                 h3(textOutput("text1")),
-                                                 plotOutput('plot10', height = "700px", dblclick = "plot1_dblclick",
-                                                            brush = brushOpts( id = "plot1_brush", resetOnNew = TRUE
+                                      shiny::column(10,
+                                             shiny::wellPanel(
+                                                 shiny::h3(shiny::textOutput("text1")),
+                                                 shiny::plotOutput('plot10', height = "700px", dblclick = "plot1_dblclick",
+                                                            brush = shiny::brushOpts( id = "plot1_brush", resetOnNew = TRUE
                                                                               ))
                                              )
                                              )
                                   )
                                   ),
-                         tabPanel("Help",
-                                  fluidPage(HTML(txtHelp)
+                         shiny::tabPanel("Help",
+                                  shiny::fluidPage(shiny::HTML(txtHelp)
                                             )
                                   ),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session) {
             ## Combine the selected variables into a new data frame
-            N.mat     <- reactiveValues()
+            N.mat     <- shiny::reactiveValues()
             N.mat$Ava <- Ava.mat
-            pred.name <- reactive({
+            pred.name <- shiny::reactive({
                 nprey <- ifelse(input$x1col ==  'Juvenile', 1, 2)
                 npred <- ifelse(input$y1col ==  'Juvenile', 1, ifelse(input$y1col ==  'Adult', 2, 0))
                 if(npred > 0){
@@ -305,34 +306,34 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     paste('pPREY', input$ycol, sep = '')
                 }
             })
-            newEntry  <- observe({
+            newEntry  <- shiny::observe({
                 if(input$do > 0) {
-                    newval <- isolate(input$num)
-                    col.ch <- isolate(which(colnames(Ava.mat) == input$xcol))
-                    row.ch <- isolate(which(row.names(Ava.mat) == pred.name()))
-                    isolate(N.mat$Ava[row.ch, col.ch] <- newval)
+                    newval <- shiny::isolate(input$num)
+                    col.ch <- shiny::isolate(which(colnames(Ava.mat) == input$xcol))
+                    row.ch <- shiny::isolate(which(row.names(Ava.mat) == pred.name()))
+                    shiny::isolate(N.mat$Ava[row.ch, col.ch] <- newval)
                 }
             })
-            observeEvent(input$save, {
+            shiny::observeEvent(input$save, {
                 saveData(N.mat$Ava)
             })
-            linex <- reactive( {
+            linex <- shiny::reactive( {
                 which(sort(colnames(Ava.mat)) == input$xcol)
             })
-            liney <- reactive({
+            liney <- shiny::reactive({
                 which(sort(row.names(Ava.mat)) == pred.name())
             })
-            rff <- reactive({
+            rff <- shiny::reactive({
                 rff <- log(real.feed * N.mat$Ava)
                 rff[!is.finite(rff)] <- 0
                 t(rff)
             })
-            rff2 <- reactive({
+            rff2 <- shiny::reactive({
                 t((real.feed * N.mat$Ava) / rowSums(real.feed * N.mat$Ava, na.rm=TRUE)) * 100
             })
             ## zoom plot
-            ranges <- reactiveValues(x = NULL, y = NULL)
-            observeEvent(input$plot1_dblclick, {
+            ranges <- shiny::reactiveValues(x = NULL, y = NULL)
+            shiny::observeEvent(input$plot1_dblclick, {
                 brush <- input$plot1_brush
                 if (!is.null(brush)) {
                     ranges$x <- c(brush$xmin, brush$xmax)
@@ -342,13 +343,13 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     ranges$y <- NULL
                 }
             })
-            spatial <- reactive({
-                gp.pred  <- dplyr::filter(over.tmp, Predator == input$pred, Prey == input$prey)
+            spatial <- shiny::reactive({
+                gp.pred  <- dplyr::filter(data = over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
-                pred.ad  <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Adult', Layer == input.layer)
-                pred.juv <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Juvenile', Layer == input.layer)
-                prey.ad  <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Adult', Layer == input.layer)
-                prey.juv <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Juvenile', Layer == input.layer)
+                pred.ad  <- dplyr::filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Adult', .data$Layer == input.layer)
+                pred.juv <- dplyr::filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Juvenile', .data$Layer == input.layer)
+                prey.ad  <- dplyr::filter(data = sp.ov, .data$variable == input$prey, .data$Stage == 'Adult', .data$Layer == input.layer)
+                prey.juv <- dplyr::filter(data = sp.ov, .data$variable == input$prey, .data$Stage == 'Juvenile', .data$Layer == input.layer)
                 ## Checking for Juveniles on the biomass pools
                 ## avoiding inf problems
                 if(length(prey.juv[, 6]) == 0){
@@ -362,10 +363,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     juv.prd <- pred.juv[, 6]
                 }
                 ## Checking the gape overlap
-                AoA <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Adult')[, 5])))
-                AoJ <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Adult', Stg.prey == 'Juvenile')[, 5])))
-                JoA <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Adult')[, 5])))
-                JoJ <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
+                AoA <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5])))
+                AoJ <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5])))
+                JoA <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5])))
+                JoJ <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5])))
                 ## Merging
                 ad.on.juv    <- data.frame(Land = prey.ad[, 4], Layer = prey.ad[, 1], Box = prey.ad[, 2], overlap = juv.pry  * pred.ad[, 6], Stage.prey = 'Juvenile - PREY',
                                            Stage.pred = 'Adult - PREDATOR', Gape.Overlap = AoJ)
@@ -386,22 +387,22 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                                        ifelse(overlap == 1 & Gape.Overlap == 0, 'No Gape - Spatial', 'Gape - Spatial')))))))
                 overlap.pred.prey <- suppressMessages(dplyr::left_join(map, pred.tot))
             })
-            dpt <- reactive({
+            dpt <- shiny::reactive({
                 dpt <- rbind(dplyr::filter(depth.dst, FG == input$pred), dplyr::filter(depth.dst, FG == input$prey))
             })
-            title <- reactive({
+            title <- shiny::reactive({
                 paste('Realized Spatial overlap between the predator', groups.csv$Long.Name[which(groups.csv$Code %in% input$pred)] ,'and the prey',
                       groups.csv$Long.Name[which(groups.csv$Code %in% input$prey)], sep = ' ')
             })
-            output$text1 <- renderText({
+            output$text1 <- shiny::renderText({
                 title()
             })
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            output$plot1 <- renderPlot({
+            output$plot1 <- shiny::renderPlot({
                 ggplot2::ggplot(data = reshape::melt(rff()),
-                       aes(x = X1, y = X2, fill = value)) + geom_tile() +
+                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
                     annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1,
@@ -409,9 +410,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5,
                              alpha = .1, colour = 'royalblue')
             })
-            output$plot2 <- renderPlot({
+            output$plot2 <- shiny::renderPlot({
                 ggplot2::ggplot(data = reshape::melt(t.o.mat),
-                       aes(x = X1, y = X2, fill = value)) + geom_tile(aes( fill = factor(value))) +
+                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(aes( fill = factor(.data$value))) +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
                     scale_fill_grey(start = .9, end = 0, name = 'Gape overlap', labels = c('No', 'Yes')) +
                     annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1,
@@ -419,9 +420,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     annotate("rect", xmin =  - .5, xmax = nrow(t.o.mat) + .5, ymin = liney() - .5, ymax = liney() + .5,
                              alpha = .1, colour = 'royalblue')
             })
-            output$plot3 <- renderPlot({
+            output$plot3 <- shiny::renderPlot({
                 ggplot2::ggplot(data = reshape::melt(t(N.mat$Ava)),
-                       aes(x = X1, y = X2, fill = value)) + geom_tile() +
+                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
                     annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1,
@@ -429,9 +430,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     annotate("rect", xmin =  - .5, xmax = nrow(t(N.mat$Ava)) + .5, ymin = liney() - .5, ymax = liney() + .5,
                              alpha = .1, colour = 'royalblue')
             })
-            output$plot4 <- renderPlot({
+            output$plot4 <- shiny::renderPlot({
                 ggplot2::ggplot(data = reshape::melt(rff2()),
-                       aes(x = X1, y = X2, fill = value)) + geom_tile() +
+                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
                     scale_fill_gradient(limits=c(0, 100), name = 'Precentage of pressure', low="white", high="red", na.value = 'white')  +
                     theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
                     annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff2()) + 1,
@@ -439,20 +440,20 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     annotate("rect", xmin =  - .5, xmax = nrow(rff2()) + .5, ymin = liney() - .5, ymax = liney() + .5,
                              alpha = .1, colour = 'royalblue')
             })
-            output$plot5 <- renderPlot({
-                ggplot2::ggplot(data = b.juv, aes(x = FG, y = log(Biomass), fill=FG)) +
+            output$plot5 <- shiny::renderPlot({
+                ggplot2::ggplot(data = b.juv, aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
-            output$plot6 <- renderPlot({
-                ggplot2::ggplot(data = b.adl, aes(x = FG, y = log(Biomass), fill=FG)) +
+            output$plot6 <- shiny::renderPlot({
+                ggplot2::ggplot(data = b.adl, aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
-            output$plot10 <- renderPlot({
-                ggplot2::ggplot(data = spatial(), aes(x = lon, y = lat, group = Box, fill = Rel.overlap)) +
+            output$plot10 <- shiny::renderPlot({
+                ggplot2::ggplot(data = spatial(), aes(x = .data$lon, y = .data$lat, group = .data$Box, fill = .data$Rel.overlap)) +
                     geom_polygon(colour = "black", size = 0.25, na.rm = TRUE) +
                     scale_fill_manual('Realized overlap\n', values = c('No Gape - No Spatial'              = 'azure1',
                                                                        'No Gape - Spatial'                 = 'royalblue',
@@ -462,22 +463,22 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                                                        'Sediment Layer - Spatial - No Gape' = 'darkolivegreen1',
                                                                        'Land or Sediment'                   = 'grey50'
                                                                        )) +
-                    facet_grid(Stage.prey~Stage.pred) +
+                    facet_grid(.data$Stage.prey~.data$Stage.pred) +
                     theme(panel.background = element_blank(), axis.line = element_line(colour = "black"),
                           strip.text = element_text(size = 14)) +
                     labs(x = 'Longitude', y = 'Latitude') +
                     coord_cartesian(xlim = ranges$x, ylim = ranges$y)
             })
-            output$plot11 <- renderPlot({
+            output$plot11 <- shiny::renderPlot({
                 plot(c(1,1), -dpt()[1,2:3], xaxt = 'n', bty = 'n', ylab = 'Depth (m)', xlab = 'Functional group', type = 'l', las = 1,
                      ylim = -c(max(dpt()$Max),min(dpt()$Min)), xlim = c(0.5, 2.5), lwd = 15, col = 'royalblue',main='Depth Distribution')
                 lines(c(2,2), -dpt()[2,2:3], col='goldenrod', lwd = 15)
                 axis(side = 1, at= c(1,2), labels=as.character(dpt()[1:2,1]))
             })
-            output$numPoints <- renderText({
+            output$numPoints <- shiny::renderText({
                 Ava.mat[which(row.names(Ava.mat) == pred.name()), which(colnames(Ava.mat) == input$xcol)]
             })
-            output$CurPoints <- renderText({
+            output$CurPoints <- shiny::renderText({
                 N.mat$Ava[which(row.names(Ava.mat) == pred.name()), which(colnames(Ava.mat) == input$xcol)]
             })
         }
@@ -636,7 +637,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
             }
         }
     }
-    nc_close(nc.out)
+    ncdf4::nc_close(nc.out)
     row.names(Biom.N) <- as.character(groups.csv$Code)
     row.names(Struct) <- as.character(groups.csv$Code)
     if(length(Is.off) > 0){

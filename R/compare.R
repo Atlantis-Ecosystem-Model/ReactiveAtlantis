@@ -17,7 +17,7 @@
 ##' @param bgm.file Character string with the path to the XY coordinates
 ##'     Atlantis input file \emph{*.bgm} with the information in metres.
 ##' @param cum.depths Cumulative depth of the Atlantis model
-##' @return A reactive HTML that is divided in 3 different panels:
+##' @return A shiny::reactive shiny::HTML that is divided in 3 different panels:
 ##' \itemize{
 ##' \item \bold{Biomass}: This panel shows the results for:
 ##'     \itemize{
@@ -60,6 +60,7 @@
 ##'     or to set the limit from 0 to 3 for the normalized version.
 ##' }
 ##' }
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
@@ -89,13 +90,13 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
         stop('The package RColorBrewer was not installed')
     }
     ## General configuration
-    mycol  <- c(brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-    mycol  <- colorRampPalette(mycol)
+    mycol  <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
+    mycol  <- grDevices::colorRampPalette(mycol)
     col.bi <- mycol(15)[c(14, 13, 12, 10)]
     mg2t   <- 0.00000002  ## mgC converted to wet weight in tonnes = 20/1000000000
     x.cn   <- 5.7   	  ## Redfield ratio of C:N 5.7
     ## Reading data
-    grp     <- read.csv(grp.csv)
+    grp     <- utils::read.csv(grp.csv)
     inf.box <- boxes.prop(bgm.file,  cum.depths)
     nc.cur  <- ncdf4::nc_open(nc.out.current)
     ## Time Vector
@@ -154,78 +155,78 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     rel.bio <- by(t.biomass, t.biomass$FG, relative)
     rel.bio <- do.call(rbind.data.frame, rel.bio)
     ## Start the Shiny application
-    shinyApp(
+    shiny::shinyApp(
         ## Create the different tabs
-        ui <- navbarPage("Compare outputs",
-                         tabPanel('Biomass',
-                                  tabsetPanel(
-                                      tabPanel('Total Biomass',
-                                               plotOutput('plot1', height = "auto"),
-                                               downloadButton("dwn.bio", "Download")
+        ui <- shiny::navbarPage("Compare outputs",
+                         shiny::tabPanel('Biomass',
+                                  shiny::tabsetPanel(
+                                      shiny::tabPanel('Total Biomass',
+                                               shiny::plotOutput('plot1', height = "auto"),
+                                               shiny::downloadButton("dwn.bio", "Download")
                                                ),
-                                      tabPanel('Relative Biomass',
-                                               plotOutput('plot1B', height = "auto"),
-                                               downloadButton("dwn.rel", "Download")
+                                      shiny::tabPanel('Relative Biomass',
+                                               shiny::plotOutput('plot1B', height = "auto"),
+                                               shiny::downloadButton("dwn.rel", "Download")
                                                ))),
-                         tabPanel('Total',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FG2', 'Functional Group :', as.character(grp$code)),
-                                                 checkboxInput('bpol', label = strong("By polygon"), value = FALSE),
-                                                 conditionalPanel(
+                         shiny::tabPanel('Total',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FG2', 'Functional Group :', as.character(grp$code)),
+                                                 shiny::checkboxInput('bpol', label = shiny::strong("By polygon"), value = FALSE),
+                                                 shiny::conditionalPanel(
                                                      condition = "input.bpol == '1'",
-                                                     selectInput('poln', 'Polygon', inf.box$info$Boxid)
+                                                     shiny::selectInput('poln', 'Polygon', inf.box$info$Boxid)
                                                  ),
-                                                 checkboxInput('rn2', label = strong("Reserve Nitrogen"), value = FALSE),
-                                                 checkboxInput('sn2', label = strong("Structural Nitrogen"), value = FALSE),
-                                                 checkboxInput('num2', label = strong("Numbers"), value = FALSE),
-                                                 checkboxInput('bio2', label = strong("Biomass"), value = TRUE),
-                                                 checkboxInput('scl2', label = strong("Scaled"), value = TRUE),
-                                                 checkboxInput('limit2', label = strong("limit-axis"), value = TRUE),
-                                                 selectInput('right2', label = strong("Legend position"), c('Right', 'Left'))
+                                                 shiny::checkboxInput('rn2', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('sn2', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('num2', label = shiny::strong("Numbers"), value = FALSE),
+                                                 shiny::checkboxInput('bio2', label = shiny::strong("Biomass"), value = TRUE),
+                                                 shiny::checkboxInput('scl2', label = shiny::strong("Scaled"), value = TRUE),
+                                                 shiny::checkboxInput('limit2', label = shiny::strong("limit-axis"), value = TRUE),
+                                                 shiny::selectInput('right2', label = shiny::strong("Legend position"), c('Right', 'Left'))
                                              ),
-                                             wellPanel(
-                                                 checkboxInput('cur2', label = strong("Compare current output"), value = FALSE),
-                                                 selectInput('FG2b', 'Functional Group :', as.character(grp$code)),
-                                                 checkboxInput('rn2b', label = strong("Reserve Nitrogen"), value = FALSE),
-                                                 checkboxInput('sn2b', label = strong("Structural Nitrogen"), value = FALSE),
-                                                 checkboxInput('num2b', label = strong("Numbers"), value = FALSE),
-                                                 checkboxInput('bio2b', label = strong("Biomass"), value = TRUE),
-                                                 checkboxInput('scl2b', label = strong("Scaled"), value = TRUE),
-                                                 checkboxInput('limit2b', label = strong("limit-axis"), value = TRUE),
-                                                 selectInput('right2b', label = strong("Legend position"), c('Right', 'Left'))
+                                             shiny::wellPanel(
+                                                 shiny::checkboxInput('cur2', label = shiny::strong("Compare current output"), value = FALSE),
+                                                 shiny::selectInput('FG2b', 'Functional Group :', as.character(grp$code)),
+                                                 shiny::checkboxInput('rn2b', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('sn2b', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('num2b', label = shiny::strong("Numbers"), value = FALSE),
+                                                 shiny::checkboxInput('bio2b', label = shiny::strong("Biomass"), value = TRUE),
+                                                 shiny::checkboxInput('scl2b', label = shiny::strong("Scaled"), value = TRUE),
+                                                 shiny::checkboxInput('limit2b', label = shiny::strong("limit-axis"), value = TRUE),
+                                                 shiny::selectInput('right2b', label = shiny::strong("Legend position"), c('Right', 'Left'))
                                              )                                             ),
-                                      column(10,
-                                             plotOutput('plot2a', width = "100%", height = "450px"),
-                                             plotOutput('plot2b', width = "100%", height = "450px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot2a', width = "100%", height = "450px"),
+                                             shiny::plotOutput('plot2b', width = "100%", height = "450px")
                                              ))),
-                         tabPanel('By AgeClass',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FG3a', 'Functional Group :', as.character(grp$code[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')])),
-                                                 checkboxInput('rn3a', label = strong("Reserve Nitrogen"), value = FALSE),
-                                                 checkboxInput('sn3a', label = strong("Structural Nitrogen"), value = FALSE),
-                                                 checkboxInput('num3a', label = strong("Numbers"), value = FALSE),
-                                                 checkboxInput('bio3a', label = strong("Biomass"), value = TRUE),
-                                                 checkboxInput('scl3a', label = strong("Scaled"), value = TRUE),
-                                                 checkboxInput('limit3a', label = strong("limit-axis"), value = TRUE),
-                                                 selectInput('right3a', label = strong("Legend position"), c('Right', 'Left')),
-                                                 downloadButton("Dwn.age", "Download")
+                         shiny::tabPanel('By AgeClass',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FG3a', 'Functional Group :', as.character(grp$code[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')])),
+                                                 shiny::checkboxInput('rn3a', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('sn3a', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                 shiny::checkboxInput('num3a', label = shiny::strong("Numbers"), value = FALSE),
+                                                 shiny::checkboxInput('bio3a', label = shiny::strong("Biomass"), value = TRUE),
+                                                 shiny::checkboxInput('scl3a', label = shiny::strong("Scaled"), value = TRUE),
+                                                 shiny::checkboxInput('limit3a', label = shiny::strong("limit-axis"), value = TRUE),
+                                                 shiny::selectInput('right3a', label = shiny::strong("Legend position"), c('Right', 'Left')),
+                                                 shiny::downloadButton("Dwn.age", "Download")
                                              )),
-                                      column(10,
-                                             plotOutput('plot3a', width = "100%", height = "1000px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot3a', width = "100%", height = "1000px")
                                              ))),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         ## Link the input for the different tabs with your original data
         ## Create the plots
         function(input, output, session){
-            total <- reactive({
+            total <- shiny::reactive({
                 if(isTRUE(input$bpol)){
                     total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Poly', inf.box, mg2t, x.cn, polnum = (as.numeric(input$poln) + 1))
                 } else {
@@ -239,7 +240,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 }
                 total
             })
-            total2 <- reactive({
+            total2 <- shiny::reactive({
                 if(!is.null(nc.out.old) | input$cur2){
                     if(input$cur2){
                         total2 <- nitro.weight(nc.cur, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
@@ -257,7 +258,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 }
                 total2
             })
-            coho <- reactive({
+            coho <- shiny::reactive({
                 coho <- nitro.weight(nc.cur, grp, FG = input$FG3a, By = 'Cohort', inf.box, mg2t, x.cn)
                 if(input$scl3a){
                     rmv         <- which(sapply(coho, function(x) length(x) == 0 || is.null(x) || is.character(x)))
@@ -267,12 +268,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 }
                 coho
             })
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            output$plot1 <- renderPlot({
-                plot <- ggplot2::ggplot(t.biomass, aes(x = Time, y = Biomass, colour = Simulation)) +
-                    geom_line() + facet_wrap(~ FG, ncol = 4,  scale = 'free_y') + theme_minimal() +
+            output$plot1 <- shiny::renderPlot({
+                plot <- ggplot2::ggplot(data  = t.biomass, aes(x = .data$Time, y = .data$Biomass, colour = .data$Simulation)) +
+                    geom_line() + ggplot2::facet_wrap(~ .data$FG, ncol = 4,  scale = 'free_y') + theme_minimal() +
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
@@ -280,9 +281,9 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
             height = function() {
                 session$clientData$output_plot1_width
             })
-            output$plot1B <- renderPlot({
-                plot <- ggplot2::ggplot(rel.bio, aes(x = Time, y = Relative, colour = Simulation)) +
-                    geom_line() + facet_wrap( ~ FG, ncol = 4) + ylim(0, 2) + theme_minimal()  +
+            output$plot1B <- shiny::renderPlot({
+                plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$Relative, colour = .data$Simulation)) +
+                    geom_line() + ggplot2::facet_wrap( ~ .data$FG, ncol = 4) + ylim(0, 2) + theme_minimal()  +
                     annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue') +
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
@@ -291,23 +292,23 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
             height = function() {
                 session$clientData$output_plot1_width
             })
-            output$plot2a <- renderPlot({
+            output$plot2a <- shiny::renderPlot({
                 plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
             })
-            output$plot2b <- renderPlot({
-                validate(
-                    need(total2() != '',  'To Display this plot you need to provide an old .nc output file or activate the box compare current (Default = FALSE)')
+            output$plot2b <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need(total2() != '',  'To Display this plot you need to provide an old .nc output file or activate the box compare current (Default = FALSE)')
                 )
                 plot.age.total(total2(), Time = Time, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
             })
-            output$plot3a <- renderPlot({
+            output$plot3a <- shiny::renderPlot({
                 n.coh <- grp$numcohorts[grp$code == input$FG3a]
-                par(mfrow = n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
+                graphics::par(mfrow = grDevices::n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
                 for( i in 1 : n.coh){
                     plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
                 }
             })
-            output$Dwn.age <- downloadHandler(
+            output$Dwn.age <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -316,7 +317,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     write.csv(out, file, row.names = FALSE)
                 }
             )
-            output$dwn.bio <- downloadHandler(
+            output$dwn.bio <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -327,7 +328,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                     write.csv(out, file, row.names = FALSE)
                 }
              )
-            output$dwn.rel <- downloadHandler(
+            output$dwn.rel <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -360,7 +361,8 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
             b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$code[age]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$code[age]),
+                                             Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -658,11 +660,11 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
     yli    <- yli[, which(c(TRUE, bio2, num2, sn2, rn2) == 1)]
     yli    <- cbind(range(yli), yli)
     tickx  <- seq(from = 1, to = length(Time), length = 5)
-    par(mar = c(5, l.lab, 4, 4) + 0.1)
+    graphics::par(mar = c(5, l.lab, 4, 4) + 0.1)
     if(!is.null(coh)){
-        xtlab  <- max.coh - rev(n2mfrow(max.coh))[1]
-        nr.lab <- rev(n2mfrow(max.coh))[1]
-        par(mar = c(1, l.lab, 1, 1) + 0.1)
+        xtlab  <- max.coh - rev(grDevices::n2mfrow(max.coh))[1]
+        nr.lab <- rev(grDevices::n2mfrow(max.coh))[1]
+        graphics::par(mar = c(1, l.lab, 1, 1) + 0.1)
     }
     if(bio2){
         ylim <- yli[, ifelse(limit, 2, ifelse(scl2, 1, which(colnames(yli) == 'Biomass')))]
@@ -688,7 +690,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
         }
     }
     if(num2 & total$Type == 'AgeClass'){
-        if(bio2) par(new = TRUE)
+        if(bio2) graphics::par(new = TRUE)
         sum.l <- sum(bio2) * 4
         ylim  <- yli[, ifelse(limit, 2, ifelse(scl2, 1, which(colnames(yli) == 'Numbers')))]
         if(is.null(coh)) {
@@ -711,7 +713,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
         }
     }
     if(rn2 & total$Type == 'AgeClass'){
-        if(bio2 || num2) par(new = TRUE)
+        if(bio2 || num2) graphics::par(new = TRUE)
         sum.l <- sum(bio2, num2) * 4
         ylim <- yli[, ifelse(limit, 2, ifelse(scl2, 1, which(colnames(yli) == 'Reserve')))]
         if(is.null(coh)){
@@ -734,7 +736,7 @@ plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right
         }
     }
     if(sn2 & total$Type == 'AgeClass'){
-        if(bio2 || num2 || rn2) par(new = TRUE)
+        if(bio2 || num2 || rn2) graphics::par(new = TRUE)
         sum.l <- sum(bio2, num2, rn2) * 4
         ylim  <- yli[, ifelse(limit, 2, ifelse(scl2, 1, which(colnames(yli) == 'Structural')))]
         if(is.null(coh)){

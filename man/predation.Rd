@@ -28,7 +28,7 @@ make sure to turn on the flag \bold{\emph{"flag_age_output"}} in the
 \emph{run.prm} file if you want Atlantis to write this this output file.}
 }
 \value{
-The output of this function is a reactive html, useful for dynamically evaluating and visualizing
+The output of this function is a shiny::reactive html, useful for dynamically evaluating and visualizing
     predator-prey relationships from an Atlantis output. The outputs of the predation analysis
     is divided in three parts:
    \itemize{

@@ -22,7 +22,7 @@ read in. This netcdf file is a generic output from an Atlantis run and
 usually starts with output and ends in \emph{.nc}.}
 }
 \value{
-A reactive HTML with graphical output by functional group, for layer and box
+A shiny::reactive shiny::HTML with graphical output by functional group, for layer and box
     of the following variables:
 \itemize{
   \item \bold{Growth}:  This variable is the  Primary producer growth (\eqn{G_{pp}}) which is

@@ -15,7 +15,7 @@
 ##'     file from Atlantis. Usually this file has the name of \emph{[Your_Model]CATCH.nc},
 ##'     where [Your_Model] is the name of your Atlantis model
 ##' @param ext.catch.f (Default = NULL) Character string with the path to the
-##'     external file with the observed catches and discards by year. This helps to
+##'     external file with the shiny::observed catches and discards by year. This helps to
 ##'     calibrate the harvest section of Atlantis and it is required to perform the
 ##'     skill assessment of the model.
 ##' @return This function provides 3 different sets of analyzes of the catches in the following tabs:
@@ -27,13 +27,13 @@
 ##' \item \bold{Numbers}:  This function allows the user to analyze the change by age and
 ##'     through time of the variable catch and discards for the selected functional group
 ##' \item \bold{Compare}: This function allows for several skill assessment of the model
-##'     (based on the analysis of the simulated and observed time series of catch and
+##'     (based on the analysis of the simulated and shiny::observed time series of catch and
 ##'     bycatch) to be performed. The analysis is based on the approach described by
 ##'     Olsen \emph{et al.} (2016) and Stow \emph{et al.} 2009, which is composed of the following
 ##'     quantitative metrics:
 ##' \itemize{
 ##' \item \bold{Correlation coefficient (\eqn{r})}: measures the tendency of the
-##'     predicted \eqn{P} and observed \eqn{O} values to vary together. The values of
+##'     predicted \eqn{P} and shiny::observed \eqn{O} values to vary together. The values of
 ##'     correlation can range from -1 to 1, with negative values of correlation for
 ##'     time series that vary inversely.
 ##' \deqn{r = \frac{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})(P_{i} - \bar{P})}{\sqrt{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})^2 \displaystyle\sum_{i=1}^{n} (P_{i} - \bar{P})^2}}}
@@ -49,7 +49,7 @@
 ##' \deqn{RMSE = \sqrt{\frac{\displaystyle\sum_{i=1}^{n} (P_{i} - O_{i})}{n}}}
 ##' \item \bold{Reliability index \eqn{RI}}: This quantifies the average factor by
 ##'     which the predicted values differ from observations. If the model predictions
-##'     do not differ too much from the observed then the value of \eqn{RI} should be close to 1. But if the
+##'     do not differ too much from the shiny::observed then the value of \eqn{RI} should be close to 1. But if the
 ##'     value of \eqn{RI} is 2 it means that a model predicts the observations
 ##'     within a multiplicative factor of two, on average.
 ##' \deqn{RI = exp\sqrt{\frac{1}{n} \displaystyle\sum_{i=1}^{n} (log\frac{O_{i}}{P_{i}})^2}}
@@ -64,6 +64,7 @@
 ##'     \eqn{P_{i}} ith of \eqn{n} predictions, and \eqn{\bar{O}} and \eqn{\bar{P}} are the
 ##'     observation and prediction averaged, respectively.
 ##' }
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
@@ -91,16 +92,16 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
     }
     ## General setting
     mycol    <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-    mycol    <- colorRampPalette(mycol)
+    mycol    <- grDevices::colorRampPalette(mycol)
     col.bi   <- mycol(15)[c(14, 13, 12, 10)]
     nc.data  <- ncdf4::nc_open(catch.nc)
-    grp      <- read.csv(grp.csv)
+    grp      <- utils::read.csv(grp.csv)
     if(!is.null(ext.catch.f)){
         ext.f  <- scan(ext.catch.f, nlines = 1, what = character(), sep = ',')
-        ext.c  <- read.table(ext.catch.f, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
+        ext.c  <- utils::read.table(ext.catch.f, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
     }
     grp      <- grp[grp$IsImpacted == 1, ]
-    fsh      <- read.csv(fsh.csv)
+    fsh      <- utils::read.csv(fish.csv)
     nam.var  <- names(nc.data$var)
     orign    <- unlist(strsplit(ncdf4::ncatt_get(nc.data, 't')$units, ' ', fixed = TRUE))
     if(orign[1] == 'seconds') {
@@ -109,62 +110,62 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
         Time <- ncdf4::ncvar_get(nc.data, 't')
     }
     Time     <- as.Date(Time, origin = orign[3])
-    shinyApp(
+    shiny::shinyApp(
         ## Create the different tabs
-        ui <- navbarPage("Catch",
-                         tabPanel('Biomass',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FISHB', 'Fishery :', as.character(fsh$Code)),
-                                                 selectInput('is.CB', label = strong("Data type"), c('Catch', 'Discard')),
-                                                 checkboxInput('rem.cb', label = strong("Remove Values"), value = FALSE),
-                                                 numericInput("lag.cb", "Observations:", 1, min = 1, max = 100),
-                                                 checkboxInput('b.year', label = strong("By year"), value = FALSE),
-                                                 downloadButton("DL_Biomass", "Download")
+        ui <- shiny::navbarPage("Catch",
+                         shiny::tabPanel('Biomass',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FISHB', 'Fishery :', as.character(fsh$Code)),
+                                                 shiny::selectInput('is.CB', label = shiny::strong("Data type"), c('Catch', 'Discard')),
+                                                 shiny::checkboxInput('rem.cb', label = shiny::strong("Remove Values"), value = FALSE),
+                                                 shiny::numericInput("lag.cb", "Observations:", 1, min = 1, max = 100),
+                                                 shiny::checkboxInput('b.year', label = shiny::strong("By year"), value = FALSE),
+                                                 shiny::downloadButton("DL_Biomass", "Download")
                                                  )),
-                                      column(10,
-                                             plotOutput('plotB', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plotB', width = "100%", height = "800px")
                                              ))),
-                         tabPanel('Numbers',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FG', 'Functional Group :', as.character(grp$Code)),
-                                                 selectInput('is.catch', label = strong("Data type"), c('Catch', 'Discard')),
-                                                 checkboxInput('rem.ab', label = strong("Remove Values"), value = FALSE),
-                                                 numericInput("lag.ab", "Observations:", 1, min = 1, max = 100),
-                                                 checkboxInput('gen', label = strong("limit-axis"), value = TRUE),
-                                                 downloadButton("DL_Abun", "Download")
+                         shiny::tabPanel('Numbers',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FG', 'Functional Group :', as.character(grp$Code)),
+                                                 shiny::selectInput('is.catch', label = shiny::strong("Data type"), c('Catch', 'Discard')),
+                                                 shiny::checkboxInput('rem.ab', label = shiny::strong("Remove Values"), value = FALSE),
+                                                 shiny::numericInput("lag.ab", "Observations:", 1, min = 1, max = 100),
+                                                 shiny::checkboxInput('gen', label = shiny::strong("limit-axis"), value = TRUE),
+                                                 shiny::downloadButton("DL_Abun", "Download")
                                              )),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "800px")
                                              ))),
-                         tabPanel('Compare',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FISHC', 'Fishery :', as.character(fsh$Code)),
-                                                 selectInput('is.CC', label = strong("Data type"), c('Catch', 'Discard')),
-                                                 checkboxInput('rem.CC', label = strong("Remove Values"), value = FALSE),
-                                                 numericInput("lag.CC", "Observations:", 1, min = 1, max = 100),
-                                                 downloadButton("DL.cp.dat", "Download")
+                         shiny::tabPanel('Compare',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FISHC', 'Fishery :', as.character(fsh$Code)),
+                                                 shiny::selectInput('is.CC', label = shiny::strong("Data type"), c('Catch', 'Discard')),
+                                                 shiny::checkboxInput('rem.CC', label = shiny::strong("Remove Values"), value = FALSE),
+                                                 shiny::numericInput("lag.CC", "Observations:", 1, min = 1, max = 100),
+                                                 shiny::downloadButton("DL.cp.dat", "Download")
                                              )),
-                                      column(10,
-                                             plotOutput('plotC', width = "100%", height = "800px"),
-                                             p(strong("\nModel skill assessment (quantitative metrics)")),
+                                      shiny::column(10,
+                                             shiny::plotOutput('plotC', width = "100%", height = "800px"),
+                                             shiny::p(shiny::strong("\nModel skill assessment (quantitative metrics)")),
                                              DT::dataTableOutput('TabStat'),
-                                             downloadButton("DL.cp.stat", "Download")
+                                             shiny::downloadButton("DL.cp.stat", "Download")
                                              ))),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         ## Link the input for the different tabs with your original data
         ## Create the plots
         function(input, output, session){
-            num <- reactive({
+            num <- shiny::reactive({
                 num <- read.var(input$FG, nc.data, input$is.catch, grp)
                 if(input$rem.ab){
                     rep <- rep(1, length(num[[1]]))
@@ -173,7 +174,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 }
                 num
             })
-            bio <- reactive({
+            bio <- shiny::reactive({
                 cat.obs <- paste0(grp$Code, '_', input$is.CB, '_FC', which(fsh$Code == input$FISHB))
                 cat.obs <- which(cat.obs %in% nam.var)
                 arry    <- array(NA, dim = c(length(Time), length(cat.obs)))
@@ -194,7 +195,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 arry
             })
             ## External files
-            ext <- reactive({
+            ext <- shiny::reactive({
                 cat.obs <- paste0(grp$Code, '_', input$is.CC, '_FC', which(fsh$Code == input$FISHC))
                 cat.obs <- which(cat.obs %in% nam.var)
                 C.arry  <- array(NA, dim = c(length(Time), length(cat.obs)))
@@ -228,28 +229,28 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 ext
             })
             ## exit
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            output$plot1 <- renderPlot({
+            output$plot1 <- shiny::renderPlot({
                 rp           <- length(num())
                 ylm          <- NULL
                 if(input$gen) ylm <- range(sapply(num(), range, na.rm = TRUE))
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
+                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(num()[[i]], Time, ylm, coh = i, col.bi)
                 }
                 mtext("Time (days)", side = 1, outer = TRUE, cex = 2)
                 mtext("Numbers", side = 2, outer = TRUE, line = 2, cex = 2)
             })
-            output$plotB <- renderPlot({
+            output$plotB <- shiny::renderPlot({
                 rp       <- ncol(bio())
                 col.cur  <- col.bi[2]
                 ylm      <- NULL
                 if(input$is.CB == 'Discards'){
                     col.cur <- col.bi[1]
                 }
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
+                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(bio()[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(bio())[i], by.year = input$b.year)
                 }
@@ -257,10 +258,10 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                 mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
 
             })
-            output$plotC <- renderPlot({
+            output$plotC <- shiny::renderPlot({
                 rp       <- ncol(ext()$A.catch)
                 col.cur  <- col.bi[2]
-                par(mfrow = c(t(n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
+                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
                 for( i in 1 : rp){
                     plot.catch(ext()$A.catch[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(ext()$A.catch)[i], by.year = TRUE, external = ext()$external.c)
                 }
@@ -269,7 +270,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
             })
             output$TabStat <- DT::renderDataTable(ext()$Stats)
             ## Save data
-            output$DL_Biomass <- downloadHandler(
+            output$DL_Biomass <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -280,7 +281,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(Date = Tim, bio()), file, row.names = FALSE)
                 }
             )
-            output$DL_Abun <- downloadHandler(
+            output$DL_Abun <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -290,7 +291,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(Date = Time, out.abu), file, row.names = FALSE)
                 }
             )
-             output$DL.cp.stat <- downloadHandler(
+             output$DL.cp.stat <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -298,7 +299,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     write.csv(data.frame(ext()$Stats), file, row.names = FALSE)
                 }
             )
-            output$DL.cp.dat <- downloadHandler(
+            output$DL.cp.dat <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -312,7 +313,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                         out.int[c((nrow(out.int) + 1) : (nrow(out.int) + (diff *  - 1))), ] <- NA
                     }
                     out.f           <- data.frame(out.ext, out.int)
-                    colnames(out.f) <- c(paste0('Observed-', colnames(out.ext)), paste0('Simulated-', colnames(out.int)))
+                    colnames(out.f) <- c(paste0('Shiny::Observed-', colnames(out.ext)), paste0('Simulated-', colnames(out.int)))
                     write.csv(out.f, file, row.names = FALSE)
                 }
             )
@@ -388,7 +389,7 @@ read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
 ##' @return plot of the catch
 ##' @author Demiurgo
 plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL, by.year = FALSE, external = NULL, ...){
-    par(mar = c(1, 4, 3, 1) + 0.1)
+    graphics::par(mar = c(1, 4, 3, 1) + 0.1)
     if(is.null(ylm)) ylm <- range(ctch, na.rm = TRUE)
     if(!is.null(external)){
         plp <- which(colnames(external) %in% bio.n)
@@ -426,7 +427,7 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 }
 
 ##' @title Skill assessment of the model
-##' @param obs Observed values
+##' @param obs Shiny::Observed values
 ##' @param mod modeled values
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo

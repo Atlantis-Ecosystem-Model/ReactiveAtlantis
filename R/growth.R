@@ -49,7 +49,7 @@
 ##' @param out.nc.file Character string with the path to the netcdf file to
 ##'     read in. This netcdf file is a generic output from an Atlantis run and
 ##'     usually starts with output and ends in \emph{.nc}.
-##' @return  A reactive HTML with graphical output by functional group, for layer and box
+##' @return  A shiny::reactive shiny::HTML with graphical output by functional group, for layer and box
 ##'     of the following variables:
 ##' \itemize{
 ##'   \item \bold{Growth}:  This variable is the  Primary producer growth (\eqn{G_{pp}}) which is
@@ -70,6 +70,7 @@
 ##'     Atlantis output and the value of eddy scale (\eqn{eddy_{scale}}) is read from
 ##'     the Atlantis configuration file.
 ##'   }
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
@@ -97,7 +98,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     color    <- RColorBrewer::brewer.pal(9, "BrBG")[2 : 9]
     ## reading information
     nc.ini    <- ncdf4::nc_open(ini.nc.file)
-    group.csv <- read.csv(grp.file)
+    group.csv <- utils::read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     is.off    <- which(group.csv$isturnedon == 0)
     nc.out    <- ncdf4::nc_open(out.nc.file)
@@ -151,7 +152,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     nlayers  <- ncdf4::ncvar_get(nc.out, 'numlayers')[, 1]
     IRR      <- ncdf4::ncvar_get(nc.out, 'Light')
     l.space  <- l.light <- l.nut <- biom<- list()
-    color    <- colorRampPalette(color)(max(nlayers, na.rm = TRUE))
+    color    <- grDevices::colorRampPalette(color)(max(nlayers, na.rm = TRUE))
     ## type of sediments
     for(fg in 1 : length(nam.fg)){
         ## nutrients
@@ -197,76 +198,76 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
     numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
     n.box              <- dim(pp.list[['Light']])[2]
-    shinyApp(
-        ui <- navbarPage('Growth primary producers',
-                         tabPanel('Growth  - Limiting factors',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp', 'Functional Group', as.character(cod.fg)),
-                                                 selectInput('coh', 'Age-Class', seq(1, max(coh.fg))),
-                                                 selectInput('box', 'Box', seq(0, (length(nlayers) - 1))),
-                                                 checkboxInput("log", "Logarithmic scale", FALSE)
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Growth primary producers',
+                         shiny::tabPanel('Growth  - Limiting factors',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp', 'Functional Group', as.character(cod.fg)),
+                                                 shiny::selectInput('coh', 'Age-Class', seq(1, max(coh.fg))),
+                                                 shiny::selectInput('box', 'Box', seq(0, (length(nlayers) - 1))),
+                                                 shiny::checkboxInput("log", "Logarithmic scale", FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "700px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "700px")
                                              )
                                   )
                                   ),
-                         tabPanel('Growth curves Zoo and PPs',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
-                                                 selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
-                                                 selectInput('s.box', 'Box', 0 : (n.box - 1)),
-                                                 checkboxInput('l.prop', 'Layer-Proportion', TRUE),
-                                                 checkboxInput('b.prop', 'Box-Proportion', FALSE),
-                                                 checkboxInput('log.v', 'Logarithm', FALSE)
+                         shiny::tabPanel('Growth curves Zoo and PPs',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
+                                                 shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
+                                                 shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
+                                                 shiny::checkboxInput('log.v', 'Logarithm', FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot3', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot3', width = "100%", height = "800px")
                                              )
                                   )
                                   ),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session){
-            p.fg <- reactive({
+            p.fg <- shiny::reactive({
                 which(cod.fg %in% input$sp)})
-            biom <- reactive({
+            biom <- shiny::reactive({
                  if(coh.fg[p.fg()] == 1){
                     biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
                 } else {
                     biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
                 }
             })
-            lay  <- reactive({
+            lay  <- shiny::reactive({
                 if(is.na(l.space[[p.fg()]])){
                     ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1)
                 } else {
                     (((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1))[1]
                 }
             })
-            name.lay <- reactive({
+            name.lay <- shiny::reactive({
                 if(length(lay()) == 1){
                     c('Sediment')
                 } else {
                     c(paste0('Layer_', seq(from = 0, to = (length(lay()) - 2))), 'Sediment')
                 }
             })
-            lim.nut   <- reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
-            lim.light <- reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
-            lim.eddy  <- reactive({l.eddy[as.numeric(input$box) + 1, ]})
-            step1     <- reactive({mum[p.fg(), as.numeric(input$coh)] * lim.nut() * lim.light()})
-            step2     <- reactive({
+            lim.nut   <- shiny::reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
+            lim.light <- shiny::reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
+            lim.eddy  <- shiny::reactive({l.eddy[as.numeric(input$box) + 1, ]})
+            step1     <- shiny::reactive({mum[p.fg(), as.numeric(input$coh)] * lim.nut() * lim.light()})
+            step2     <- shiny::reactive({
                 if(!is.na(l.space[[p.fg()]])){
                     biom.tm <- biom() / l.space[[p.fg()]]
                     if(any(is.finite(biom.tm))) biom.tm[which(is.finite(biom.tm))] <- 0
@@ -277,7 +278,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                     apply(temp, 1, FUN = function(x) x * lim.eddy())
                 }
             })
-            growth.fin    <- reactive({
+            growth.fin    <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     if(all(step2() == 0)){
                         step2()
@@ -287,19 +288,19 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }else{
                     step2()}
             })
-            lim.nut.fin   <- reactive({
+            lim.nut.fin   <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.nut())
                 } else {
                     lim.nut()}
             })
-            lim.light.fin <- reactive({
+            lim.light.fin <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.light())
                 } else {
                     lim.light()}
             })
-            lim.eddy.fin  <- reactive({
+            lim.eddy.fin  <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.eddy())
                 } else {
@@ -307,7 +308,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             })
 
             ## Out Primary producers List
-            o.pp <- reactive({
+            o.pp <- shiny::reactive({
                 box         <- as.numeric(input$s.box) + 1
                 ly.box      <- numlay[box]
                 out.pp.list <- list()
@@ -346,23 +347,23 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
             })
 
             ## STOP
-            observeEvent(input$exitButton, {stopApp()})
-            output$plot3 <- renderPlot({
+            shiny::observeEvent(input$exitButton, {shiny::stopApp()})
+            output$plot3 <- shiny::renderPlot({
                 ## colors
                 colo  <- c(rep('grey', (length(pp.list) - 2)), color[c(1, 4)])
-                ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE, size = 1.5) +
-                    facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
+                ggplot2::ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE, size = 1.5) +
+                    ggplot2::facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
                     scale_colour_manual(values = colo)
             })
-            output$plot1 <- renderPlot({
-                par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
+            output$plot1 <- shiny::renderPlot({
+                graphics::par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
                 ran     <- range(unlist(growth.fin()), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
                 axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
@@ -373,7 +374,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## light
                 ran     <- range(lim.light.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.light.fin()))){
                     plt.light <- matrix(lim.light.fin(), nrow = 1)
                 } else {
@@ -387,10 +388,10 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                         lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
-                par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
+                graphics::par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
                 ## Nutrients
                 ran     <- range(lim.nut.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.nut.fin()))){
                     plt.nut <- matrix(lim.nut.fin(), nrow = 1)
                 } else {
@@ -406,7 +407,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)

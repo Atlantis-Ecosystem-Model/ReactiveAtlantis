@@ -38,6 +38,7 @@
 ##' proportion by layer, or their logarithmic value.
 ##'     \item \bold{Help}: Shows information about the inputs, parameter values and
 ##' output. It also, provides an overview of the different options for the user.}
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
@@ -90,8 +91,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ## Reading files
     if(!quiet) cat('\n Reading files')
     nc.ini    <- ncdf4::nc_open(ini.nc.file)
-    yoy       <- read.csv(yoy.file, sep = ' ')
-    group.csv <- read.csv(grp.file)
+    yoy       <- utils::read.csv(yoy.file, sep = ' ')
+    group.csv <- utils::read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     ## remove here those that are turned off!!
     nc.out    <- ncdf4::nc_open(out.nc.file)
@@ -294,67 +295,67 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n # -     Step 3    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n  -  - Plotting -  -  \n\n')
-    shinyApp(
-        ui <- navbarPage('Atlantis Recruitment Tool',
-                         tabPanel('Recruits and YOY',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp', 'Functional Group', as.character(cod.fg)),
-                                                 mainPanel(strong("Rec model:"), textOutput("Rec.mod")),
-                                                 mainPanel(strong("Alpha: "), verbatimTextOutput("Alpha.mod", placeholder = TRUE)),
-                                                 mainPanel(strong("Beta: "), verbatimTextOutput("Beta.mod", placeholder = TRUE)),
-                                                 mainPanel("Initial YOY: ", textOutput("Ini.YOY")),
-                                                 br(),
-                                                 numericInput("new.alpha", label = "New Alpha", value = 0),
-                                                 br(),
-                                                 numericInput("new.beta", label = "New Beta", value = 0),
-                                                 mainPanel("Recomened Alpha: ", textOutput("ratio"))
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Atlantis Recruitment Tool',
+                         shiny::tabPanel('Recruits and YOY',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp', 'Functional Group', as.character(cod.fg)),
+                                                 shiny::mainPanel(shiny::strong("Rec model:"), shiny::textOutput("Rec.mod")),
+                                                 shiny::mainPanel(shiny::strong("Alpha: "), shiny::verbatimTextOutput("Alpha.mod", placeholder = TRUE)),
+                                                 shiny::mainPanel(shiny::strong("Beta: "), shiny::verbatimTextOutput("Beta.mod", placeholder = TRUE)),
+                                                 shiny::mainPanel("Initial YOY: ", shiny::textOutput("Ini.YOY")),
+                                                 shiny::br(),
+                                                 shiny::numericInput("new.alpha", label = "New Alpha", value = 0),
+                                                 shiny::br(),
+                                                 shiny::numericInput("new.beta", label = "New Beta", value = 0),
+                                                 shiny::mainPanel("Recomened Alpha: ", shiny::textOutput("ratio"))
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "400px"),
-                                             plotOutput('plot2', width = "100%", height = "400px"),
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "400px"),
+                                             shiny::plotOutput('plot2', width = "100%", height = "400px"),
                                              DT::dataTableOutput('table')
                                              )
                                   )
                                   ),
-                         tabPanel('Growth Zoo and PPs',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
-                                                 selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
-                                                 selectInput('s.box', 'Box', 0 : (n.box - 1)),
-                                                 checkboxInput('l.prop', 'Layer-Proportion', TRUE),
-                                                 checkboxInput('b.prop', 'Box-Proportion', FALSE),
-                                                 checkboxInput('log.v', 'Logarithm', FALSE)
+                         shiny::tabPanel('Growth Zoo and PPs',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
+                                                 shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
+                                                 shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
+                                                 shiny::checkboxInput('log.v', 'Logarithm', FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot3', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot3', width = "100%", height = "800px")
                                              )
                                   )
                                   ),
                          ## -  -  Help
-                         tabPanel("Help",
-                                  fluidPage(HTML(txtHelp)
+                         shiny::tabPanel("Help",
+                                  shiny::fluidPage(shiny::HTML(txtHelp)
                                             )
                                   ),
                          ## -  - Exit
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session) {
-            time.stp <- reactive({
+            time.stp <- shiny::reactive({
                 time.stp <- seq(from = 0, by = 365, to = tail(time, 1))  + rec$Time.sp[rec$FG == input$sp]
                 time.stp <- time.stp[time.stp < tail(time, 1)]
             })
             ## recruitment model
-            output$Rec.mod <- renderText({
+            output$Rec.mod <- shiny::renderText({
                 mod   <- rec$Value[rec$FG == input$sp]
                 model <- ifelse(mod == 1, 'Constant recruitment',
                          ifelse(mod == 2, 'Determined by chlA',
@@ -364,7 +365,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                          ifelse(mod == 12, 'Fixed offspring', 'Other'))))))
             })
             ## Original Recruitment
-            rec.bio <- reactive({
+            rec.bio <- shiny::reactive({
                 mod      <- rec$Value[rec$FG == input$sp]
                 if(mod != 10){
                     spawn.fg <- spw[input$sp, ]
@@ -414,7 +415,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 df.end
             })
             ## Out Primary producers List
-            o.pp <- reactive({
+            o.pp <- shiny::reactive({
                 box         <- as.numeric(input$s.box) + 1
                 ly.box      <- numlay[box]
                 out.pp.list <- list()
@@ -453,22 +454,22 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot2 ::ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
             })
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            output$Alpha.mod <- renderText({
+            output$Alpha.mod <- shiny::renderText({
                 Alpha   <- rec$Alpha[rec$FG == input$sp]
             })
-            output$Beta.mod <- renderText({
+            output$Beta.mod <- shiny::renderText({
                 Beta   <- rec$Beta[rec$FG == input$sp]
             })
-            output$Ini.YOY <- renderText({
+            output$Ini.YOY <- shiny::renderText({
                 sp.plt   <- paste0(input$sp, '.0')
                 Ini.YOY  <- yoy[1, which(names(yoy) == sp.plt)]
             })
-            output$ratio <- renderText({
+            output$ratio <- shiny::renderText({
                 if(rec.bio()$Model[1] %in% c(3, 10, 19)) {
                     ratio <- rec.bio()$Ratio[1] * as.numeric(rec$Alpha[rec$FG == input$sp])
                 } else {
@@ -476,8 +477,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 }
                 ratio
             })
-            output$plot1 <- renderPlot({
-                par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
+            output$plot1 <- shiny::renderPlot({
+                graphics::par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$BYOY , xlab = 'Time (days)', ylab = ifelse(rec.bio()$Model[1] %in% c(1, 12), 'Numbers', 'Biomass [Tonnes]'), las = 1, bty = 'n', pch = 20,type = 'b',
                      col = 'royalblue', ylim = c(0, max(rec.bio()$Rec, rec.bio()$BYOY, rec.bio()$N.Rec)),
                      xlim = range(c(rec.bio()$TYOY, time.stp())))
@@ -487,19 +488,19 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 legend("topright", inset = c(-0.1, 0), legend = c('Atlantis YOY', 'Larvaes', 'New Larvaes', 'New YOY'),
                        lty=c(1, 1, 1, 1), col=c('royalblue', 'red4', 'green4', 'yellowgreen'), pch = c(20, 20, 20, 20), bty = 'n', lwd = 2)
             })
-            output$plot2 <- renderPlot({
-                par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
+            output$plot2 <- shiny::renderPlot({
+                graphics::par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$PrpYOY, ylim = c(0, ifelse(max(rec.bio()$PrpYOY) < 1, 1, max(rec.bio()$PrpYOY))), bty = 'n', type = 'b',
                      lty = 2, pch = 19, col = 'olivedrab4', ylab = 'proportion from initial yoy (t)', xlab = 'Time (days)', las = 1,
                      xlim = range(c(rec.bio()$TYOY, time.stp())))
                 lines(time.stp(), rec.bio()$Prp.st, type = 'b', pch = 19, lty = 2, col = 'yellow3')
                 legend('topright', inset=c(-0.1, 0), legend = c('YOY prop', 'New prop'), lty = 2, col=c('olivedrab4', 'yellow3' ), pch = c(19, 19), bty = 'n', lwd = 2)
             })
-            output$plot3 <- renderPlot({
+            output$plot3 <- shiny::renderPlot({
                 ## colors
                 colo  <- c(rep('grey', (length(pp.list) - 2)), colors[c(1, 2)])
                 ggplot2::ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE) +
-                    facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
+                    ggplot2::facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
                     scale_colour_manual(values = colo)
             })
             output$table <- DT::renderDataTable({

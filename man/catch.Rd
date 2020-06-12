@@ -16,7 +16,7 @@ file from Atlantis. Usually this file has the name of \emph{[Your_Model]CATCH.nc
 where [Your_Model] is the name of your Atlantis model}
 
 \item{ext.catch.f}{(Default = NULL) Character string with the path to the
-external file with the observed catches and discards by year. This helps to
+external file with the shiny::observed catches and discards by year. This helps to
 calibrate the harvest section of Atlantis and it is required to perform the
 skill assessment of the model.}
 }
@@ -30,13 +30,13 @@ This function provides 3 different sets of analyzes of the catches in the follow
 \item \bold{Numbers}:  This function allows the user to analyze the change by age and
     through time of the variable catch and discards for the selected functional group
 \item \bold{Compare}: This function allows for several skill assessment of the model
-    (based on the analysis of the simulated and observed time series of catch and
+    (based on the analysis of the simulated and shiny::observed time series of catch and
     bycatch) to be performed. The analysis is based on the approach described by
     Olsen \emph{et al.} (2016) and Stow \emph{et al.} 2009, which is composed of the following
     quantitative metrics:
 \itemize{
 \item \bold{Correlation coefficient (\eqn{r})}: measures the tendency of the
-    predicted \eqn{P} and observed \eqn{O} values to vary together. The values of
+    predicted \eqn{P} and shiny::observed \eqn{O} values to vary together. The values of
     correlation can range from -1 to 1, with negative values of correlation for
     time series that vary inversely.
 \deqn{r = \frac{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})(P_{i} - \bar{P})}{\sqrt{\displaystyle\sum_{i=1}^{n} (O_{i} - \bar{O})^2 \displaystyle\sum_{i=1}^{n} (P_{i} - \bar{P})^2}}}
@@ -52,7 +52,7 @@ This function provides 3 different sets of analyzes of the catches in the follow
 \deqn{RMSE = \sqrt{\frac{\displaystyle\sum_{i=1}^{n} (P_{i} - O_{i})}{n}}}
 \item \bold{Reliability index \eqn{RI}}: This quantifies the average factor by
     which the predicted values differ from observations. If the model predictions
-    do not differ too much from the observed then the value of \eqn{RI} should be close to 1. But if the
+    do not differ too much from the shiny::observed then the value of \eqn{RI} should be close to 1. But if the
     value of \eqn{RI} is 2 it means that a model predicts the observations
     within a multiplicative factor of two, on average.
 \deqn{RI = exp\sqrt{\frac{1}{n} \displaystyle\sum_{i=1}^{n} (log\frac{O_{i}}{P_{i}})^2}}

@@ -20,7 +20,7 @@
 ##'     \bold{\emph{biomass by age}}. This is a non-standard Atlantis output file,
 ##'     make sure to turn on the flag \bold{\emph{"flag_age_output"}} in the
 ##'     \emph{run.prm} file if you want Atlantis to write this this output file.
-##' @return The output of this function is a reactive html, useful for dynamically evaluating and visualizing
+##' @return The output of this function is a shiny::reactive html, useful for dynamically evaluating and visualizing
 ##'     predator-prey relationships from an Atlantis output. The outputs of the predation analysis
 ##'     is divided in three parts:
 ##'    \itemize{
@@ -62,6 +62,7 @@
 ##'     selected time step.
 ##'      }
 ##'}
+##' @import stats utils grDevices ggplot2 graphics
 ##' @author Demiurgo
 ##' @export
 predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
@@ -102,7 +103,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     ## Reading Data
     cur.dat   <- data.frame(data.table::fread(biom.file, header = TRUE, sep = ' ', showProgress = FALSE))
     diet.data <- data.frame(data.table::fread(diet.file, header=TRUE, sep = ' ', showProgress = FALSE))
-    grp       <- read.csv(groups.csv)
+    grp       <- utils::read.csv(groups.csv)
     grp.prd   <- grp[grp$IsTurnedOn == 1 & grp$NumCohorts > 1, ]$Code
     grp       <- grp[grp$IsTurnedOn == 1, ]$Code
     sub.cur   <- cbind(cur.dat[c('Time', as.character(grp))])
@@ -134,87 +135,87 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
 
     ## Colors
     g.col    <- c(RColorBrewer::brewer.pal(9, "BuPu") [2 : 9], RColorBrewer::brewer.pal(9, "BrBG")[1 : 3],  RColorBrewer::brewer.pal(9, "OrRd") [2 : 9])
-    g.col    <- data.frame(grp, col = colorRampPalette(g.col)(length(grp)))
+    g.col    <- data.frame(grp, col = grDevices::colorRampPalette(g.col)(length(grp)))
 
     ## Start the Shiny application
-    shinyApp(
+    shiny::shinyApp(
         ## Create the different tabs
-        ui <- navbarPage("Predation",
-                         tabPanel('Biomass',
-                                  tabsetPanel(
-                                      tabPanel('Total Biomass',
-                                               plotOutput('plot1', width = "100%", height = "1000px")
+        ui <- shiny::navbarPage("Predation",
+                         shiny::tabPanel('Biomass',
+                                  shiny::tabsetPanel(
+                                      shiny::tabPanel('Total Biomass',
+                                               shiny::plotOutput('plot1', width = "100%", height = "1000px")
                                                ),
-                                      tabPanel('Relative Biomass',
-                                               plotOutput('plot1B', width = "100%", height = "1000px")
+                                      shiny::tabPanel('Relative Biomass',
+                                               shiny::plotOutput('plot1B', width = "100%", height = "1000px")
                                                )
                                   )
                                   ),
-                         tabPanel('Predation through time',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 selectInput('FG', 'Functional Group :', as.character(grp)),
-                                                 selectInput('Stocks', 'Stocks :', stocks),
-                                                 numericInput("Thr", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001),
-                                                 checkboxInput(inputId = "scl", label = strong("scaled to 1"), value = TRUE),
-                                                 checkboxInput(inputId = "merT", label = strong("Melt time step"), value = FALSE)
+                         shiny::tabPanel('Predation through time',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::selectInput('FG', 'Functional Group :', as.character(grp)),
+                                                 shiny::selectInput('Stocks', 'Stocks :', stocks),
+                                                 shiny::numericInput("Thr", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001),
+                                                 shiny::checkboxInput(inputId = "scl", label = shiny::strong("scaled to 1"), value = TRUE),
+                                                 shiny::checkboxInput(inputId = "merT", label = shiny::strong("Melt time step"), value = FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot2', width = "100%", height = "400px"),
-                                             plotOutput('plot3', width = "100%", height = "400px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot2', width = "100%", height = "400px"),
+                                             shiny::plotOutput('plot3', width = "100%", height = "400px")
                                              )
                                   )
                                   ),
-                         tabPanel('Predation by Age group',
-                                  tabsetPanel(
-                                      tabPanel('Total Biomass',
-                                               fluidRow(
-                                                   column(2,
-                                                          wellPanel(
-                                                              selectInput('FG2', 'Functional Group :', as.character(grp)),
-                                                              sliderInput("Time", "Simulation Time :", min = min(time),  max = max(time), value = min(time), step = diff(time)[1]),
-                                                              selectInput('Stocks2', 'Stocks :', stocks),
-                                                              numericInput("Thr2", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001)
+                         shiny::tabPanel('Predation by Age group',
+                                  shiny::tabsetPanel(
+                                      shiny::tabPanel('Total Biomass',
+                                               shiny::fluidRow(
+                                                   shiny::column(2,
+                                                          shiny::wellPanel(
+                                                              shiny::selectInput('FG2', 'Functional Group :', as.character(grp)),
+                                                              shiny::sliderInput("Time", "Simulation Time :", min = min(time),  max = max(time), value = min(time), step = diff(time)[1]),
+                                                              shiny::selectInput('Stocks2', 'Stocks :', stocks),
+                                                              shiny::numericInput("Thr2", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001)
                                                           )
                                                           ),
-                                                   column(10,
-                                                          plotOutput('plot4A', width = "100%", height = "300px"),
-                                                          plotOutput('plot4B', width = "100%", height = "500px")
+                                                   shiny::column(10,
+                                                          shiny::plotOutput('plot4A', width = "100%", height = "300px"),
+                                                          shiny::plotOutput('plot4B', width = "100%", height = "500px")
                                                           )
                                                )
                                                ),
-                                      tabPanel('Biomass by Age',
-                                               fluidRow(
-                                                   column(2,
-                                                          wellPanel(
-                                                              selectInput('FG3', 'Functional Group :', as.character(grp.prd)),
-                                                              sliderInput("Time3", "Simulation Time :", min = min(time),  max = max(time), value = min(time), step = diff(time)[1]),
-                                                              selectInput('Stock3', 'Stocks :', stocks),
-                                                              numericInput("Thr3", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001)
+                                      shiny::tabPanel('Biomass by Age',
+                                               shiny::fluidRow(
+                                                   shiny::column(2,
+                                                          shiny::wellPanel(
+                                                              shiny::selectInput('FG3', 'Functional Group :', as.character(grp.prd)),
+                                                              shiny::sliderInput("Time3", "Simulation Time :", min = min(time),  max = max(time), value = min(time), step = diff(time)[1]),
+                                                              shiny::selectInput('Stock3', 'Stocks :', stocks),
+                                                              shiny::numericInput("Thr3", "Threshold :", min = 1e-16,  max = 1, value = 1e-3, step = 0.001)
                                                           )
                                                           ),
-                                                   column(10,
-                                                          plotOutput('plot5', width = "100%", height = "400px"),
-                                                          plotOutput('plot6', width = "100%", height = "400px")
+                                                   shiny::column(10,
+                                                          shiny::plotOutput('plot5', width = "100%", height = "400px"),
+                                                          shiny::plotOutput('plot6', width = "100%", height = "400px")
                                                           )
                                                )
                                                )
                                   )),
-                         tabPanel("Help",
-                                  fluidPage(HTML(txtHelp)
+                         shiny::tabPanel("Help",
+                                  shiny::fluidPage(shiny::HTML(txtHelp)
                                             )
                                   ),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         ## Link the input for the different tabs with your original data
         ## Create the plots
         function(input, output, session){
-            age.diet <- reactive({
+            age.diet <- shiny::reactive({
                 age.diet <- diet.data[diet.data$Predator ==  input$FG2 & diet.data$Stock == as.numeric(input$Stocks2) & diet.data$Time == as.numeric(input$Time), ]
                 age.diet <- age.diet[,  -which(names(age.diet) %in% c('Predator','Time', 'Stock'))]
                 age.diet <- age.diet[, (colSums(age.diet, na.rm = TRUE) > input$Thr2)]
@@ -222,12 +223,12 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 age.diet[age.diet$value > input$Thr2, ]
             })
 
-            age.diet.bio <- reactive({
+            age.diet.bio <- shiny::reactive({
                 new.bio[new.bio$Predator == input$FG2, ]
             })
 
             if(!is.null(age.biomass)){
-                age.bio.gr <- reactive({
+                age.bio.gr <- shiny::reactive({
                     age.gr          <- age.gr.pred[, col.nam %in% c('Time', input$FG3)]
                     age.gr          <- age.gr[age.gr$Time == input$Time3, ]
                     age.gr          <- reshape::melt(age.gr, id.vars = c("Time"))
@@ -247,13 +248,13 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
             }
 
             if(!is.null(age.biomass)){
-                prey.bio <- reactive({
+                prey.bio <- shiny::reactive({
                     prey <- as.character(unique(age.bio.gr()$variable))
                     prey <- biom.tot[biom.tot$variable %in% prey, ]
                 })
             }
 
-            predator <- reactive({
+            predator <- shiny::reactive({
                 predator        <- diet.data[diet.data$Predator ==  input$FG & diet.data$Stock == as.numeric(input$Stocks), ]
                 predator        <- predator[,  -which(names(predator) %in% c('Predator', 'Cohort', 'Stock'))]
                 predator        <- predator[, (colSums(predator, na.rm = TRUE) > input$Thr)]
@@ -265,10 +266,10 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 predator        <- as.data.frame(predator)
 
             })
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            prey <- reactive({
+            prey <- shiny::reactive({
                 prey          <- diet.data[, names(diet.data) %in% c('Time', 'Predator', input$FG)]
                 prey          <- prey[prey[, input$FG] > 0, ] ## removing zero values, faster now
                 prey          <- dplyr::left_join(prey, new.bio, by = c('Predator', 'Time')) ## Biomass of the predator, so we have an idea of the total pressure
@@ -277,67 +278,67 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 if(input$merT) prey$Time <- prey$Time / diff(unique(prey$Time))[1]
                 prey          <- prey[prey$eff.pred > trh.max, ]
             })
-            output$plot1 <- renderPlot({
+            output$plot1 <- shiny::renderPlot({
                 mycol  <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-                mycol  <- colorRampPalette(mycol)
-                plot   <- ggplot2::ggplot(biom.tot, aes(x = Time, y = value)) +
-                    geom_line(colour = 'darkorange3') + facet_wrap(~ variable, ncol = 4,  scale = 'free_y') + theme_bw()+
+                mycol  <- grDevices::colorRampPalette(mycol)
+                plot   <- ggplot2::ggplot(data = biom.tot, aes(x = .data$Time, y = .data$value)) +
+                    geom_line(colour = 'darkorange3') + ggplot2::facet_wrap(~ .data$variable, ncol = 4,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = mycol(2))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
             })
-            output$plot1B <- renderPlot({
-                plot <- ggplot2::ggplot(rel.bio, aes(x = Time, y = value)) +
-                    geom_line(colour = 'darkorange3', na.rm = TRUE) + facet_wrap( ~ variable, ncol = 4) +
+            output$plot1B <- shiny::renderPlot({
+                plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$value)) +
+                    geom_line(colour = 'darkorange3', na.rm = TRUE) + ggplot2::facet_wrap( ~ .data$variable, ncol = 4) +
                     theme_bw() + ylim(0, 2) +
                     annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
                 plot
             })
-            output$plot2 <- renderPlot({
+            output$plot2 <- shiny::renderPlot({
                 ## Colors
                 mycol      <- c(RColorBrewer::brewer.pal(9, "BrBG")[1 : 3],  RColorBrewer::brewer.pal(9, "OrRd") [2 : 9])
-                colorpp    <- colorRampPalette(mycol)(length(unique(predator()$variable)))
-                ggplot2::ggplot(predator(), aes(x = Time, y = consum, fill = variable, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp, name = 'Prey') +
+                colorpp    <- grDevices::colorRampPalette(mycol)(length(unique(predator()$variable)))
+                ggplot2::ggplot(data = predator(), aes(x = .data$Time, y = .data$consum, fill = .data$variable, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp, name = 'Prey') +
                     labs(list(title = paste('Predator -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]'), colour = 'Prey'))
             })
-            output$plot3 <- renderPlot({
-                validate(
-                    need(length(prey()$eff.pred) != 0,  'Apparently this functional group has no predators.')
+            output$plot3 <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need(length(prey()$eff.pred) != 0,  'Apparently this functional group has no predators.')
                 )
                 mycol      <- c(RColorBrewer::brewer.pal(9, "YlGnBu")[1 : 3], RColorBrewer::brewer.pal(9, "BuPu") [2 : 9])
-                colorpp    <- colorRampPalette(mycol)(length(unique(prey()$Predator)))
-                ggplot2::ggplot(prey(), aes(x = Time, y = eff.pred, fill = Predator, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp) +
+                colorpp    <- grDevices::colorRampPalette(mycol)(length(unique(prey()$Predator)))
+                ggplot2::ggplot(data = prey(), aes(x = .data$Time, y = .data$eff.pred, fill = .data$Predator, width = 1)) + geom_bar(stat = "identity", position = ifelse(input$scl, 'fill', 'stack'), na.rm = TRUE) + scale_fill_manual(values = colorpp) +
                     labs(list(title = paste('Prey -', input$FG), x = 'Time step', y = ifelse(input$scl, 'Proportion', 'Biomass [tons]')))
             })
 
-            output$plot4A <- renderPlot({
+            output$plot4A <- shiny::renderPlot({
                 with(age.diet.bio(), plot(Time, Biomass, ylab = 'Biomass (tons)', xlab = 'Time step', bty = 'n', type = 'l',
                                           ylim = range(Biomass), las = 1, main = paste0('Biomass  - ', input$FG2)))
                 with(age.diet.bio(), points(Time[Time == input$Time], Biomass[Time == input$Time], pch = 19, col = 'firebrick3', cex = 1.3))
             })
-            output$plot4B <- renderPlot({
+            output$plot4B <- shiny::renderPlot({
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.diet()$variable))])
-                ggplot2::ggplot(age.diet(), aes(x = Cohort, y = value, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = color.pp) +
+                ggplot2::ggplot(data = age.diet(), aes(x = .data$Cohort, y = .data$value, fill = .data$variable, width = .75)) + geom_bar(stat = "identity", position = 'fill') + scale_fill_manual(values = color.pp) +
                     labs(list(title = paste('Predator  -', input$FG2, 'on Time step :', input$Time), x = 'AgeGroup', y = 'Proportion'))
             })
 
-            output$plot5 <- renderPlot({
-                validate(
-                    need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
+            output$plot5 <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
-                plot <- ggplot2::ggplot(prey.bio(), aes(x = Time, y = value)) +
-                    geom_line(colour = 'firebrick3') + facet_wrap(~ variable, ncol = 5,  scale = 'free_y') + theme_bw()+
+                plot <- ggplot2::ggplot(data = prey.bio(), aes(x = .data$Time, y = .data$value)) +
+                    geom_line(colour = 'firebrick3') + ggplot2::facet_wrap(~ .data$variable, ncol = 5,  scale = 'free_y') + theme_bw()+
                     scale_color_manual(values = color.pp)  + labs(list(title = paste('Prey(s) for', input$FG3, 'on Time step :', input$Time3), x = 'Time step', y = 'Biomass (tons)'))
                 plot + geom_vline(xintercept = input$Time3, linetype = "dashed",  color = 'royalblue')
             })
-            output$plot6 <- renderPlot({
-                validate(
-                    need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
+            output$plot6 <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                 )
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
-                ggplot2::ggplot(age.bio.gr(), aes(x = Cohort, y = eff.pred, fill = variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = color.pp)  +
+                ggplot2::ggplot(data = age.bio.gr(), aes(x = .data$Cohort, y = .data$eff.pred, fill = .data$variable, width = .75)) + geom_bar(stat = "identity", position = 'stack') + scale_fill_manual(values = color.pp)  +
                     labs(list(title = paste('Predator  -', input$FG3, 'on Time step :', input$Time3), x = 'AgeGroup', y = 'Effective predation (tons)')) + theme_bw()
             })
 
