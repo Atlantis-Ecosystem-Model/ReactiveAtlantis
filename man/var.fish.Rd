@@ -17,11 +17,9 @@ var.fish(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE)
 
 \item{grp}{Groups csv file (Input from Atlantis)}
 
+\item{is.C}{Bolean,  is Catch variable}
+
 \item{by.box}{Default FALSE. If the information is needed by box (TRUE) or not (FALSE)}
-
-\item{catch}{Default TRUE,  if the data needed is Catch (}
-
-\item{catch}{Default TRUE,  if the data needed is Catch (TRUE) or Discard (FALSE)}
 }
 \value{
 The information of the catch by biomass for all the FG

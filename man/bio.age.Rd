@@ -12,6 +12,10 @@ bio.age(age.grp, nc.out, ctg, mg2t, x.cn)
 \item{nc.out}{ncdf atlantis' output file}
 
 \item{ctg}{category}
+
+\item{mg2t}{Miligram to tons scalar}
+
+\item{x.cn}{Carbon to Nitrogen transformation (Value/scalar)}
 }
 \value{
 a dataframe with the biomass for all the functional groups with age classes

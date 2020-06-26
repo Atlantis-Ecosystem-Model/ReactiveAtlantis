@@ -10,6 +10,8 @@ stats(obs, mod, FG)
 \item{obs}{Shiny::Observed values}
 
 \item{mod}{modeled values}
+
+\item{FG}{Functional group}
 }
 \value{
 metrics  =  AAE; AE; MEF; RMSE; COR

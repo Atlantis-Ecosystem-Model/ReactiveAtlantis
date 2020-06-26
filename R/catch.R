@@ -68,28 +68,6 @@
 ##' @author Demiurgo
 ##' @export
 catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
-## Libraries
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('data.table', quietly = TRUE)) {
-        stop('The package data.table was not installed')
-    }
-    if (!require('RColorBrewer', quietly = TRUE)) {
-        stop('The package RColorBrewer was not installed')
-    }
     ## General setting
     mycol    <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
     mycol    <- grDevices::colorRampPalette(mycol)
@@ -327,10 +305,9 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
 ##' @param FG Functional groups
 ##' @param FISH Fishery
 ##' @param nc.data NetCDF file with the information of catch
-##' @param catch Default TRUE,  if the data needed is Catch (
 ##' @param fsh Fisheries csv file (Input from Atlantis)
 ##' @param grp Groups csv file (Input from Atlantis)
-##' @param catch Default TRUE,  if the data needed is Catch (TRUE) or Discard (FALSE)
+##' @param is.C Bolean,  is Catch variable
 ##' @param by.box Default FALSE. If the information is needed by box (TRUE) or not (FALSE)
 ##' @return The information of the catch by biomass for all the FG
 ##' @author Demiurgo
@@ -349,7 +326,7 @@ var.fish <- function(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE){
 ##' @param FG Csv with the Functional groups
 ##' @param nc.data NetCDF file with the information of catch
 ##' @param is.C Default TRUE,  if the data needed is Catch (TRUE) or Discard (FALSE)
-##' @param grp.csv Groups csv file (Input from Atlantis)
+##' @param grp Specific group to get from the csv file
 ##' @param by.box Default FALSE. If the information is needed by box (TRUE) or not (FALSE)
 ##' @return A list witht the information for all the functional groups
 ##' @author Demiurgo
@@ -429,6 +406,7 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @title Skill assessment of the model
 ##' @param obs Shiny::Observed values
 ##' @param mod modeled values
+##' @param FG Functional group
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo
 stats <- function(obs, mod, FG){

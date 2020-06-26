@@ -17,6 +17,12 @@ nitro.weight(nc.out, grp, FG, By = "Total", box.info, mg2t, x.cn,
 \item{By}{option to aggregate the time series in just one or leave the values by cohort}
 
 \item{box.info}{Internal function}
+
+\item{mg2t}{Miligrams to tons scalar}
+
+\item{x.cn}{carbon to nitrogen scalar}
+
+\item{polnum}{number by polygons}
 }
 \value{
 List witht he weight (reserve and structural), total biomass (tons) and number

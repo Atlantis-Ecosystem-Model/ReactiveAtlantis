@@ -10,6 +10,8 @@
 \arguments{
 \item{total}{Dataframe with the weight output from the nitro.weight function}
 
+\item{Time}{Time serie}
+
 \item{rn2}{True if active the plot of reserve nitrogen}
 
 \item{sn2}{True if active the plot of structural nitrogen}
@@ -23,6 +25,12 @@
 \item{limit}{True if active limiting the plot area from 0 to maximum 3}
 
 \item{right}{choose left of right for the legend of the plor}
+
+\item{colors}{Colors}
+
+\item{coh}{by cohort}
+
+\item{max.coh}{maximum number of cohorts}
 }
 \value{
 A interactive plot

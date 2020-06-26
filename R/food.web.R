@@ -53,30 +53,30 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('plotrix', quietly = TRUE)) {
-        stop('The package plotrix was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('data.table', quietly = TRUE)) {
-        stop('The package data.table was not installed')
-    }
-    if (!require('RColorBrewer', quietly = TRUE)) {
-        stop('The package RColorBrewer was not installed')
-    }
+    ## if (!require('shiny', quietly = TRUE)) {
+    ##     stop('The package shiny was not installed')
+    ## }
+    ## if (!require('ncdf4', quietly = TRUE)) {
+    ##     stop('The package ncdf4 was not installed')
+    ## }
+    ## if (!require('plotrix', quietly = TRUE)) {
+    ##     stop('The package plotrix was not installed')
+    ## }
+    ## if (!require('reshape', quietly = TRUE)) {
+    ##     stop('The package reshape was not installed')
+    ## }
+    ## if (!require('tidyverse', quietly = TRUE)) {
+    ##     stop('The package tidyverse was not installed')
+    ## }
+    ## if (!require('stringr', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
+    ## if (!require('data.table', quietly = TRUE)) {
+    ##     stop('The package data.table was not installed')
+    ## }
+    ## if (!require('RColorBrewer', quietly = TRUE)) {
+    ##     stop('The package RColorBrewer was not installed')
+    ## }
     if(!quiet) cat('  ...Done!')
     color.p <- RColorBrewer::brewer.pal(8, 'RdYlBu')[c(7, 2)]
     ## Reading files
@@ -110,7 +110,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
         ui <- shiny::navbarPage('Atlantis Food Web Tool',
                          shiny::tabPanel('Food Web',
                                   shiny::fluidRow(
-                                      column(2,
+                                      shiny::column(2,
                                              shiny::wellPanel(
                                                  shiny::tags$h3('Functional Group'),
                                                  shiny::selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),

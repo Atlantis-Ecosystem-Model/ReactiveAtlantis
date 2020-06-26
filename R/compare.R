@@ -64,31 +64,31 @@
 ##' @author Demiurgo
 ##' @export
 compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
-    ## Libraries
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('data.table', quietly = TRUE)) {
-        stop('The package data.table was not installed')
-    }
-    if (!require('plotly', quietly = TRUE)) {
-        stop('The package plotly was not installed')
-    }
-    if (!require('RColorBrewer', quietly = TRUE)) {
-        stop('The package RColorBrewer was not installed')
-    }
+    ## ## Libraries
+    ## if (!require('shiny', quietly = TRUE)) {
+    ##     stop('The package shiny was not installed')
+    ## }
+    ## if (!require('ncdf4', quietly = TRUE)) {
+    ##     stop('The package ncdf4 was not installed')
+    ## }
+    ## if (!require('reshape', quietly = TRUE)) {
+    ##     stop('The package reshape was not installed')
+    ## }
+    ## if (!require('tidyverse', quietly = TRUE)) {
+    ##     stop('The package tidyverse was not installed')
+    ## }
+    ## if (!require('stringr', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
+    ## if (!require('data.table', quietly = TRUE)) {
+    ##     stop('The package data.table was not installed')
+    ## }
+    ## if (!require('plotly', quietly = TRUE)) {
+    ##     stop('The package plotly was not installed')
+    ## }
+    ## if (!require('RColorBrewer', quietly = TRUE)) {
+    ##     stop('The package RColorBrewer was not installed')
+    ## }
     ## General configuration
     mycol  <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
     mycol  <- grDevices::colorRampPalette(mycol)
@@ -347,6 +347,8 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
 ##' @param age.grp Age groups
 ##' @param nc.out ncdf atlantis' output file
 ##' @param ctg category
+##' @param mg2t Miligram to tons scalar
+##' @param x.cn Carbon to Nitrogen transformation (Value/scalar)
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
 bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
@@ -373,8 +375,7 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
 ##' @param ctg category
 ##' @param mg2t Miligrams to tons scalar
 ##' @param x.cn Ration from nitrogen to carbon
-##' @param area Box area
-##' @param age.grp Age groups
+##' @param box.info Information by box and layer
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
 bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
@@ -406,6 +407,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
 ##' @param ctg category
 ##' @param mg2t mg C converted to wet weight in tonnes == 20 / 1000000000
 ##' @param x.cn Redfield ratio of C:N 5.7
+##' @param box.info Information for each box and layer
 ##' @return a dataframe with the biomass for all the functional groups with Biomass pool age classes
 ##' @author Demiurgo
 bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
@@ -432,6 +434,8 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
 
 ##' @title Calculate the value of a time serie based on the first value
 ##' @param df Data frame of biomass by FG
+##' @param biomass Is biomass included
+##' @param Vec True is the information in vector
 ##' @return A vector of relative values
 ##' @author Demiurgo
 relative <- function(df, biomass = TRUE, Vec = NULL){
@@ -441,67 +445,67 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
     return(df)
 }
 
-##' @title Parameter file reader
-##' @param text Biological parametar file for Atlatnis
-##' @param pattern Text that you are looking
-##' @param FG Name of the functional groups
-##' @param Vector Logic argument, if the data is on vectors or not
-##' @param pprey Logic argument, if the data is a pprey matrix or not
-##' @return A matrix with the values from the .prm file
-##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
-    if(!isTRUE(Vector)){
-        text <- text[grep(pattern = pattern, text)]
-        if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
-        txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-        col1 <- col2 <- vector()
-        for( i in 1 : length(txt)){
-            tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1])) next
-            tmp2    <- unlist(strsplit(tmp[1], split = '_'))
-            if(FG[1] == 'look') {
-                col1[i] <- tmp2[1]
-            } else {
-                id.co   <- which(tmp2 %in% FG )
-                if(sum(id.co) == 0) next
-                col1[i] <- tmp2[id.co]
-            }
-            col2[i] <- as.numeric(tmp[2])
-        }
-        if(is.null(FG)) col1 <- rep('FG', length(col2))
-        out.t <- data.frame(FG = col1, Value = col2)
-        if(any(is.na(out.t[, 1]))){
-            out.t <- out.t[-which(is.na(out.t[, 1])), ]
-        }
-        return(out.t)
-    } else {
-        l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
-        fg    <- vector()
-        pos   <- 1
-        for( i in 1 : length(nam)){
-            tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
-            fg[pos] <- tmp[1]
-            if(pos == 1) {
-                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
-                pos    <- pos + 1
-            } else {
-                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
-                pp.mat <- rbind(pp.mat, pp.tmp)
-                pos    <- pos + 1
-            }
-        }
-        if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-        row.names(pp.mat)                  <- fg
-        return(pp.mat)
-    }
-}
+## ##' @title Parameter file reader
+## ##' @param text Biological parametar file for Atlatnis
+## ##' @param pattern Text that you are looking
+## ##' @param FG Name of the functional groups
+## ##' @param Vector Logic argument, if the data is on vectors or not
+## ##' @param pprey Logic argument, if the data is a pprey matrix or not
+## ##' @return A matrix with the values from the .prm file
+## ##' @author Demiurgo
+## text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
+##     if(!isTRUE(Vector)){
+##         text <- text[grep(pattern = pattern, text)]
+##         if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
+##         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
+##         col1 <- col2 <- vector()
+##         for( i in 1 : length(txt)){
+##             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1])) next
+##             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
+##             if(FG[1] == 'look') {
+##                 col1[i] <- tmp2[1]
+##             } else {
+##                 id.co   <- which(tmp2 %in% FG )
+##                 if(sum(id.co) == 0) next
+##                 col1[i] <- tmp2[id.co]
+##             }
+##             col2[i] <- as.numeric(tmp[2])
+##         }
+##         if(is.null(FG)) col1 <- rep('FG', length(col2))
+##         out.t <- data.frame(FG = col1, Value = col2)
+##         if(any(is.na(out.t[, 1]))){
+##             out.t <- out.t[-which(is.na(out.t[, 1])), ]
+##         }
+##         return(out.t)
+##     } else {
+##         l.pat <- grep(pattern = pattern, text)
+##         nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
+##         fg    <- vector()
+##         pos   <- 1
+##         for( i in 1 : length(nam)){
+##             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
+##             fg[pos] <- tmp[1]
+##             if(pos == 1) {
+##                 #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
+##                 pos    <- pos + 1
+##             } else {
+##                 #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+##                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
+##                 pp.mat <- rbind(pp.mat, pp.tmp)
+##                 pos    <- pos + 1
+##             }
+##         }
+##         if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
+##         row.names(pp.mat)                  <- fg
+##         return(pp.mat)
+##     }
+## }
 
 ##' @title Box information
 ##' @param bgm.file BGM file,  Atlantis input
@@ -547,6 +551,9 @@ boxes.prop <- function(bgm.file, depths){
 ##' @param FG Functional group (selected)
 ##' @param By option to aggregate the time series in just one or leave the values by cohort
 ##' @param box.info Internal function
+##' @param mg2t Miligrams to tons scalar
+##' @param x.cn carbon to nitrogen scalar
+##' @param polnum number by polygons
 ##' @return List witht he weight (reserve and structural), total biomass (tons) and number
 ##' @author Demiurgo
 nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, polnum = NULL){
@@ -643,6 +650,7 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
 
 ##' @title Interactive Plot for biomass (structural and reserve nitrogen)
 ##' @param total Dataframe with the weight output from the nitro.weight function
+##' @param Time Time serie
 ##' @param rn2 True if active the plot of reserve nitrogen
 ##' @param sn2 True if active the plot of structural nitrogen
 ##' @param num2 True if active the plot of numbers
@@ -650,6 +658,9 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
 ##' @param scl2 True if active the scaling base on the initial value of the time serie
 ##' @param limit True if active limiting the plot area from 0 to maximum 3
 ##' @param right choose left of right for the legend of the plor
+##' @param colors Colors
+##' @param coh by cohort
+##' @param max.coh maximum number of cohorts
 ##' @return A interactive plot
 ##' @author Demiurgo
 plot.age.total <- function(total, Time, rn2, sn2, num2, bio2, scl2, limit, right, colors, coh = NULL, max.coh = NULL){
@@ -792,7 +803,7 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
     if(sn){
         n.c    <- length(list$Structural)
         struct <- matrix(unlist(list$Structural, use.names = FALSE), ncol = n.c, byrow = FALSE)
-        out    <- cbind(out, Struct)
+        out    <- cbind(out, struct)
         nam    <- c(nam, paste0('SN.Age', 1 : n.c))
     }
     if(b){
