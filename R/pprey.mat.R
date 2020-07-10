@@ -78,38 +78,19 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     txtHelp <- paste(txtHelp, "<p><b>% of predation pressure</b> Which percentage of each prey corresponds to the total consumed by the predator.</p>")
     txtHelp <- paste(txtHelp, "<p><b>Total biomass prey</b> Total biomass of each functional group on logarithmic scale.</p>")
     ## Libraries
+    library(ggplot2)
+    library(plotly)
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    ## if (!require('shiny', quietly = TRUE)) {
-    ##     stop('The package shiny was not installed')
-    ## }
-    ## if (!require('ncdf4', quietly = TRUE)) {
-    ##     stop('The package ncdf4 was not installed')
-    ## }
-    ## if (!require('reshape', quietly = TRUE)) {
-    ##     stop('The package reshape was not installed')
-    ## }
-    ## if (!require('tidyverse', quietly = TRUE)) {
-    ##     stop('The package tidyverse was not installed')
-    ## }
-    ## if (!require('stringr', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
-    ## if (!require('proj4', quietly = TRUE)) {
-    ##     stop('The package proj4 was not installed')
-    ## }
-
     if(!quiet) cat('      ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
-    groups.csv <- utils::read.csv(grp.file)
-    if(any(grepl('isPredator', names(groups.csv)))){
-        names(groups.csv)[which(grepl('isPredator', names(groups.csv)))] <- 'IsPredator'
-    }
-    if(any(grepl('InvertType', names(groups.csv)))){
-        names(groups.csv)[which(grepl('InvertType', names(groups.csv)))] <- 'GroupType'
+    groups.csv        <- utils::read.csv(grp.file)
+    names(groups.csv) <- tolower(names(groups.csv))
+    if(any(grepl('invertype', names(groups.csv)))){
+        names(groups.csv)[which(grepl('invertype', names(groups.csv)))] <- 'grouptype'
     }
     prm        <- readLines(prm.file, warn = FALSE)
     numlayers  <- find.z(bgm.file, cum.depths)
@@ -118,7 +99,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     depth.dst  <- data.frame(FG = min.depth[, 1], Min = min.depth[, 2], Max = max.depth[which(max.depth[, 1] %in% min.depth[,1]), 2])
     ## availability matrix
     Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE, pprey = TRUE)
-    colnames(Ava.mat)  <- c(as.character(groups.csv$Code), 'DLsed', 'DRsed', 'DCsed')
+    colnames(Ava.mat)  <- c(as.character(groups.csv$code), 'DLsed', 'DRsed', 'DCsed')
     if(!quiet) cat('          ...Done!')
     ## Biomass,  age and Gape size
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
@@ -130,13 +111,13 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     Biom.N   <- out.Bio[[2]]
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
-    age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
-    is.off   <- which(groups.csv$IsTurnedOn == 0)
+    age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
+    is.off   <- which(groups.csv$isturnedon == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
-        out <- which(age$FG %in% groups.csv$Code[is.off])
+        out <- which(age$FG %in% groups.csv$code[is.off])
         if(sum(out) != 0) age      <- age[- out, ]
     }
-    adu      <- data.frame(FG = groups.csv$Code, Adul = groups.csv$NumCohorts)
+    adu      <- data.frame(FG = groups.csv$code, Adul = groups.csv$numcohorts)
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
@@ -191,7 +172,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## removing groups that are not in the matrix
     ad.sp.ov  <- ad.sp.ov[which(ad.sp.ov %in% colnames(out.Bio[[3]]))]
     ad.sp.ov  <- out.Bio[[3]][ad.sp.ov]
-    ad.sp.ov  <- sapply(as.character(groups.csv$Code), function(x) rowSums(ad.sp.ov[, grep(x, names(ad.sp.ov)), drop = FALSE]))
+    ad.sp.ov  <- sapply(as.character(groups.csv$code), function(x) rowSums(ad.sp.ov[, grep(x, names(ad.sp.ov)), drop = FALSE]))
     ## Binary values
     ad.sp.ov[ad.sp.ov > 1]   <- 1
     juv.sp.ov[juv.sp.ov > 1] <- 1
@@ -221,7 +202,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                       shiny::column(2,
                                              shiny::wellPanel(
                                                  shiny::tags$h3('Predator'),
-                                                 shiny::selectInput('ycol', 'Functional Group', as.character(groups.csv$Code[which(groups.csv$IsPredator == 1)])),
+                                                 shiny::selectInput('ycol', 'Functional Group', as.character(groups.csv$code[which(groups.csv$ispredator == 1)])),
                                                  shiny::selectInput('y1col', 'Stage', c('Juvenile', 'Adult', 'Biomass pool')),
                                                  shiny::tags$h3('Prey'),
                                                  shiny::selectInput('xcol', 'Functional Group', colnames(Ava.mat)),
@@ -266,8 +247,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                   shiny::fluidRow(
                                       shiny::column(2,
                                              shiny::wellPanel(
-                                                 shiny::selectInput('pred', 'Predator',  groups.csv$Code),
-                                                 shiny::selectInput('prey', 'Prey', groups.csv$Code),
+                                                 shiny::selectInput('pred', 'Predator',  groups.csv$code),
+                                                 shiny::selectInput('prey', 'Prey', groups.csv$code),
                                                  shiny::selectInput("layer", "Layer:", c(1 : (sediment - 1), 'Sediment')),
                                                  shiny::br(),
                                                  shiny::br(),
@@ -391,8 +372,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 dpt <- rbind(dplyr::filter(depth.dst, .data$FG == input$pred), dplyr::filter(depth.dst, .data$FG == input$prey))
             })
             title <- shiny::reactive({
-                paste('Realized Spatial overlap between the predator', groups.csv$Long.Name[which(groups.csv$Code %in% input$pred)] ,'and the prey',
-                      groups.csv$Long.Name[which(groups.csv$Code %in% input$prey)], sep = ' ')
+                paste('Realized Spatial overlap between the predator', groups.csv$long.name[which(groups.csv$code %in% input$pred)] ,'and the prey',
+                      groups.csv$long.name[which(groups.csv$code %in% input$prey)], sep = ' ')
             })
             output$text1 <- shiny::renderText({
                 title()
@@ -400,25 +381,41 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             shiny::observeEvent(input$exitButton, {
                 shiny::stopApp()
             })
+            ## ~~~~~~~~~~~~~~~~~~~~~~ ##
+            ## ~      Build Plots   ~ ##
+            ## ~~~~~~~~~~~~~~~~~~~~~~ ##
+            plot1_out <- shiny::reactive({
+                dat <- reshape::melt(rff())
+                dat[which(dat == 0,  arr.ind = TRUE)] <- NA
+                p <- ggplot2::ggplot(data = dat, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- p + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value',  na.value = 'white', direction = 1)
+                #p <- p + scale_fill_distiller()
+                p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1))
+                p <- p + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1, alpha = .1, colour = 'royalblue')
+                p <- p + annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
+                p
+            })
+            plot2_out <- shiny::reactive({
+                dat2 <- reshape::melt(t.o.mat)
+                p <- ggplot2::ggplot(data = dat2, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour= 'grey45', aes( fill = factor(.data$value)))
+                p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator')
+                p <- p + scale_x_discrete(position = "top")  + scale_fill_brewer(palette = 'Set1', name = 'Gape overlap', labels = c('No', 'Yes')) #+ scale_fill_manual(name = 'Gape overlap', labels = c('No', 'Yes'))
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1, alpha = .1, colour = 'royalblue')
+                p <- p + annotate("rect", xmin = -.5, xmax = nrow(t.o.mat) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
+                #x11()
+                p
+            })
+
+
+            ## ~~~~~~~~~~~~~~~~~~~~ ##
+            ## ~      Call Plots  ~ ##
+            ## ~~~~~~~~~~~~~~~~~~~~ ##
             output$plot1 <- shiny::renderPlot({
-                ggplot2::ggplot(data = reshape::melt(rff()),
-                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
-                    scale_fill_gradient(limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
-                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
-                    annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1,
-                             alpha = .1, colour = 'royalblue') +
-                    annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5,
-                             alpha = .1, colour = 'royalblue')
+                plot1_out()
             })
             output$plot2 <- shiny::renderPlot({
-                ggplot2::ggplot(data = reshape::melt(t.o.mat),
-                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(aes( fill = factor(.data$value))) +
-                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top") +
-                    scale_fill_grey(start = .9, end = 0, name = 'Gape overlap', labels = c('No', 'Yes')) +
-                    annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1,
-                             alpha = .1, colour = 'royalblue') +
-                    annotate("rect", xmin =  - .5, xmax = nrow(t.o.mat) + .5, ymin = liney() - .5, ymax = liney() + .5,
-                             alpha = .1, colour = 'royalblue')
+                plot2_out()
             })
             output$plot3 <- shiny::renderPlot({
                 ggplot2::ggplot(data = reshape::melt(t(N.mat$Ava)),
@@ -498,16 +495,16 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 Bio.func <- function(nc.file, groups.csv, numlayers){
     nc.out  <- ncdf4::nc_open(nc.file)
     m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
-    Is.off  <- which(groups.csv$IsTurnedOn == 0)
-    FG      <- as.character(groups.csv$Name)
-    FGN     <- as.character(groups.csv$Code)
-    TY      <- as.character(groups.csv$GroupType)
-    Biom.N  <- array(data = NA, dim = c(length(FG), max(groups.csv$NumCohorts)))
+    Is.off  <- which(groups.csv$isturnedon == 0)
+    FG      <- as.character(groups.csv$name)
+    FGN     <- as.character(groups.csv$code)
+    TY      <- as.character(groups.csv$grouptype)
+    Biom.N  <- array(data = NA, dim = c(length(FG), max(groups.csv$numcohorts)))
     Struct  <- Biom.N
     over.sp <- NULL
     for(code in 1 : length(FG)){
         if(code %in% Is.off) next
-        if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
+        if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$numcohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
             sed     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
             unit    <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
@@ -520,9 +517,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-        if(groups.csv$NumCohorts[code] == 1 && groups.csv$IsTurnedOn[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
-            for(coh in 1 : groups.csv$NumCohorts[code]){
-                if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$NumCohorts[code] > 1){
+        if(groups.csv$numcohorts[code] == 1 && groups.csv$isturnedon[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
+            for(coh in 1 : groups.csv$numcohorts[code]){
+                if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$numcohorts[code] > 1){
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
@@ -588,8 +585,8 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                 }
             }
-        } else if(groups.csv$NumCohorts[code] > 1 && groups.csv$IsTurnedOn[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'))) {
-            for(cohort in 1 : groups.csv$NumCohorts[code]){
+        } else if(groups.csv$numcohorts[code] > 1 && groups.csv$isturnedon[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'))) {
+            for(cohort in 1 : groups.csv$numcohorts[code]){
                 StructN <- ncdf4::ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
                     ## Some model don't have the values by box and layer,  they use the FillValue attribute
@@ -638,8 +635,8 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         }
     }
     ncdf4::nc_close(nc.out)
-    row.names(Biom.N) <- as.character(groups.csv$Code)
-    row.names(Struct) <- as.character(groups.csv$Code)
+    row.names(Biom.N) <- as.character(groups.csv$code)
+    row.names(Struct) <- as.character(groups.csv$code)
     if(length(Is.off) > 0){
         ## Remove groups that are not On in the model
         Struct            <- Struct[ - Is.off, ]
@@ -722,8 +719,8 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
 ##' @author Demiurgo
 gape.func <- function(groups.csv, Struct, Biom.N, prm){
     ## Gape size and adult and young age
-    KLP                     <- text2num(prm, 'KLP', FG = as.character(groups.csv$Code))
-    KUP                     <- text2num(prm, 'KUP',  FG = as.character(groups.csv$Code))
+    KLP                     <- text2num(prm, 'KLP', FG = as.character(groups.csv$code))
+    KUP                     <- text2num(prm, 'KUP',  FG = as.character(groups.csv$code))
 
     if(length(unique(KLP[,1])) != nrow(KLP)){
         stop('You have repeated values of KLP for ', KLP[which(duplicated(KLP[, 1])), 1], ', fix that and run again the tool')
@@ -740,7 +737,7 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
             KLP <- KLP[which(KUP[, 1] %in% KLP[, 1]), ]
         }
     }
-    age                     <- text2num(prm, '_age_mat', FG = as.character(groups.csv$Code))
+    age                     <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
     Gape                    <- data.frame(FG = KLP$FG, KLP = KLP$Value, KUP = KUP$Value, Age.Adult = NA)
     pos.Age                 <- which(Gape$FG %in% age$FG)
     Gape$Age.Adult[pos.Age] <- age$Value

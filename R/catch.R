@@ -210,6 +210,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
             shiny::observeEvent(input$exitButton, {
                 shiny::stopApp()
             })
+            ## Plots
             output$plot1 <- shiny::renderPlot({
                 rp           <- length(num())
                 ylm          <- NULL
