@@ -61,34 +61,10 @@
 ##' }
 ##' }
 ##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
-    ## ## Libraries
-    ## if (!require('shiny', quietly = TRUE)) {
-    ##     stop('The package shiny was not installed')
-    ## }
-    ## if (!require('ncdf4', quietly = TRUE)) {
-    ##     stop('The package ncdf4 was not installed')
-    ## }
-    ## if (!require('reshape', quietly = TRUE)) {
-    ##     stop('The package reshape was not installed')
-    ## }
-    ## if (!require('tidyverse', quietly = TRUE)) {
-    ##     stop('The package tidyverse was not installed')
-    ## }
-    ## if (!require('stringr', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
-    ## if (!require('data.table', quietly = TRUE)) {
-    ##     stop('The package data.table was not installed')
-    ## }
-    ## if (!require('plotly', quietly = TRUE)) {
-    ##     stop('The package plotly was not installed')
-    ## }
-    ## if (!require('RColorBrewer', quietly = TRUE)) {
-    ##     stop('The package RColorBrewer was not installed')
-    ## }
     ## General configuration
     mycol  <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
     mycol  <- grDevices::colorRampPalette(mycol)
@@ -273,7 +249,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
             })
             output$plot1 <- shiny::renderPlot({
                 plot <- ggplot2::ggplot(data  = t.biomass, aes(x = .data$Time, y = .data$Biomass, colour = .data$Simulation)) +
-                    geom_line() + ggplot2::facet_wrap(~ .data$FG, ncol = 4,  scale = 'free_y') + theme_minimal() +
+                    geom_line() + ggplot2::facet_wrap(~ .data$FG, ncol = 4, scale = 'free_y') + theme_minimal() +
                     scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
                 plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
                 plot
@@ -282,11 +258,13 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                 session$clientData$output_plot1_width
             })
             output$plot1B <- shiny::renderPlot({
-                plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$Relative, colour = .data$Simulation)) +
-                    geom_line() + ggplot2::facet_wrap( ~ .data$FG, ncol = 4) + ylim(0, 2) + theme_minimal()  +
-                    annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue') +
-                    scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
-                plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
+                plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$Relative, colour = .data$Simulation))
+                plot <- plot + ggplot2::geom_line() + ggplot2::facet_wrap( ~ .data$FG, ncol = 4) + ylim(0, 2)
+                #plot <- plot + ggplot2::annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
+                #plot <- plot + scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
+                #plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
+                #plot <- plot + geom_hline(yintercept=c(1.5, 0.5), linetype="dashed", color = "red", size=2)
+                plot <- plot + theme_minimal()
                 plot
             },
             height = function() {

@@ -217,30 +217,30 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                                              shiny::actionButton("save", label = "Write pPPREY Matrix")
                                              ),
                                       shiny::column(10,
-                                             shiny::wellPanel(
-                                                 shiny::tabsetPanel(
-                                                     shiny::tabPanel('Effective Predation',#
-                                                              shiny::plotOutput('plot1', width = plotWidth, height = plotHeigh)
-                                                              ),
-                                                     shiny::tabPanel('Availability matrix',#
-                                                              shiny::plotOutput('plot3', width = plotWidth, height = plotHeigh)
-                                                              ),
-                                                     shiny::tabPanel('Overlap matrix',#
-                                                              shiny::plotOutput('plot2', width = plotWidth, height = plotHeigh)
-                                                              ),
-                                                     shiny::tabPanel('% of predation pressure',#
-                                                              shiny::plotOutput('plot4', width = plotWidth, height = plotHeigh)
-                                                              ),
-                                                     shiny::tabPanel('Total biomass prey',#
-                                                              shiny::h3('Juvenile biomass'),
-                                                              shiny::plotOutput('plot5', width = "100%", height = "400px"),
-                                                              shiny::br(),
-                                                              shiny::h3('Adult biomass'),
-                                                              shiny::plotOutput('plot6', width = "100%", height = "400px")
-                                                              )
-                                                 )
-                                             )
-                                             )
+                                                    shiny::wellPanel(
+                                                               shiny::tabsetPanel(
+                                                                          shiny::tabPanel('Availability matrix',#
+                                                                                          shiny::plotOutput('Ava_plot', width = plotWidth, height = plotHeigh)
+                                                                                          ),
+                                                                          shiny::tabPanel('Effective Predation',#
+                                                                                          shiny::plotOutput('Eff_pred', width = plotWidth, height = plotHeigh)
+                                                                                          ),
+                                                                          shiny::tabPanel('Overlap matrix',#
+                                                                                          shiny::plotOutput('Overlap_plot', width = plotWidth, height = plotHeigh)
+                                                                                          ),
+                                                                          shiny::tabPanel('% of predation pressure',#
+                                                                                          shiny::plotOutput('Press_plot', width = plotWidth, height = plotHeigh)
+                                                                                          ),
+                                                                          shiny::tabPanel('Total biomass prey',#
+                                                                                          shiny::h3('Juvenile biomass'),
+                                                                                          shiny::plotOutput('plot5', width = "100%", height = "400px"),
+                                                                                          shiny::br(),
+                                                                                          shiny::h3('Adult biomass'),
+                                                                                          shiny::plotOutput('plot6', width = "100%", height = "400px")
+                                                                                          )
+                                                                      )
+                                                           )
+                                                    )
                                   )
                                   ),
                          shiny::tabPanel('Spatial Overlap',
@@ -384,59 +384,70 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             ## ~~~~~~~~~~~~~~~~~~~~~~ ##
             ## ~      Build Plots   ~ ##
             ## ~~~~~~~~~~~~~~~~~~~~~~ ##
-            plot1_out <- shiny::reactive({
-                dat <- reshape::melt(rff())
+            ## Effective Predation
+            Eff_pred_out <- shiny::reactive({
+                dat      <- reshape::melt(rff())
                 dat[which(dat == 0,  arr.ind = TRUE)] <- NA
                 p <- ggplot2::ggplot(data = dat, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
-                p <- p + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation value',  na.value = 'white', direction = 1)
+                p <- p + scale_fill_distiller(palette = "YlGnBu", limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation \nLn()',  na.value = 'white', direction = 1)
                 #p <- p + scale_fill_distiller()
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1))
                 p <- p + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
-                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1, alpha = .1, colour = 'royalblue')
-                p <- p + annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff()) + 1, alpha = .1, colour = 'goldenrod')
+                p <- p + annotate("rect", xmin =  - .5, xmax = nrow(rff()) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'goldenrod')
                 p
             })
-            plot2_out <- shiny::reactive({
+            ## Overlap Matrix
+            Overlap_out <- shiny::reactive({
+                col.tmp <- RColorBrewer::brewer.pal(11, 'RdBu')[c(6, 11)]
                 dat2 <- reshape::melt(t.o.mat)
                 p <- ggplot2::ggplot(data = dat2, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour= 'grey45', aes( fill = factor(.data$value)))
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator')
-                p <- p + scale_x_discrete(position = "top")  + scale_fill_brewer(palette = 'Set1', name = 'Gape overlap', labels = c('No', 'Yes')) #+ scale_fill_manual(name = 'Gape overlap', labels = c('No', 'Yes'))
-                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1, alpha = .1, colour = 'royalblue')
-                p <- p + annotate("rect", xmin = -.5, xmax = nrow(t.o.mat) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
-                #x11()
+                p <- p + scale_x_discrete(position = "top")  + scale_fill_manual(values = col.tmp, name = 'Gape overlap', labels = c('No', 'Yes')) #+ scale_fill_manual(name = 'Gape overlap', labels = c('No', 'Yes'))
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1, alpha = .1, colour = 'darkorange')
+                p <- p + annotate("rect", xmin = -.5, xmax = nrow(t.o.mat) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'darkorange')
                 p
             })
-
+            ## Availability matrix
+            Avail_out <- shiny::reactive({
+                dat.A <- reshape::melt(t(N.mat$Ava))
+                dat.A[which(dat.A == 0,  arr.ind = TRUE)] <- NA
+                p <- ggplot2::ggplot(data = dat.A, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- p  + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Availability', na.value = 'white', direction = 1)
+                p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
+                p <- p +annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1, alpha = .1, colour = 'royalblue')
+                p <- p + annotate("rect", xmin = -.5, xmax = nrow(t(N.mat$Ava)) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
+                p
+            })
+            ## % of pressure
+            Press_out <- shiny::reactive({
+                dat.P <- reshape::melt(rff2())
+                dat.P[which(dat.P == 0,  arr.ind = TRUE)] <- NA
+                p <- ggplot2::ggplot(data = dat.P, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45", size = 0.2)
+                p <- p + scale_fill_distiller(palette = "RdPu",, limits=c(0, 100), name = 'Precentage of pressure', na.value = 'white', direction = 1)
+                p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff2()) + 1, alpha = .1, colour = 'goldenrod')
+                p <- p + annotate("rect", xmin =  - .5, xmax = nrow(rff2()) + .5, ymin = liney() - .5, ymax = liney() + .5,alpha = .1, colour = 'goldenrod')
+                p
+            })
 
             ## ~~~~~~~~~~~~~~~~~~~~ ##
             ## ~      Call Plots  ~ ##
             ## ~~~~~~~~~~~~~~~~~~~~ ##
-            output$plot1 <- shiny::renderPlot({
-                plot1_out()
+            output$Eff_pred <- shiny::renderPlot({
+                Eff_pred_out()
             })
-            output$plot2 <- shiny::renderPlot({
-                plot2_out()
+            output$Overlap_plot <- shiny::renderPlot({
+                Overlap_out()
             })
-            output$plot3 <- shiny::renderPlot({
-                ggplot2::ggplot(data = reshape::melt(t(N.mat$Ava)),
-                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
-                    scale_fill_gradient(limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Predation value', low="white", high="red", na.value = 'white')  +
-                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
-                    annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1,
-                             alpha = .1, colour = 'royalblue') +
-                    annotate("rect", xmin =  - .5, xmax = nrow(t(N.mat$Ava)) + .5, ymin = liney() - .5, ymax = liney() + .5,
-                             alpha = .1, colour = 'royalblue')
+            output$Ava_plot <- shiny::renderPlot({
+                Avail_out()
             })
-            output$plot4 <- shiny::renderPlot({
-                ggplot2::ggplot(data = reshape::melt(rff2()),
-                       aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile() +
-                    scale_fill_gradient(limits=c(0, 100), name = 'Precentage of pressure', low="white", high="red", na.value = 'white')  +
-                    theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")+
-                    annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff2()) + 1,
-                             alpha = .1, colour = 'royalblue') +
-                    annotate("rect", xmin =  - .5, xmax = nrow(rff2()) + .5, ymin = liney() - .5, ymax = liney() + .5,
-                             alpha = .1, colour = 'royalblue')
+            output$Press_plot <- shiny::renderPlot({
+                Press_out()
             })
+
+
             output$plot5 <- shiny::renderPlot({
                 ggplot2::ggplot(data = b.juv, aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
@@ -493,18 +504,21 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
+    #browser()
     nc.out  <- ncdf4::nc_open(nc.file)
     m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
-    Is.off  <- which(groups.csv$isturnedon == 0)
+    active  <- which(groups.csv$isturnedon == 1)
+    is.off  <- which(groups.csv$isturnedon == 0)
     FG      <- as.character(groups.csv$name)
     FGN     <- as.character(groups.csv$code)
     TY      <- as.character(groups.csv$grouptype)
     Biom.N  <- array(data = NA, dim = c(length(FG), max(groups.csv$numcohorts)))
     Struct  <- Biom.N
     over.sp <- NULL
-    for(code in 1 : length(FG)){
-        if(code %in% Is.off) next
-        if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$numcohorts[code] > 1){
+    special <- c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')
+    for(code in active){
+        #if(code %in% is.off) next
+        if(TY[code] %in% special && groups.csv$numcohorts[code] > 1){
             ## This bit is for Aged structured Biomass pools
             sed     <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "insed")$value
             unit    <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N1", sep = ""), attname = "units")$value
@@ -517,9 +531,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
-        if(groups.csv$numcohorts[code] == 1 && groups.csv$isturnedon[code] == 1 || TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
+        if(groups.csv$numcohorts[code] == 1 || TY[code] %in% special){
             for(coh in 1 : groups.csv$numcohorts[code]){
-                if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE') && groups.csv$numcohorts[code] > 1){
+                if(TY[code] %in% special && groups.csv$numcohorts[code] > 1){
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
@@ -533,7 +547,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     w.m2[is.infinite(w.m2)] <- NA
                     w.m2    <- sum(w.m2, na.rm=TRUE)
                     w.m3    <- sum(water.t, na.rm = TRUE)
-                    if(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')){
+                    if(TY[code] %in% special){
                         Biom.N[code, 1] <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", coh, sep = ""), attname = "_FillValue")$value
                     } else {
                         Biom.N[code, 1] <- ncdf4::ncatt_get(nc.out, varid = paste(FG[code], "_N", sep = ""), attname = "_FillValue")$value
@@ -557,7 +571,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     Biom.N[code, coh] <- sum(N.tot, na.rm = TRUE)
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
-                    if(code==1 && coh==1 && !(code %in% Is.off)){
+                    if(code==1 && coh==1 && !(code %in% is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
                         } else {
@@ -569,7 +583,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         }
                         over.sp        <- reshape::melt(Numb.tmp)
                         names(over.sp) <- c('Layer', 'Box', paste(FGN[code], coh, sep = '_'))
-                    } else if(!(code %in% Is.off)){
+                    } else if(!(code %in% is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
                         } else {
@@ -585,7 +599,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                 }
             }
-        } else if(groups.csv$numcohorts[code] > 1 && groups.csv$isturnedon[code] == 1 && !(TY[code] %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE'))) {
+        } else if(groups.csv$numcohorts[code] > 1 && groups.csv$isturnedon[code] == 1 && !(TY[code] %in% special)) {
             for(cohort in 1 : groups.csv$numcohorts[code]){
                 StructN <- ncdf4::ncvar_get(nc.out, paste(FG[code], as.character(cohort), "_StructN", sep = ""))
                 if(all(is.na(StructN))){
@@ -605,7 +619,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                 if(length(dim(Numb)) > 2){
                     Numb    <- Numb[, , 1]
                 }
-                if(code == 1 && cohort == 1 && !(code %in% Is.off)){
+                if(code == 1 && cohort == 1 && (code %in% active)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb.tmp)){
                         if(numlayers[box, 2]  == 1) next()
@@ -614,7 +628,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     over.sp        <- reshape::melt(Numb.tmp)
                     names(over.sp) <- c('Layer', 'Box', paste(FGN[code], cohort, sep = '_'))
-                }else if(!(code %in% Is.off)){
+                }else if((code %in% active)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb)){
                         if(numlayers[box, 2]  == 1) next()
@@ -637,10 +651,10 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     ncdf4::nc_close(nc.out)
     row.names(Biom.N) <- as.character(groups.csv$code)
     row.names(Struct) <- as.character(groups.csv$code)
-    if(length(Is.off) > 0){
+    if(length(is.off) > 0){
         ## Remove groups that are not On in the model
-        Struct            <- Struct[ - Is.off, ]
-        Biom.N            <- Biom.N[ - Is.off, ]
+        Struct            <- Struct[ - is.off, ]
+        Biom.N            <- Biom.N[ - is.off, ]
     }
     mom.t            <- over.sp[, 3 : ncol(over.sp)]
     mom.t[mom.t > 0] <- 1
