@@ -325,6 +325,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 }
             })
             spatial <- shiny::reactive({
+                browser()
+                                gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
                 gp.pred  <- dplyr::filter(data = over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
                 pred.ad  <- dplyr::filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Adult', .data$Layer == input.layer)

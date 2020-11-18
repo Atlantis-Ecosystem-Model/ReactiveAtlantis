@@ -71,6 +71,7 @@
 ##'     the Atlantis configuration file.
 ##'   }
 ##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
@@ -355,9 +356,9 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             output$plot3 <- shiny::renderPlot({
                 ## colors
                 colo  <- c(rep('grey', (length(pp.list) - 2)), color[c(1, 4)])
-                ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE, size = 1.5) +
-                    ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    scale_colour_manual(values = colo)
+                ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG)) + ggplot2::geom_line(na.rm = TRUE, size = 1.5) +
+                    ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
+                    ggplot2::scale_colour_manual(values = colo)
             })
             output$plot1 <- shiny::renderPlot({
                 graphics::par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
