@@ -326,7 +326,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             })
             spatial <- shiny::reactive({
                 browser()
-                                gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
+                gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
                 gp.pred  <- dplyr::filter(data = over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
                 pred.ad  <- dplyr::filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Adult', .data$Layer == input.layer)
@@ -765,15 +765,19 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
     Struct        <- Struct[order(row.names(Struct)), ]
     Gape          <- Gape[order(Gape$FG), ]
     G.pos         <- which(row.names(Struct) %in% Gape$FG)
+    length(which(Gape$FG %in% row.names(Struct)))
     Gape$juv.Min  <- Struct[G.pos, 1] * Gape$KLP
+    Struct[which(is.na(Struct[, 1])), 1] <- 0 ## avoiding dimension problems
     for( i in 1 : length(G.pos)){
+        ## Gape limitation as a predator
         Gape$adult.Min[i]  <- Struct[G.pos[i], Gape$Age.Adult[i]] * Gape$KLP[i]
-        Gape$adult.Max[i]  <- Struct[G.pos[i], length(sum(!is.na(Struct[G.pos[i], ])))] * Gape$KUP[i]
+        Gape$adult.Max[i]  <- Struct[G.pos[i], sum(!is.na(Struct[G.pos[i], ]))] * Gape$KUP[i]
         Gape$juv.Max[i]    <- Struct[G.pos[i], Gape$Age.Young[i]] * Gape$KUP[i]
+        ## Gape limitation as prey
         Gape$JminS[i]      <- Struct[G.pos[i], 1]
         Gape$AminS[i]      <- Struct[G.pos[i], Gape$Age.Adult[i]]
         Gape$JmaxS[i]      <- Struct[G.pos[i], Gape$Age.Young[i]]
-        Gape$AmaxS[i]      <- Struct[G.pos[i], length(sum(!is.na(Struct[G.pos[i], ])))]
+        Gape$AmaxS[i]      <- Struct[G.pos[i], sum(!is.na(Struct[G.pos[i], ]))]
     }
     return(list(Gape, age))
 }
