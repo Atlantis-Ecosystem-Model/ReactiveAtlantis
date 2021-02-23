@@ -274,7 +274,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 prey          <- prey[prey[, input$FG] > 0, ] ## removing zero values, faster now
                 prey          <- dplyr::left_join(prey, new.bio, by = c('Predator', 'Time')) ## Biomass of the predator, so we have an idea of the total pressure
                 prey$eff.pred <- prey[, input$FG] * prey$Biomass
-                trh.max       <- max(prey$eff.pred) * input$Thr
+                trh.max       <- max(prey$eff.pred, na.rm = TRUE) * input$Thr
                 if(input$merT) prey$Time <- prey$Time / diff(unique(prey$Time))[1]
                 prey          <- prey[prey$eff.pred > trh.max, ]
             })

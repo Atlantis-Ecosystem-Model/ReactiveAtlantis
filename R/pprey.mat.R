@@ -111,13 +111,14 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     Biom.N   <- out.Bio[[2]]
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
-    age      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
+    age_transition      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
     is.off   <- which(groups.csv$isturnedon == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
         out <- which(age$FG %in% groups.csv$code[is.off])
         if(sum(out) != 0) age      <- age[- out, ]
     }
-    adu      <- data.frame(FG = groups.csv$code, Adul = groups.csv$numcohorts)
+    Ages      <- data.frame(FG = groups.csv$code, Adul = groups.csv$numcohorts)
+    Ages$Juv  <- apply(Ages, 1, function(x){if(x[1] %in% age_transition$FG){ age_transition$Value[which(age_transition$FG %in% x[1])]} else {NA}})
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
@@ -163,11 +164,11 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Spatial Overlap functions and procedures
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(!quiet) cat('\n Reading and preparing the spatial data for plotting')
-    juv.sp.ov <- as.character(unlist(apply(age, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
-    ad.sp.ov  <- as.character(unlist(apply(adu, 1, function(x) paste(rep(x[1], x[2]), 1 : x[2], sep = '_'))))
+    juv.sp.ov <- as.character(unlist(apply(Ages, 1, function(x) if(!is.na(x[3])) paste(rep(x[1], x[3]), 1 : x[3], sep = '_'))))
+    ad.sp.ov  <- as.character(unlist(apply(Ages, 1, function(x) if(!is.na(x[3])){paste(rep(x[1], x[2]), x[3] : x[2], sep = '_')} else {paste(x[1], 1, sep = '_')} )))
     ad.sp.ov  <- setdiff(ad.sp.ov,  juv.sp.ov)
     juv.sp.ov <- out.Bio[[3]][juv.sp.ov]
-    juv.sp.ov <- sapply(as.character(age$FG), function(x) rowSums(juv.sp.ov[, grep(x, names(juv.sp.ov)), drop = FALSE]))
+    juv.sp.ov <- sapply(as.character(Ages$FG), function(x) rowSums(juv.sp.ov[, grep(x, names(juv.sp.ov)), drop = FALSE]))
     ## Adults
     ## removing groups that are not in the matrix
     ad.sp.ov  <- ad.sp.ov[which(ad.sp.ov %in% colnames(out.Bio[[3]]))]
