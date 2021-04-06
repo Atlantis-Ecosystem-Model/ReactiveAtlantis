@@ -500,10 +500,10 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             })
             output$plot3 <- shiny::renderPlot({
                 ## colors
-                colo  <- c(rep('grey', (length(pp.list) - 2)), colors[c(1, 2)])
-                p <- ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE) +
-                    ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    scale_colour_manual(values = colo, name = 'Variable')
+                colo  <- c(rep('grey70', (length(pp.list) - 2)), colors[c(1, 2)])
+                p <- ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE)
+                p <- p + ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE))
+                p <- p + scale_colour_manual(values = colo, name = 'Variable') + ggplot2::theme_minimal() + ggplot2::theme(text = ggplot2::element_text(size = 15))
                 p <- update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
                 p
             })

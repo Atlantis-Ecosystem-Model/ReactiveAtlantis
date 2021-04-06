@@ -97,6 +97,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ##     stop('The package RColorBrewer was not installed')
     ## }
     color    <- RColorBrewer::brewer.pal(9, "BrBG")[2 : 9]
+    color2   <- RColorBrewer::brewer.pal(9, "RdBu")
     ## reading information
     nc.ini    <- ncdf4::nc_open(ini.nc.file)
     group.csv <- utils::read.csv(grp.file)
@@ -355,10 +356,13 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             shiny::observeEvent(input$exitButton, {shiny::stopApp()})
             output$plot3 <- shiny::renderPlot({
                 ## colors
-                colo  <- c(rep('grey', (length(pp.list) - 2)), color[c(1, 4)])
-                ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG)) + ggplot2::geom_line(na.rm = TRUE, size = 1.5) +
-                    ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    ggplot2::scale_colour_manual(values = colo)
+                colo  <- c(rep('grey70', (length(pp.list) - 2)), color2[c(1, 8)])
+                p <- ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG))
+                p <- p + ggplot2::geom_line(na.rm = TRUE, size = 1.5) + ggplot2::facet_wrap(~ .data$variable, ncol = 2)
+                p <- p + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) + ggplot2::theme_minimal()
+                p <- p + ggplot2::scale_colour_manual(values = colo,  name = 'Variables') + ggplot2::theme(text = ggplot2::element_text(size = 15))
+                p <- ggplot2::update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                p
             })
             output$plot1 <- shiny::renderPlot({
                 graphics::par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
