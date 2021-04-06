@@ -98,7 +98,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     ## }
     ## if (!require('RColorBrewer', quietly = TRUE)) {
     ##     stop('The package RColorBrewer was not installed')
-    }
+    ##}
 
 
     ## Reading Data
@@ -367,7 +367,6 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                     shiny::need(age.biomass != '',  'To Display this plot, please provide the non-standard atlantis output \'Biomass by age\' (default : age.biomass = NULL). Make sure to put the flag \'flag_age_output\' in the run.prm file if you want to look at this output')
                     )
                 color.pp <- as.character(g.col$col[which(g.col$grp %in% levels(age.bio.gr()$variable))])
-                browser()
                 p <-ggplot2::ggplot(data = prey.bio(), aes(x = .data$Time, y = .data$Biomass)) + geom_line(colour = 'firebrick3')
                 p <- p + ggplot2::facet_wrap(~ .data$Prey, ncol = 5,  scale = 'free_y') + theme_bw() + scale_color_manual(values = color.pp)
                 #p <- p + ggplot2::geom_vline(xintercept = input$Time3, linetype = "dashed",  color = 'royalblue')
