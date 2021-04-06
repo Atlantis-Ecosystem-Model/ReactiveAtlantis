@@ -111,17 +111,18 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     Biom.N   <- out.Bio[[2]]
     if(!quiet) cat('       ...Done!')
     if(!quiet) cat('\n Calculating gape limitation and prey size')
-    age_transition      <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
+    age_transition  <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
     is.off   <- which(groups.csv$isturnedon == 0)
     if(length(is.off) > 0){ ## removing the groups that are turned off
-        out <- which(age$FG %in% groups.csv$code[is.off])
-        if(sum(out) != 0) age      <- age[- out, ]
+        out <- which(age_transition$FG %in% groups.csv$code[is.off])
+        if(sum(out) != 0) age_transition      <- age_transition[- out, ]
     }
     Ages      <- data.frame(FG = groups.csv$code, Adul = groups.csv$numcohorts)
     Ages$Juv  <- apply(Ages, 1, function(x){if(x[1] %in% age_transition$FG){ age_transition$Value[which(age_transition$FG %in% x[1])]} else {NA}})
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
+    browser()
     Over.mat <- Over.mat.func(Ava.mat, Gape[[1]])
     bio.a    <- Bio.ages(Biom.N, age = Gape[[2]], Over.mat)
     bio.juv  <- bio.a[[1]]
@@ -326,7 +327,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 }
             })
             spatial <- shiny::reactive({
-                browser()
                 gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
                 gp.pred  <- dplyr::filter(data = over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
@@ -507,17 +507,18 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 ##' @return The biomass for age class and the sturctural nitrogen by age class
 ##' @author Demiurgo
 Bio.func <- function(nc.file, groups.csv, numlayers){
-    #browser()
-    nc.out  <- ncdf4::nc_open(nc.file)
-    m.depth <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
-    active  <- which(groups.csv$isturnedon == 1)
-    is.off  <- which(groups.csv$isturnedon == 0)
-    FG      <- as.character(groups.csv$name)
-    FGN     <- as.character(groups.csv$code)
-    TY      <- as.character(groups.csv$grouptype)
-    Biom.N  <- array(data = NA, dim = c(length(FG), max(groups.csv$numcohorts)))
-    Struct  <- Biom.N
-    over.sp <- NULL
+    nc.out     <- ncdf4::nc_open(nc.file)
+    m.depth    <- nc.out$dim$z$len ## get the max depth to avoid problem with the bgm file
+    active     <- which(groups.csv$isturnedon == 1)
+    is.off     <- which(groups.csv$isturnedon == 0)
+    FG         <- as.character(groups.csv$name)
+    FGN        <- as.character(groups.csv$code)
+    TY         <- as.character(groups.csv$grouptype)
+    Biom.N     <- array(data = NA, dim = c(length(FG), max(groups.csv$numcohorts)))
+    Struct     <- Biom.N
+    over.sp    <-reshape::melt(matrix(NA, m.depth, nrow(numlayers)))[,1: 2]
+    names.temp <- c('Layer', 'Box')
+    #over.sp <- NULL
     special <- c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')
     for(code in active){
         #if(code %in% is.off) next
@@ -574,7 +575,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     }
                     Biom.N[code, coh] <- sum(N.tot, na.rm = TRUE)
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
-                    if(code==1 && coh==1 && !(code %in% is.off)){
+                    if(code == 1 && coh == 1 && !(code %in% is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
                         } else {
@@ -584,8 +585,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        over.sp        <- reshape::melt(Numb.tmp)
-                        names(over.sp) <- c('Layer', 'Box', paste(FGN[code], coh, sep = '_'))
+                        new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                        over.sp    <- cbind(over.sp, new.sp)
+                        names.temp <- c(names.temp, paste(FGN[code], coh, sep = '_'))
                     } else if(!(code %in% is.off)){
                         if(length(dim(Temp.N)) == 1){
                             Numb.tmp[nrow(Numb.tmp), ] <- Temp.N
@@ -596,9 +598,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        new.sp  <- as.vector(reshape::melt(Numb.tmp)[, 3])
-                        over.sp <- cbind(over.sp, new.sp)
-                        names(over.sp)[ncol(over.sp)] <- paste(FGN[code], coh, sep = '_')
+                        new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                        over.sp    <- cbind(over.sp, new.sp)
+                        names.temp <- c(names.temp, paste(FGN[code], coh, sep = '_'))
                     }
                 }
             }
@@ -629,8 +631,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) : (m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    over.sp        <- reshape::melt(Numb.tmp)
-                    names(over.sp) <- c('Layer', 'Box', paste(FGN[code], cohort, sep = '_'))
+                    new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                    over.sp    <- cbind(over.sp, new.sp)
+                    names.temp <- c(names.temp, paste(FGN[code], cohort, sep = '_'))
                 }else if((code %in% active)){
                     Numb.tmp <- matrix(NA, m.depth, nrow(numlayers))
                     for(box in 1 : ncol(Numb)){
@@ -638,13 +641,9 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) :(m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    new.sp  <- as.vector(reshape::melt(Numb.tmp)[, 3])
-                    if(is.null(over.sp)){
-                        over.sp <- new.sp
-                    } else {
-                        over.sp <- cbind(over.sp, new.sp)
-                    }
-                    names(over.sp)[ncol(over.sp)] <- paste(FGN[code], cohort, sep = '_')
+                    new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                    over.sp    <- cbind(over.sp, new.sp)
+                    names.temp <- c(names.temp, paste(FGN[code], cohort, sep = '_'))
                 }
                 Biom.N[code, cohort] <- sum(StructN + ReservN * Numb, na.rm = TRUE)
                 Struct[code, cohort] <- max(StructN, na.rm = TRUE)
@@ -652,10 +651,11 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         }
     }
     ncdf4::nc_close(nc.out)
+    names(over.sp)    <- names.temp
     row.names(Biom.N) <- as.character(groups.csv$code)
     row.names(Struct) <- as.character(groups.csv$code)
     if(length(is.off) > 0){
-        ## Remove groups that are not On in the model
+        ## Remove groups that are not ON in the model
         Struct            <- Struct[ - is.off, ]
         Biom.N            <- Biom.N[ - is.off, ]
     }
@@ -754,31 +754,31 @@ gape.func <- function(groups.csv, Struct, Biom.N, prm){
             KLP <- KLP[which(KUP[, 1] %in% KLP[, 1]), ]
         }
     }
-    age                     <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
-    Gape                    <- data.frame(FG = KLP$FG, KLP = KLP$Value, KUP = KUP$Value, Age.Adult = NA)
-    pos.Age                 <- which(Gape$FG %in% age$FG)
-    Gape$Age.Adult[pos.Age] <- age$Value
-    Gape$Age.Young          <- Gape$Age.Adult - 1
-    Gape$Age.Young          <- ifelse(Gape$Age.Young == 0,  1, Gape$Age.Young)
+    age             <- text2num(prm, '_age_mat', FG = as.character(groups.csv$code))
+    names(age)      <- c('FG', 'Age.Adult')
+    Gape            <- data.frame(FG = as.factor(KLP$FG), KLP = KLP$Value, KUP = KUP$Value, adult.Min = NA, adult.Max = NA, juv.Min = NA,
+                                  juv.Max = NA, JminS = NA, JmaxS = NA, AminS = NA, AmaxS = NA)
+    Gape            <- dplyr::left_join(Gape, age, by = 'FG')
+    Gape$Age.Young  <- Gape$Age.Adult - 1
+    Gape$Age.Young  <- ifelse(Gape$Age.Young == 0,  1, Gape$Age.Young)
     ## Pre-Calculations
-    ## Be sure that the FG have the same order
     Biom.N        <- Biom.N[order(row.names(Biom.N)), ]
-    Struct        <- Struct[order(row.names(Struct)), ]
-    Gape          <- Gape[order(Gape$FG), ]
-    G.pos         <- which(row.names(Struct) %in% Gape$FG)
-    length(which(Gape$FG %in% row.names(Struct)))
-    Gape$juv.Min  <- Struct[G.pos, 1] * Gape$KLP
-    Struct[which(is.na(Struct[, 1])), 1] <- 0 ## avoiding dimension problems
-    for( i in 1 : length(G.pos)){
+    Struct        <- data.frame(as.factor(row.names(Struct)), Struct)
+    names(Struct) <- c('FG',  paste0('Age_', 1 : (ncol(Struct) - 1)))
+    Gape          <- dplyr::left_join(Gape, Struct, by = 'FG')
+    ages.pos      <- grep('Age_', colnames(Gape))
+    Gape$juv.Min  <- Gape[, ages.pos[1]] * Gape$KLP
+    for( i in 1 : nrow(Gape)){
+        if(all(is.na(Gape[i, ages.pos]))) next()
         ## Gape limitation as a predator
-        Gape$adult.Min[i]  <- Struct[G.pos[i], Gape$Age.Adult[i]] * Gape$KLP[i]
-        Gape$adult.Max[i]  <- Struct[G.pos[i], sum(!is.na(Struct[G.pos[i], ]))] * Gape$KUP[i]
-        Gape$juv.Max[i]    <- Struct[G.pos[i], Gape$Age.Young[i]] * Gape$KUP[i]
+        Gape$adult.Min[i]  <- Gape[i, ages.pos[Gape$Age.Adult[i]]] * Gape$KLP[i]
+        Gape$adult.Max[i]  <- Gape[i, ages.pos[sum(!is.na(Gape[i, ages.pos]))]] * Gape$KUP[i]
+        Gape$juv.Max[i]    <- Gape[i, ages.pos[Gape$Age.Young[i]]] * Gape$KLP[i]
         ## Gape limitation as prey
-        Gape$JminS[i]      <- Struct[G.pos[i], 1]
-        Gape$AminS[i]      <- Struct[G.pos[i], Gape$Age.Adult[i]]
-        Gape$JmaxS[i]      <- Struct[G.pos[i], Gape$Age.Young[i]]
-        Gape$AmaxS[i]      <- Struct[G.pos[i], sum(!is.na(Struct[G.pos[i], ]))]
+        Gape$JminS[i]      <- Gape[i, ages.pos[1]]
+        Gape$AminS[i]      <- Gape[i, ages.pos[Gape$Age.Adult[i]]]
+        Gape$JmaxS[i]      <- Gape[i, ages.pos[Gape$Age.Young[i]]]
+        Gape$AmaxS[i]      <- Gape[i, ages.pos[sum(!is.na(Gape[i, ages.pos]))]]
     }
     return(list(Gape, age))
 }
@@ -852,14 +852,15 @@ Over.mat.func <- function(Ava.mat, Gape){
 ##' @author Demiurgo
 Bio.ages <- function(Biom.N, age, Over.mat){
     ## total biomasss by Juv and Adults
+    browser()
     Biom.N  <- Biom.N[order(row.names(Biom.N)), ]
     fg      <- row.names(Biom.N)
     bio.juv <- bio.adl <- matrix(NA, ncol = 2, nrow = nrow(Biom.N))
     for( i in 1 : nrow(Biom.N)){
-        l.age <- which(age$FG == fg[i])
+        l.age <- which(age$FG  ==  fg[i])
         if(length(l.age) !=  0){
-            bio.juv[i, ] <- c(fg[i], sum(Biom.N[i, 1 : (age$Value[l.age] - 1)], na.rm = TRUE))
-            bio.adl[i, ] <- c(fg[i], sum(Biom.N[i, age$Value[l.age] : ncol(Biom.N)], na.rm = TRUE))
+            bio.juv[i, ] <- c(fg[i], sum(Biom.N[i, 1 : (age$Age.Adult[l.age] - 1)], na.rm = TRUE))
+            bio.adl[i, ] <- c(fg[i], sum(Biom.N[i, age$Age.Adult[l.age] : ncol(Biom.N)], na.rm = TRUE))
         } else {
             ## For Biomass pool,  only adult
             bio.juv[i, ] <- c(fg[i], sum(Biom.N[i, 1], na.rm = TRUE))
