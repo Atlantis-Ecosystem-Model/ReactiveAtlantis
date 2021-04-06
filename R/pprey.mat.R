@@ -120,7 +120,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     Gape     <- gape.func(groups.csv, Struct, Biom.N, prm)
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Calculating size and spatial overlap')
-    browser()
     Over.mat <- Over.mat.func(Ava.mat, Gape[[1]])
     bio.a    <- Bio.ages(Biom.N, age = Gape[[2]], Over.mat)
     bio.juv  <- bio.a[[1]]
@@ -389,7 +388,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             Eff_pred_out <- shiny::reactive({
                 dat      <- reshape::melt(rff())
                 dat[which(dat == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- ggplot2::ggplot(data = dat, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
                 p <- p + scale_fill_distiller(palette = "YlGnBu", limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation \nLn()',  na.value = 'white', direction = 1)
                 #p <- p + scale_fill_distiller()
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1))
@@ -402,7 +401,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             Overlap_out <- shiny::reactive({
                 col.tmp <- RColorBrewer::brewer.pal(11, 'RdBu')[c(6, 11)]
                 dat2 <- reshape::melt(t.o.mat)
-                p <- ggplot2::ggplot(data = dat2, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour= 'grey45', aes( fill = factor(.data$value)))
+                p <- ggplot2::ggplot(data = dat2, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour= 'grey45', ggplot2::aes( fill = factor(.data$value)))
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator')
                 p <- p + scale_x_discrete(position = "top")  + scale_fill_manual(values = col.tmp, name = 'Gape overlap', labels = c('No', 'Yes')) #+ scale_fill_manual(name = 'Gape overlap', labels = c('No', 'Yes'))
                 p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1, alpha = .1, colour = 'darkorange')
@@ -413,10 +412,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             Avail_out <- shiny::reactive({
                 dat.A <- reshape::melt(t(N.mat$Ava))
                 dat.A[which(dat.A == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat.A, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
-                p <- p  + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Availability', na.value = 'white', direction = 1)
+                p <- ggplot2::ggplot(data = dat.A, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- p + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Availability', na.value = 'white', direction = 1)
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
-                p <- p +annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1, alpha = .1, colour = 'royalblue')
+                p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1, alpha = .1, colour = 'royalblue')
                 p <- p + annotate("rect", xmin = -.5, xmax = nrow(t(N.mat$Ava)) + .5, ymin = liney() - .5, ymax = liney() + .5, alpha = .1, colour = 'royalblue')
                 p
             })
@@ -424,7 +423,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             Press_out <- shiny::reactive({
                 dat.P <- reshape::melt(rff2())
                 dat.P[which(dat.P == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat.P, aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45", size = 0.2)
+                p <- ggplot2::ggplot(data = dat.P, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45", size = 0.2)
                 p <- p + scale_fill_distiller(palette = "RdPu",, limits=c(0, 100), name = 'Precentage of pressure', na.value = 'white', direction = 1)
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
                 p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff2()) + 1, alpha = .1, colour = 'goldenrod')
@@ -450,19 +449,19 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
 
 
             output$plot5 <- shiny::renderPlot({
-                ggplot2::ggplot(data = b.juv, aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
+                ggplot2::ggplot(data = b.juv, ggplot2::aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
             output$plot6 <- shiny::renderPlot({
-                ggplot2::ggplot(data = b.adl, aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
+                ggplot2::ggplot(data = b.adl, ggplot2::aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
                     guides(fill = FALSE)+
                     xlab("Functional Groups") + ylab("Biomass [MgN] or Density [MgNm-3]")
             })
             output$plot10 <- shiny::renderPlot({
-                ggplot2::ggplot(data = spatial(), aes(x = .data$lon, y = .data$lat, group = .data$Box, fill = .data$Rel.overlap)) +
+                ggplot2::ggplot(data = spatial(), ggplot2::aes(x = .data$lon, y = .data$lat, group = .data$Box, fill = .data$Rel.overlap)) +
                     geom_polygon(colour = "black", size = 0.25, na.rm = TRUE) +
                     scale_fill_manual('Realized overlap\n', values = c('No Gape - No Spatial'              = 'azure1',
                                                                        'No Gape - Spatial'                 = 'royalblue',
@@ -850,7 +849,6 @@ Over.mat.func <- function(Ava.mat, Gape){
 ##' @author Demiurgo
 Bio.ages <- function(Biom.N, age, Over.mat){
     ## total biomasss by Juv and Adults
-    browser()
     Biom.N  <- Biom.N[order(row.names(Biom.N)), ]
     fg      <- row.names(Biom.N)
     bio.juv <- bio.adl <- matrix(NA, ncol = 2, nrow = nrow(Biom.N))
@@ -916,7 +914,7 @@ make.map <- function(bgm.file){
     }
     ## some datum are not included on the proj4 poject (NZ and AU)
     proj = gsub('\\+datum=NZGD2000', '', proj)
-    ## in case you use alb for albers equal area (aes)
+    ## in case you use alb for albers equal area (ggplot2::aes)
     proj = gsub('alb', 'aea', proj)
     ## in case someone is using grs and no GRS. case sensitive for R - proj4
     proj = gsub('grs', 'GRS', proj)
