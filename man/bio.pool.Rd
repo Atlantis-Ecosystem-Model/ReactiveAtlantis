@@ -17,9 +17,7 @@ bio.pool(pol.grp, nc.out, ctg, mg2t, x.cn, box.info)
 
 \item{x.cn}{Ration from nitrogen to carbon}
 
-\item{area}{Box area}
-
-\item{age.grp}{Age groups}
+\item{box.info}{Information by box and layer}
 }
 \value{
 a dataframe with the biomass for all the functional groups with age classes
