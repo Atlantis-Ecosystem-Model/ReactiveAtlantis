@@ -24,7 +24,7 @@ usually ends in \emph{.nc}.}
 \item{quiet}{(Default = TRUE) this parameter helps during the process of debugging.}
 }
 \value{
-Reactive HTML that displays predator-prey information such as: the ppPREY
+Shiny::Reactive shiny::HTML that displays predator-prey information such as: the ppPREY
     matrix, the initial abundance of prey, the overlap matrix based on gape size,
     predator preference and predator prey spatial overlap. All this information
     is divided into two different tabs:
@@ -71,11 +71,11 @@ This function helps the user to calibrate and explore different aspect of the
     predator-prey interaction. In Atlantis, interaction between the predator and
     the prey is mainly defined by the predator-prey matrix which represents the
     maximum availability of each prey (age) group to a specific predator (age
-    group). This consumption can be strongly affected by different processes such
+    group). This consumption can be shiny::strongly affected by different processes such
     as the spatial overlap, the biomass of the prey and the gape limitation of
     the predator. With this tool you can explore the availability matrix and the
     processes that affect consumption. This tool also allows you to explore new
-    values for the predator-prey matrix and observe online how these new values
+    values for the predator-prey matrix and shiny::observe online how these new values
     affect the predator-prey interaction.
 }
 \author{

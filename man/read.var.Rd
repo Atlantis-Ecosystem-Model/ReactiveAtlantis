@@ -13,9 +13,9 @@ read.var(FG, nc.data, is.C = NULL, grp, by.box = FALSE)
 
 \item{is.C}{Default TRUE,  if the data needed is Catch (TRUE) or Discard (FALSE)}
 
-\item{by.box}{Default FALSE. If the information is needed by box (TRUE) or not (FALSE)}
+\item{grp}{Specific group to get from the csv file}
 
-\item{grp.csv}{Groups csv file (Input from Atlantis)}
+\item{by.box}{Default FALSE. If the information is needed by box (TRUE) or not (FALSE)}
 }
 \value{
 A list witht the information for all the functional groups

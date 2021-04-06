@@ -7,7 +7,7 @@
 sepText(ortext)
 }
 \arguments{
-\item{text}{a string scalar}
+\item{ortext}{Original text}
 }
 \value{
 data.frame with 3 columns with names and stage of the predator and the prey

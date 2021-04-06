@@ -16,6 +16,8 @@ bio.pwn(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info)
 \item{mg2t}{mg C converted to wet weight in tonnes == 20 / 1000000000}
 
 \item{x.cn}{Redfield ratio of C:N 5.7}
+
+\item{box.info}{Information for each box and layer}
 }
 \value{
 a dataframe with the biomass for all the functional groups with Biomass pool age classes

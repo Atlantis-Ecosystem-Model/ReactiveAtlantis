@@ -8,6 +8,10 @@ relative(df, biomass = TRUE, Vec = NULL)
 }
 \arguments{
 \item{df}{Data frame of biomass by FG}
+
+\item{biomass}{Is biomass included}
+
+\item{Vec}{True is the information in vector}
 }
 \value{
 A vector of relative values

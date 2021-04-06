@@ -38,6 +38,8 @@
 ##' proportion by layer, or their logarithmic value.
 ##'     \item \bold{Help}: Shows information about the inputs, parameter values and
 ##' output. It also, provides an overview of the different options for the user.}
+##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
@@ -66,37 +68,37 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('RColorBrewer', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
+    ## if (!require('shiny', quietly = TRUE)) {
+    ##     stop('The package shiny was not installed')
+    ## }
+    ## if (!require('ncdf4', quietly = TRUE)) {
+    ##     stop('The package ncdf4 was not installed')
+    ## }
+    ## if (!require('reshape', quietly = TRUE)) {
+    ##     stop('The package reshape was not installed')
+    ## }
+    ## if (!require('tidyverse', quietly = TRUE)) {
+    ##     stop('The package tidyverse was not installed')
+    ## }
+    ## if (!require('stringr', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
+    ## if (!require('RColorBrewer', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
     ## general settings
-    colors    <- brewer.pal(n = 8, name = "Set1")
+    colors    <- RColorBrewer::brewer.pal(n = 8, name = "Set1")
     if(!quiet) cat('  ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
-    nc.ini    <- nc_open(ini.nc.file)
-    yoy       <- read.csv(yoy.file, sep = ' ')
-    group.csv <- read.csv(grp.file)
+    nc.ini    <- ncdf4::nc_open(ini.nc.file)
+    yoy       <- utils::read.csv(yoy.file, sep = ' ')
+    group.csv <- utils::read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     ## remove here those that are turned off!!
-    nc.out    <- nc_open(out.nc.file)
+    nc.out    <- ncdf4::nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
-    mg2t      <-  0.00000002 ## mg C converted to wet weight in tonnes == 20 / 1000000000
+    mg2t      <- 0.00000002 ## mg C converted to wet weight in tonnes == 20 / 1000000000
     if(!quiet) cat('      ...Done!')
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n # -     Step 2    -   #')
@@ -159,19 +161,19 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
     for(l.pp in 1 : length(pp.fg)){
-        pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
+        pp.list[[l.pp]]      <- ncdf4::ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
         names(pp.list)[l.pp] <- pp.cod[l.pp]
     }
-    pp.list[['Light']] <- ncvar_get(nc.out, 'Light')
-    pp.list[['Eddy']]  <- ncvar_get(nc.out, 'eddy')
-    numlay             <- ncvar_get(nc.out, 'numlayers')
+    pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
+    pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
+    numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
     n.box              <- dim(pp.list[['Light']])[2]
     if(!quiet) cat('          ...Done!')
     if(!quiet) cat('\n Reading YOY from Atlantis')
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
     ##    YOY file array       ##
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
-    pwn.op   <- group.csv$name[which(group.csv$grouptype == 'PWN')]
+    pwn.op   <- group.csv$name[which(group.csv$grouptype %in% c('PWN', 'CEP'))]
     tmp.code <- paste0(group.csv$code[sp.dat], '.0')
     tmp.code <- tmp.code[tmp.code %in% names(yoy)]
     cod.yoy  <- data.frame(Code = tmp.code, Initial = NA)
@@ -188,7 +190,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##
     coh.fg  <- group.csv$numcohorts[sp.dat]
     cod.fg  <- group.csv$code[sp.dat]
-    time    <- ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
+    time    <- ncdf4::ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
     spw     <- NULL
     nam     <- NULL
     SSB.tot <- NULL
@@ -216,24 +218,25 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         for(coh in 1 : coh.fg[fg]){
             if(nam.fg[fg] %in% pwn.op){
                 name.fg <- paste0(nam.fg[fg], '_N', coh)
-                nums    <- ncvar_get(nc.out, name.fg)[, , time.stp]
+                nums    <- ncdf4::ncvar_get(nc.out, name.fg)[, , time.stp]
                 SSB.tmp <- nums
+                mask    <- ifelse(nums > 1.e-16, 1, 0)
                 spawn   <- nums *  FSPB[pos.fspb, coh]
                 num.sp  <- spawn
             } else {
                 name.fg <- paste0(nam.fg[fg], coh)
-                nums    <- ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
+                nums    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
                 mask    <- ifelse(nums > 1.e-16, 1, 0)
                 nums    <- nums * mask
-                rn      <- ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp] * mask
-                sn      <- ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp] * mask
+                rn      <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp] * mask
+                sn      <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp] * mask
                 wspi    <- sn * (1 + xrs)       ## minimum weigth for spawning
                 rat     <- ((rn  + sn ) - wspi) ## weight deficit
                 rat[(rat < 0)]   <- 0
                 spawn            <- ((wspi * FSP - KSPA)  -  rat)
-                SSB.tmp <- (ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp]  +
-                            ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp])  *
-                    ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
+                SSB.tmp <- (ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))[, , time.stp]  +
+                            ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))[, , time.stp])  *
+                    ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums'))[, , time.stp]
                 spawn[spawn < 0] <- 0
                 spawn  <- spawn *  FSPB[pos.fspb, coh] ## individual spawn
                 spawn  <- spawn * nums      ## total spawn
@@ -294,67 +297,67 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n # -     Step 3    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n  -  - Plotting -  -  \n\n')
-    shinyApp(
-        ui <- navbarPage('Atlantis Recruitment Tool',
-                         tabPanel('Recruits and YOY',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp', 'Functional Group', as.character(cod.fg)),
-                                                 mainPanel(strong("Rec model:"), textOutput("Rec.mod")),
-                                                 mainPanel(strong("Alpha: "), verbatimTextOutput("Alpha.mod", placeholder = TRUE)),
-                                                 mainPanel(strong("Beta: "), verbatimTextOutput("Beta.mod", placeholder = TRUE)),
-                                                 mainPanel("Initial YOY: ", textOutput("Ini.YOY")),
-                                                 br(),
-                                                 numericInput("new.alpha", label = "New Alpha", value = 0),
-                                                 br(),
-                                                 numericInput("new.beta", label = "New Beta", value = 0),
-                                                 mainPanel("Recomened Alpha: ", textOutput("ratio"))
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Atlantis Recruitment Tool',
+                         shiny::tabPanel('Recruits and YOY',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp', 'Functional Group', as.character(cod.fg)),
+                                                 shiny::mainPanel(shiny::strong("Rec model:"), shiny::textOutput("Rec.mod")),
+                                                 shiny::mainPanel(shiny::strong("Alpha: "), shiny::verbatimTextOutput("Alpha.mod", placeholder = TRUE)),
+                                                 shiny::mainPanel(shiny::strong("Beta: "), shiny::verbatimTextOutput("Beta.mod", placeholder = TRUE)),
+                                                 shiny::mainPanel("Initial YOY: ", shiny::textOutput("Ini.YOY")),
+                                                 shiny::br(),
+                                                 shiny::numericInput("new.alpha", label = "New Alpha", value = 0),
+                                                 shiny::br(),
+                                                 shiny::numericInput("new.beta", label = "New Beta", value = 0),
+                                                 shiny::mainPanel("Recomened Alpha: ", shiny::textOutput("ratio"))
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "400px"),
-                                             plotOutput('plot2', width = "100%", height = "400px"),
-                                             tableOutput('table')
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "400px"),
+                                             shiny::plotOutput('plot2', width = "100%", height = "400px"),
+                                             DT::dataTableOutput('table')
                                              )
                                   )
                                   ),
-                         tabPanel('Growth Zoo and PPs',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
-                                                 selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
-                                                 selectInput('s.box', 'Box', 0 : (n.box - 1)),
-                                                 checkboxInput('l.prop', 'Layer-Proportion', TRUE),
-                                                 checkboxInput('b.prop', 'Box-Proportion', FALSE),
-                                                 checkboxInput('log.v', 'Logarithm', FALSE)
+                         shiny::tabPanel('Growth Zoo and PPs',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
+                                                 shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
+                                                 shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
+                                                 shiny::checkboxInput('log.v', 'Logarithm', FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot3', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot3', width = "100%", height = "800px")
                                              )
                                   )
                                   ),
                          ## -  -  Help
-                         tabPanel("Help",
-                                  fluidPage(HTML(txtHelp)
+                         shiny::tabPanel("Help",
+                                  shiny::fluidPage(shiny::HTML(txtHelp)
                                             )
                                   ),
                          ## -  - Exit
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session) {
-            time.stp <- reactive({
+            time.stp <- shiny::reactive({
                 time.stp <- seq(from = 0, by = 365, to = tail(time, 1))  + rec$Time.sp[rec$FG == input$sp]
                 time.stp <- time.stp[time.stp < tail(time, 1)]
             })
             ## recruitment model
-            output$Rec.mod <- renderText({
+            output$Rec.mod <- shiny::renderText({
                 mod   <- rec$Value[rec$FG == input$sp]
                 model <- ifelse(mod == 1, 'Constant recruitment',
                          ifelse(mod == 2, 'Determined by chlA',
@@ -364,7 +367,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                          ifelse(mod == 12, 'Fixed offspring', 'Other'))))))
             })
             ## Original Recruitment
-            rec.bio <- reactive({
+            rec.bio <- shiny::reactive({
                 mod      <- rec$Value[rec$FG == input$sp]
                 if(mod != 10){
                     spawn.fg <- spw[input$sp, ]
@@ -414,7 +417,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 df.end
             })
             ## Out Primary producers List
-            o.pp <- reactive({
+            o.pp <- shiny::reactive({
                 box         <- as.numeric(input$s.box) + 1
                 ly.box      <- numlay[box]
                 out.pp.list <- list()
@@ -432,7 +435,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                             out.pp.list[[i]] <- matrix(rep(pp.list[[i]][box, ], ly.box), nrow = ly.box, byrow = TRUE)
                         }
                     }
-                    out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing ceros from atlatnis
+                    out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing zeros
                     if(input$l.prop == TRUE & input$b.prop == FALSE){
                         out.pp.list[[i]] <- out.pp.list[[i]] / apply(out.pp.list[[i]] , 1, max, na.rm = TRUE)
                     } else if (input$l.prop == FALSE & input$b.prop == TRUE){
@@ -451,24 +454,24 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 ## To get the proper plot in the right order
                 ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
                 out.pp.list <- out.pp.list[ordn]
-                ## getting ready for ggplot
+                ## getting ready for ggplot2 ::ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
             })
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
-            output$Alpha.mod <- renderText({
+            output$Alpha.mod <- shiny::renderText({
                 Alpha   <- rec$Alpha[rec$FG == input$sp]
             })
-            output$Beta.mod <- renderText({
+            output$Beta.mod <- shiny::renderText({
                 Beta   <- rec$Beta[rec$FG == input$sp]
             })
-            output$Ini.YOY <- renderText({
+            output$Ini.YOY <- shiny::renderText({
                 sp.plt   <- paste0(input$sp, '.0')
                 Ini.YOY  <- yoy[1, which(names(yoy) == sp.plt)]
             })
-            output$ratio <- renderText({
+            output$ratio <- shiny::renderText({
                 if(rec.bio()$Model[1] %in% c(3, 10, 19)) {
                     ratio <- rec.bio()$Ratio[1] * as.numeric(rec$Alpha[rec$FG == input$sp])
                 } else {
@@ -476,8 +479,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 }
                 ratio
             })
-            output$plot1 <- renderPlot({
-                par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
+            output$plot1 <- shiny::renderPlot({
+                graphics::par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$BYOY , xlab = 'Time (days)', ylab = ifelse(rec.bio()$Model[1] %in% c(1, 12), 'Numbers', 'Biomass [Tonnes]'), las = 1, bty = 'n', pch = 20,type = 'b',
                      col = 'royalblue', ylim = c(0, max(rec.bio()$Rec, rec.bio()$BYOY, rec.bio()$N.Rec)),
                      xlim = range(c(rec.bio()$TYOY, time.stp())))
@@ -487,22 +490,24 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 legend("topright", inset = c(-0.1, 0), legend = c('Atlantis YOY', 'Larvaes', 'New Larvaes', 'New YOY'),
                        lty=c(1, 1, 1, 1), col=c('royalblue', 'red4', 'green4', 'yellowgreen'), pch = c(20, 20, 20, 20), bty = 'n', lwd = 2)
             })
-            output$plot2 <- renderPlot({
-                par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
+            output$plot2 <- shiny::renderPlot({
+                graphics::par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$PrpYOY, ylim = c(0, ifelse(max(rec.bio()$PrpYOY) < 1, 1, max(rec.bio()$PrpYOY))), bty = 'n', type = 'b',
                      lty = 2, pch = 19, col = 'olivedrab4', ylab = 'proportion from initial yoy (t)', xlab = 'Time (days)', las = 1,
                      xlim = range(c(rec.bio()$TYOY, time.stp())))
                 lines(time.stp(), rec.bio()$Prp.st, type = 'b', pch = 19, lty = 2, col = 'yellow3')
                 legend('topright', inset=c(-0.1, 0), legend = c('YOY prop', 'New prop'), lty = 2, col=c('olivedrab4', 'yellow3' ), pch = c(19, 19), bty = 'n', lwd = 2)
             })
-            output$plot3 <- renderPlot({
+            output$plot3 <- shiny::renderPlot({
                 ## colors
-                colo  <- c(rep('grey', (length(pp.list) - 2)), colors[c(1, 2)])
-                ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE) +
-                    facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    scale_colour_manual(values = colo)
+                colo  <- c(rep('grey70', (length(pp.list) - 2)), colors[c(1, 2)])
+                p <- ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE)
+                p <- p + ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE))
+                p <- p + scale_colour_manual(values = colo, name = 'Variable') + ggplot2::theme_minimal() + ggplot2::theme(text = ggplot2::element_text(size = 15))
+                p <- update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                p
             })
-            output$table <- renderTable({
+            output$table <- DT::renderDataTable({
                 table <- with(rec.bio(), data.frame(Time.Larv = time.stp(), TimeYOY = TYOY, Larvaes.Atlantis = Rec, YOY.Atlantis = BYOY, Diff.Prop = P.diff * 100, Est.Larvaes = N.Rec, Est.YOY = N.YOY))
                 if(rec.bio()$Model[1] %in% c(3, 10, 19)) table$Ratio <- rec.bio()$Ratio
                 table <- as.data.frame(table)
@@ -515,6 +520,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
 ##' @param bha Alpha parameter
 ##' @param bhb Beta parameter
 ##' @param bio Biomass
+##' @param ver Calculating in Number or Biomass
 ##' @return The amout of recruit (Larvaes)
 ##' @author Demiurgo
 BH.rec <- function(sp, bha, bhb, bio, ver= 'N'){
@@ -531,64 +537,64 @@ BH.rec <- function(sp, bha, bhb, bio, ver= 'N'){
     return(recruit)
 }
 
-##' @title Parameter file reader
-##' @param text Biological parametar file for Atlatnis
-##' @param pattern Text that you are looking
-##' @param FG Name of the functional groups
-##' @param Vector Logic argument, if the data is on vectors or not
-##' @param pprey Logic argument, if the data is a pprey matrix or not
-##' @return A matrix with the values from the .prm file
-##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
-    if(!isTRUE(Vector)){
-        text <- text[grep(pattern = pattern, text)]
-        if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
-        txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-        col1 <- col2 <- vector()
-        for( i in 1 : length(txt)){
-            tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1])) next
-            tmp2    <- unlist(strsplit(tmp[1], split = '_'))
-            if(FG[1] == 'look') {
-                col1[i] <- tmp2[1]
-            } else {
-                id.co   <- which(tmp2 %in% FG )
-                if(sum(id.co) == 0) next
-                col1[i] <- tmp2[id.co]
-            }
-            col2[i] <- as.numeric(tmp[2])
-        }
-        if(is.null(FG)) col1 <- rep('FG', length(col2))
-        out.t <- data.frame(FG = col1, Value = col2)
-        if(any(is.na(out.t[, 1]))){
-            out.t <- out.t[-which(is.na(out.t[, 1])), ]
-        }
-        return(out.t)
-    } else {
-        l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
-        fg    <- vector()
-        pos   <- 1
-        for( i in 1 : length(nam)){
-            tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
-            fg[pos] <- tmp[1]
-            if(pos == 1) {
-                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
-                pos    <- pos + 1
-            } else {
-                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
-                pp.mat <- rbind(pp.mat, pp.tmp)
-                pos    <- pos + 1
-            }
-        }
-        if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-        row.names(pp.mat)                  <- fg
-        return(pp.mat)
-    }
-}
+## ##' @title Parameter file reader
+## ##' @param text Biological parametar file for Atlatnis
+## ##' @param pattern Text that you are looking
+## ##' @param FG Name of the functional groups
+## ##' @param Vector Logic argument, if the data is on vectors or not
+## ##' @param pprey Logic argument, if the data is a pprey matrix or not
+## ##' @return A matrix with the values from the .prm file
+## ##' @author Demiurgo
+## text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
+##     if(!isTRUE(Vector)){
+##         text <- text[grep(pattern = pattern, text)]
+##         if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
+##         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
+##         col1 <- col2 <- vector()
+##         for( i in 1 : length(txt)){
+##             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1])) next
+##             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
+##             if(FG[1] == 'look') {
+##                 col1[i] <- tmp2[1]
+##             } else {
+##                 id.co   <- which(tmp2 %in% FG )
+##                 if(sum(id.co) == 0) next
+##                 col1[i] <- tmp2[id.co]
+##             }
+##             col2[i] <- as.numeric(tmp[2])
+##         }
+##         if(is.null(FG)) col1 <- rep('FG', length(col2))
+##         out.t <- data.frame(FG = col1, Value = col2)
+##         if(any(is.na(out.t[, 1]))){
+##             out.t <- out.t[-which(is.na(out.t[, 1])), ]
+##         }
+##         return(out.t)
+##     } else {
+##         l.pat <- grep(pattern = pattern, text)
+##         nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
+##         fg    <- vector()
+##         pos   <- 1
+##         for( i in 1 : length(nam)){
+##             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
+##             fg[pos] <- tmp[1]
+##             if(pos == 1) {
+##                 #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
+##                 pos    <- pos + 1
+##             } else {
+##                 #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+##                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
+##                 pp.mat <- rbind(pp.mat, pp.tmp)
+##                 pos    <- pos + 1
+##             }
+##         }
+##         if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
+##         row.names(pp.mat)                  <- fg
+##         return(pp.mat)
+##     }
+## }

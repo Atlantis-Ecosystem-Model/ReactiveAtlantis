@@ -38,10 +38,11 @@
 ##' @param diet.file.bypol Detailed diet check file, this can be obtained as an extra output from Atlantis \emph{"DetailedDietCheck.txt"}. To get this file from Atlatnis turn on the option \emph{flagdietcheck} on the \emph{Run.prm} file on Atlantis.
 ##' @param grp.file Character string with the path to the groups \emph{*.csv} file (Atlantis input file).
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
-##' @return Reactive output with the plot of the food web for the specific time step,
+##' @return Shiny::Reactive output with the plot of the food web for the specific time step,
 ##'     and a table with the trophic level of each prey and predator in the food web
 ##' @author Demiurgo
 ##' @importFrom Rdpack reprompt
+##' @import stats utils grDevices ggplot2 graphics
 ##' @export
 food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"
@@ -52,44 +53,44 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('plotrix', quietly = TRUE)) {
-        stop('The package plotrix was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('data.table', quietly = TRUE)) {
-        stop('The package data.table was not installed')
-    }
-    if (!require('RColorBrewer', quietly = TRUE)) {
-        stop('The package RColorBrewer was not installed')
-    }
+    ## if (!require('shiny', quietly = TRUE)) {
+    ##     stop('The package shiny was not installed')
+    ## }
+    ## if (!require('ncdf4', quietly = TRUE)) {
+    ##     stop('The package ncdf4 was not installed')
+    ## }
+    ## if (!require('plotrix', quietly = TRUE)) {
+    ##     stop('The package plotrix was not installed')
+    ## }
+    ## if (!require('reshape', quietly = TRUE)) {
+    ##     stop('The package reshape was not installed')
+    ## }
+    ## if (!require('tidyverse', quietly = TRUE)) {
+    ##     stop('The package tidyverse was not installed')
+    ## }
+    ## if (!require('stringr', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
+    ## if (!require('data.table', quietly = TRUE)) {
+    ##     stop('The package data.table was not installed')
+    ## }
+    ## if (!require('RColorBrewer', quietly = TRUE)) {
+    ##     stop('The package RColorBrewer was not installed')
+    ## }
     if(!quiet) cat('  ...Done!')
-    color.p <- brewer.pal(8, 'RdYlBu')[c(7, 2)]
+    color.p <- RColorBrewer::brewer.pal(8, 'RdYlBu')[c(7, 2)]
     ## Reading files
     if(!quiet) cat('\n Reading files')
-    dat        <- data.frame(fread(diet.file, header = TRUE, sep = ' ', showProgress = FALSE))
+    dat        <- data.frame(data.table::fread(diet.file, header = TRUE, sep = ' ', showProgress = FALSE))
     dat.bp     <- pol <- NA
     if(!is.null(diet.file.bypol)){
-        dat.bp <- data.frame(fread(diet.file.bypol, header = TRUE, sep = ' ', showProgress = FALSE))
+        dat.bp <- data.frame(data.table::fread(diet.file.bypol, header = TRUE, sep = ' ', showProgress = FALSE))
         pol    <- unique(dat.bp$Box)
     }
     if(any(names(dat) == 'Group')) names(dat)[which(names(dat) == 'Group')] <- 'Predator'
     time.stp <- round(range(dat$Time), 0)
     lag      <- diff(unique(dat$Time))[1]
-    grp.dat  <- read.csv(grp.file)
+    grp.dat  <- utils::read.csv(grp.file)
     stk      <- unique(dat$Stock)
     if(any(names(grp.dat) == 'InvertType')){
         names(grp.dat)[which(names(grp.dat) == 'InvertType')] <- 'GroupType'
@@ -105,106 +106,106 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
     if(!quiet) cat('\n # -     Step 2    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n Processing and plotting')
-    shinyApp(
-        ui <- navbarPage('Atlantis Food Web Tool',
-                         tabPanel('Food Web',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),
-                                                 numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
-                                                 numericInput("min", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
-                                                 numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = lag),
-                                                 selectInput('stock', 'Stock', stk),
-                                                 downloadButton("Dwnl", "Download-data"))
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Atlantis Food Web Tool',
+                         shiny::tabPanel('Food Web',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('foc.fg', 'Functional Group', c('All', as.character(code.fg))),
+                                                 shiny::numericInput("m.stg", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
+                                                 shiny::numericInput("min", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
+                                                 shiny::numericInput("time", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = lag),
+                                                 shiny::selectInput('stock', 'Stock', stk),
+                                                 shiny::downloadButton("Dwnl", "Download-data"))
                                              ),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "800px"),
-                                             downloadButton("Dwnl.tl", "Download-table"),
-                                             tableOutput('table')
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "800px"),
+                                             shiny::downloadButton("Dwnl.tl", "Download-table"),
+                                             DT::dataTableOutput('table')
                                              )
                                   )
                                   ),
-                         tabPanel('Food Web by polygon',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('foc.fg.bp', 'Functional Group', c('All', as.character(code.fg))),
-                                                 numericInput("m.stg.bp", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
-                                                 numericInput("min.bp", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
-                                                 numericInput("time.bp", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = lag),
-                                                 selectInput('poly.bp', 'Polygon', pol),
-                                                 downloadButton("Dwnl.bp", "Download-data"))
+                         shiny::tabPanel('Food Web by polygon',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('foc.fg.bp', 'Functional Group', c('All', as.character(code.fg))),
+                                                 shiny::numericInput("m.stg.bp", "Max. Trophic Connections:", min = 1,  max = 10, value = 4, step = 1),
+                                                 shiny::numericInput("min.bp", "Min. Proportion :", min = 0.001,  max = 1, value = 0.01, step = 0.001),
+                                                 shiny::numericInput("time.bp", "Time Step :", min = time.stp[1],  max = time.stp[2], value = time.stp[1], step = lag),
+                                                 shiny::selectInput('poly.bp', 'Polygon', pol),
+                                                 shiny::downloadButton("Dwnl.bp", "Download-data"))
                                              ),
-                                      column(10,
-                                             plotOutput('plot.bp', width = "100%", height = "800px"),
-                                             downloadButton("Dwnl.tl.bp", "Download-table"),
-                                             tableOutput('table.bp')
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot.bp', width = "100%", height = "800px"),
+                                             shiny::downloadButton("Dwnl.tl.bp", "Download-table"),
+                                             DT::dataTableOutput('table.bp')
                                              )
                                   )
                                   ),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session) {
-            time.prey <- reactive({
+            time.prey <- shiny::reactive({
                 time.prey <- dat[dat$Time == input$time & dat$Stock  == input$stock, c(2, 6 : ncol(dat))]
             })
-            time.prey.bp <- reactive({
+            time.prey.bp <- shiny::reactive({
                 if(any(!is.na(dat.bp)))
                     time.prey.bp <- dat.bp[dat.bp$Time == input$time.bp & dat.bp$Box  == input$poly.bp, c(2, 6 : ncol(dat.bp))]
             })
             ## Original Recruitment
-            t.prey <- reactive({
+            t.prey <- shiny::reactive({
                 t.prey <- tot.prey(input$foc.fg, input$m.stg, code.fg, time.prey(), input$min, grp.dat)
             })
-            t.prey.bp <- reactive({
+            t.prey.bp <- shiny::reactive({
                 if(any(!is.na(dat.bp)))
                     t.prey.bp <- tot.prey(input$foc.fg.bp, input$m.stg.bp, code.fg, time.prey.bp(), input$min.bp, grp.dat)
             })
             ## assing the value of trophic level for the prey
-            TL <- reactive({
+            TL <- shiny::reactive({
                 TL <- NULL
                 if(!is.null(t.prey())){
                     TL <- trophic.lvl(t.prey(), grp.dat)
                 }
             })
-            TL.bp <- reactive({
+            TL.bp <- shiny::reactive({
                 if(any(!is.na(dat.bp)))
                 TL.bp <- NULL
                 if(!is.null(t.prey.bp())){
                     TL.bp <- trophic.lvl(t.prey.bp(), grp.dat)
                 }
             })
-            output$plot1 <- renderPlot({
-                validate(
-                    need((length(TL()) != 0),  'Apparently there is no interaction between predators and prey.')
+            output$plot1 <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need((length(TL()) != 0),  'Apparently there is no interaction between predators and prey.')
                 )
                 plot.tlvl(TL(), t.prey(), input$foc.fg, pol = NULL, color.p)
             })
-            output$plot.bp <- renderPlot({
-                validate(
-                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
+            output$plot.bp <- shiny::renderPlot({
+                shiny::validate(
+                    shiny::need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
                 )
                 plot.tlvl(TL.bp(), t.prey.bp(), input$foc.fg.bp, pol = input$poly.bp, color.p)
             })
-            output$table <- renderTable({
-                validate(
-                    need((length(TL()) != 0),  'Apparently there is no interaction between predators and prey.')
+            output$table <- DT::renderDataTable({
+                shiny::validate(
+                    shiny::need((length(TL()) != 0),  'Apparently there is no interaction between predators and prey.')
                 )
                 table    <- with(TL(), data.frame(Functional.group = FG, Trophic.Level = Tlevel))
             })
-            output$table.bp <- renderTable({
-                validate(
-                    need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
+            output$table.bp <- DT::renderDataTable({
+                shiny::validate(
+                    shiny::need((length(TL.bp()$Tlevel) != 0),  paste('Apparently there is no interaction between predators and prey in the box ', input$poly.bp, '. \n\nOr the Detailed diet check file is not provided.'))
                 )
                 table    <- with(TL.bp(), data.frame(Functional.group = FG, Trophic.Level = Tlevel))
             })
-            output$Dwnl.tl <- downloadHandler(
+            output$Dwnl.tl <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -212,7 +213,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                     write.csv(data.frame(TL()), file, row.names = FALSE)
                 }
             )
-            output$Dwnl.tl.bp <- downloadHandler(
+            output$Dwnl.tl.bp <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -220,7 +221,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                     write.csv(data.frame(TL.bp()), file, row.names = FALSE)
                 }
             )
-            output$Dwnl <- downloadHandler(
+            output$Dwnl <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -229,7 +230,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                     write.csv(t.out, file, row.names = FALSE)
                 }
             )
-            output$Dwnl.bp <- downloadHandler(
+            output$Dwnl.bp <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
                 },
@@ -238,8 +239,8 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
                     write.csv(t.out, file, row.names = FALSE)
                 }
             )
-            observeEvent(input$exitButton, {
-                stopApp()
+            shiny::observeEvent(input$exitButton, {
+                shiny::stopApp()
             })
         }
     )
@@ -389,7 +390,7 @@ trophic.lvl <- function(rel.prey, grp.dat){
     for(i in 1 : (length(brk) - 1)){
         nfg.ly          <- which(TL$Tlevel >= brk[i] & TL$Tlevel < brk[i + 1] )
         tot.fg          <- length(nfg.ly)
-        vpos            <-  cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
+        vpos            <- cumsum(rep(v.lev / tot.fg, tot.fg))  - (v.lev / tot.fg) * 0.5
         pos.or          <- vector('numeric', length(TL$FG[nfg.ly]))
         ## it's necesary to order the fg to get a nice plot
         for(i in 1 : length(TL$FG[nfg.ly])){
@@ -410,7 +411,7 @@ trophic.lvl <- function(rel.prey, grp.dat){
 ##' @return A food web plot
 ##' @author Javier Porobic
 plot.tlvl <- function(T.lvl, rel.prey, foc.fg, pol = NULL, color.p){
-    rad     <- 0.25
+    rad   <- 0.25
     y.lab <- "Trophic-level"
     if(!is.null(pol)) y.lab <- paste0("Trophic-level at polygon ",  as.numeric(pol))
     plot(1, type = "n", xlab = '', ylab = y.lab,
@@ -427,7 +428,7 @@ plot.tlvl <- function(T.lvl, rel.prey, foc.fg, pol = NULL, color.p){
     }
     ## circles
     for( i in 1 : nrow(T.lvl)){
-        draw.circle(T.lvl$vpos[i], T.lvl$Tlevel[i], radius = rad, nv = 1500, border = NULL,
+        plotrix::draw.circle(T.lvl$vpos[i], T.lvl$Tlevel[i], radius = rad, nv = 1500, border = NULL,
                     col = ifelse(i == 1 && foc.fg != 'All', 'steelblue', 'gray91'), lty = 1, lwd = 1)
         text(T.lvl$vpos[i], T.lvl$Tlevel[i], T.lvl$FG[i], cex = .8, font = 2, col = ifelse(i == 1 && foc.fg != 'All', 'white', 1))
     }

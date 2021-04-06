@@ -26,7 +26,7 @@ Atlantis input file \emph{*.bgm} with the information in metres.}
 \item{cum.depths}{Cumulative depth of the Atlantis model}
 }
 \value{
-A reactive HTML that is divided in 3 different panels:
+A shiny::reactive shiny::HTML that is divided in 3 different panels:
 \itemize{
 \item \bold{Biomass}: This panel shows the results for:
     \itemize{

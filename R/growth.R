@@ -49,7 +49,7 @@
 ##' @param out.nc.file Character string with the path to the netcdf file to
 ##'     read in. This netcdf file is a generic output from an Atlantis run and
 ##'     usually starts with output and ends in \emph{.nc}.
-##' @return  A reactive HTML with graphical output by functional group, for layer and box
+##' @return  A shiny::reactive shiny::HTML with graphical output by functional group, for layer and box
 ##'     of the following variables:
 ##' \itemize{
 ##'   \item \bold{Growth}:  This variable is the  Primary producer growth (\eqn{G_{pp}}) which is
@@ -70,35 +70,40 @@
 ##'     Atlantis output and the value of eddy scale (\eqn{eddy_{scale}}) is read from
 ##'     the Atlantis configuration file.
 ##'   }
+##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
-    if (!require('shiny', quietly = TRUE)) {
-        stop('The package shiny was not installed')
-    }
-    if (!require('ncdf4', quietly = TRUE)) {
-        stop('The package ncdf4 was not installed')
-    }
-    if (!require('reshape', quietly = TRUE)) {
-        stop('The package reshape was not installed')
-    }
-    if (!require('tidyverse', quietly = TRUE)) {
-        stop('The package tidyverse was not installed')
-    }
-    if (!require('stringr', quietly = TRUE)) {
-        stop('The package stringr was not installed')
-    }
-    if (!require('scales', quietly = TRUE)) {
-        stop('The package scales was not installed')
-    }
-    library(RColorBrewer)
-    color    <- brewer.pal(9, "BrBG")[2 : 9]
+    ## if (!require('shiny', quietly = TRUE)) {
+    ##     stop('The package shiny was not installed')
+    ## }
+    ## if (!require('ncdf4', quietly = TRUE)) {
+    ##     stop('The package ncdf4 was not installed')
+    ## }
+    ## if (!require('reshape', quietly = TRUE)) {
+    ##     stop('The package reshape was not installed')
+    ## }
+    ## if (!require('tidyverse', quietly = TRUE)) {
+    ##     stop('The package tidyverse was not installed')
+    ## }
+    ## if (!require('stringr', quietly = TRUE)) {
+    ##     stop('The package stringr was not installed')
+    ## }
+    ## if (!require('scales', quietly = TRUE)) {
+    ##     stop('The package scales was not installed')
+    ## }
+    ## if (!require('RColorBrewer', quietly = TRUE)) {
+    ##     stop('The package RColorBrewer was not installed')
+    ## }
+    color    <- RColorBrewer::brewer.pal(9, "BrBG")[2 : 9]
+    color2   <- RColorBrewer::brewer.pal(9, "RdBu")
     ## reading information
-    nc.ini    <- nc_open(ini.nc.file)
-    group.csv <- read.csv(grp.file)
+    nc.ini    <- ncdf4::nc_open(ini.nc.file)
+    group.csv <- utils::read.csv(grp.file)
     colnames(group.csv) <- tolower(colnames(group.csv))
     is.off    <- which(group.csv$isturnedon == 0)
-    nc.out    <- nc_open(out.nc.file)
+    nc.out    <- ncdf4::nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
     pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
@@ -111,7 +116,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     options(warn =  - 1)
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
-    flaghabd <- text2num(prm, 'flaghabdepend ', FG = 'look')
+    flaghabd  <- text2num(prm, 'flaghabdepend ', FG = 'look')
 
     ##Parameters needed
     mum <- matrix(NA, length(pp.grp), max(coh.fg))
@@ -143,13 +148,13 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ed.scl   <- text2num(prm, 'eddy_scale', FG = 'look')[, 2]
     options(warn =  0)
     ## nutrient
-    DIN      <- ncvar_get(nc.out, 'NO3')  * ncvar_get(nc.out, 'NH3')
-    Si       <- ncvar_get(nc.out, 'Si')
-    l.eddy   <- ncvar_get(nc.out, 'eddy') * ed.scl
-    nlayers  <- ncvar_get(nc.out, 'numlayers')[, 1]
-    IRR      <- ncvar_get(nc.out, 'Light')
+    DIN      <- ncdf4::ncvar_get(nc.out, 'NO3')  * ncdf4::ncvar_get(nc.out, 'NH3')
+    Si       <- ncdf4::ncvar_get(nc.out, 'Si')
+    l.eddy   <- ncdf4::ncvar_get(nc.out, 'eddy') * ed.scl
+    nlayers  <- ncdf4::ncvar_get(nc.out, 'numlayers')[, 1]
+    IRR      <- ncdf4::ncvar_get(nc.out, 'Light')
     l.space  <- l.light <- l.nut <- biom<- list()
-    color    <- colorRampPalette(color)(max(nlayers, na.rm = TRUE))
+    color    <- grDevices::colorRampPalette(color)(max(nlayers, na.rm = TRUE))
     ## type of sediments
     for(fg in 1 : length(nam.fg)){
         ## nutrients
@@ -188,85 +193,83 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
     for(l.pp in 1 : length(pp.fg)){
-        pp.list[[l.pp]]      <- ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
+        pp.list[[l.pp]]      <- ncdf4::ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
         names(pp.list)[l.pp] <- pp.cod[l.pp]
     }
-    pp.list[['Light']] <- ncvar_get(nc.out, 'Light')
-    pp.list[['Eddy']]  <- ncvar_get(nc.out, 'eddy')
-    numlay             <- ncvar_get(nc.out, 'numlayers')
+    pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
+    pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
+    numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
     n.box              <- dim(pp.list[['Light']])[2]
-    shinyApp(
-        ui <- navbarPage('Growth primary producers',
-                         tabPanel('Growth  - Limiting factors',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp', 'Functional Group', as.character(cod.fg)),
-                                                 selectInput('coh', 'Age-Class', seq(1, max(coh.fg))),
-                                                 selectInput('box', 'Box', seq(0, (length(nlayers) - 1))),
-                                                 checkboxInput("log", "Logarithmic scale", FALSE)
+    shiny::shinyApp(
+        ui <- shiny::navbarPage('Growth primary producers',
+                         shiny::tabPanel('Growth  - Limiting factors',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp', 'Functional Group', as.character(cod.fg)),
+                                                 shiny::selectInput('coh', 'Age-Class', seq(1, max(coh.fg))),
+                                                 shiny::selectInput('box', 'Box', seq(0, (length(nlayers) - 1))),
+                                                 shiny::checkboxInput("log", "Logarithmic scale", FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot1', width = "100%", height = "700px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot1', width = "100%", height = "700px")
                                              )
                                   )
                                   ),
-                         tabPanel('Growth curves Zoo and PPs',
-                                  fluidRow(
-                                      column(2,
-                                             wellPanel(
-                                                 tags$h3('Functional Group'),
-                                                 selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
-                                                 selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
-                                                 selectInput('s.box', 'Box', 0 : (n.box - 1)),
-                                                 checkboxInput('l.prop', 'Layer-Proportion', TRUE),
-                                                 checkboxInput('b.prop', 'Box-Proportion', FALSE),
-                                                 checkboxInput('log.v', 'Logarithm', FALSE)
+                         shiny::tabPanel('Growth curves Zoo and PPs',
+                                  shiny::fluidRow(
+                                      shiny::column(2,
+                                             shiny::wellPanel(
+                                                 shiny::tags$h3('Functional Group'),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
+                                                 shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
+                                                 shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
+                                                 shiny::checkboxInput('log.v', 'Logarithm', FALSE)
                                              )
                                              ),
-                                      column(10,
-                                             plotOutput('plot3', width = "100%", height = "800px")
+                                      shiny::column(10,
+                                             shiny::plotOutput('plot3', width = "100%", height = "800px")
                                              )
                                   )
                                   ),
                          ## -- Exit --
-                         tabPanel(
-                             actionButton("exitButton", "Exit")
+                         shiny::tabPanel(
+                             shiny::actionButton("exitButton", "Exit")
                          )
                          ),
         function(input, output, session){
-            p.fg <- reactive({
+            p.fg <- shiny::reactive({
                 which(cod.fg %in% input$sp)})
-            biom <- reactive({
+            biom <- shiny::reactive({
                  if(coh.fg[p.fg()] == 1){
-                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
+                    biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N'))
                 } else {
-                    biom <- ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
+                    biom <- ncdf4::ncvar_get(nc.out, paste0(nam.fg[p.fg()], '_N', input$coh))
                 }
             })
-            ## p.fg <- reactive({
-            ##     which(cod.fg %in% input$sp)})
-            lay  <- reactive({
+            lay  <- shiny::reactive({
                 if(is.na(l.space[[p.fg()]])){
                     ((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1)
                 } else {
                     (((max(nlayers) + 1) - nlayers[as.numeric(input$box) + 1]) : (max(nlayers) + 1))[1]
                 }
             })
-            name.lay <- reactive({
+            name.lay <- shiny::reactive({
                 if(length(lay()) == 1){
                     c('Sediment')
                 } else {
                     c(paste0('Layer_', seq(from = 0, to = (length(lay()) - 2))), 'Sediment')
                 }
             })
-            lim.nut   <- reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
-            lim.light <- reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
-            lim.eddy  <- reactive({l.eddy[as.numeric(input$box) + 1, ]})
-            step1     <- reactive({mum[p.fg(), as.numeric(input$coh)] * lim.nut() * lim.light()})
-            step2     <- reactive({
+            lim.nut   <- shiny::reactive({l.nut[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
+            lim.light <- shiny::reactive({l.light[[p.fg()]][lay(), as.numeric(input$box) + 1, ]})
+            lim.eddy  <- shiny::reactive({l.eddy[as.numeric(input$box) + 1, ]})
+            step1     <- shiny::reactive({mum[p.fg(), as.numeric(input$coh)] * lim.nut() * lim.light()})
+            step2     <- shiny::reactive({
                 if(!is.na(l.space[[p.fg()]])){
                     biom.tm <- biom() / l.space[[p.fg()]]
                     if(any(is.finite(biom.tm))) biom.tm[which(is.finite(biom.tm))] <- 0
@@ -277,7 +280,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                     apply(temp, 1, FUN = function(x) x * lim.eddy())
                 }
             })
-            growth.fin    <- reactive({
+            growth.fin    <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     if(all(step2() == 0)){
                         step2()
@@ -287,19 +290,19 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }else{
                     step2()}
             })
-            lim.nut.fin   <- reactive({
+            lim.nut.fin   <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.nut())
                 } else {
                     lim.nut()}
             })
-            lim.light.fin <- reactive({
+            lim.light.fin <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.light())
                 } else {
                     lim.light()}
             })
-            lim.eddy.fin  <- reactive({
+            lim.eddy.fin  <- shiny::reactive({
                 if(isTRUE(input$log) == TRUE){
                     log(lim.eddy())
                 } else {
@@ -307,7 +310,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             })
 
             ## Out Primary producers List
-            o.pp <- reactive({
+            o.pp <- shiny::reactive({
                 box         <- as.numeric(input$s.box) + 1
                 ly.box      <- numlay[box]
                 out.pp.list <- list()
@@ -346,23 +349,26 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
             })
 
             ## STOP
-            observeEvent(input$exitButton, {stopApp()})
-            output$plot3 <- renderPlot({
+            shiny::observeEvent(input$exitButton, {shiny::stopApp()})
+            output$plot3 <- shiny::renderPlot({
                 ## colors
-                colo  <- c(rep('grey', (length(pp.list) - 2)), color[c(1, 4)])
-                ggplot(o.pp(), aes(x = Time, y = value, colour = FG)) + geom_line(na.rm = TRUE, size = 1.5) +
-                    facet_wrap(~ variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    scale_colour_manual(values = colo)
+                colo  <- c(rep('grey70', (length(pp.list) - 2)), color2[c(1, 8)])
+                p <- ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG))
+                p <- p + ggplot2::geom_line(na.rm = TRUE, size = 1.5) + ggplot2::facet_wrap(~ .data$variable, ncol = 2)
+                p <- p + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) + ggplot2::theme_minimal()
+                p <- p + ggplot2::scale_colour_manual(values = colo,  name = 'Variables') + ggplot2::theme(text = ggplot2::element_text(size = 15))
+                p <- ggplot2::update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                p
             })
-            output$plot1 <- renderPlot({
-                par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
+            output$plot1 <- shiny::renderPlot({
+                graphics::par(mfcol = c(2, 2), mar = c(0, 3, 1, 1), oma = c(4, 4, 0.5, 2), xpd = TRUE, cex = 1.1)
                 ## growth
-                ran <- range(unlist(growth.fin()), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                ran     <- range(unlist(growth.fin()), finite = TRUE)
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(growth.fin()[, 1], axes = FALSE, ylim = ran, bty = 'n', type = 'l', lwd = 3,
                      lty = 1, pch = 19, col = color[1], ylab = '', main = 'Effective Total Growth')
                 axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
@@ -373,7 +379,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## light
                 ran     <- range(lim.light.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.light.fin()))){
                     plt.light <- matrix(lim.light.fin(), nrow = 1)
                 } else {
@@ -387,10 +393,10 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                         lines(plt.light[j, ], type = 'l', pch = 19, lty = 1, lwd = 3, col = color[j])
                     }
                 }
-                par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
+                graphics::par(mar = c(0, 3, 1, 5.1), xpd = TRUE)
                 ## Nutrients
-                ran <-range(lim.nut.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                ran     <- range(lim.nut.fin(), finite = TRUE)
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 if(is.null(dim(lim.nut.fin()))){
                     plt.nut <- matrix(lim.nut.fin(), nrow = 1)
                 } else {
@@ -406,7 +412,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 }
                 ## eddyes
                 ran <- range(lim.eddy.fin(), finite = TRUE)
-                sci.scl <- scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
+                sci.scl <- scales::scientific_format(1)(seq(ran[1], ran[2], length.out = 5))
                 plot(lim.eddy.fin(), yaxt = 'n', ylim = ran, bty = 'n', type = 'l', lwd = 3,
                           lty = 1, pch = 19, col = 'orangered2', ylab = '', main = 'Eddy scalar')
                 axis(2, at = seq(ran[1], ran[2], length.out = 5), labels = sci.scl , las = 1, line =  - .7)
@@ -421,64 +427,64 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
 
 
 
-##' @title Parameter file reader
-##' @param text Biological parametar file for Atlatnis
-##' @param pattern Text that you are looking
-##' @param FG Name of the functional groups
-##' @param Vector Logic argument, if the data is on vectors or not
-##' @param pprey Logic argument, if the data is a pprey matrix or not
-##' @return A matrix with the values from the .prm file
-##' @author Demiurgo
-text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
-    if(!isTRUE(Vector)){
-        text <- text[grep(pattern = pattern, text)]
-        if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
-        txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-        col1 <- col2 <- vector()
-        for( i in 1 : length(txt)){
-            tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1])) next
-            tmp2    <- unlist(strsplit(tmp[1], split = '_'))
-            if(FG[1] == 'look') {
-                col1[i] <- tmp2[1]
-            } else {
-                id.co   <- which(tmp2 %in% FG )
-                if(sum(id.co) == 0) next
-                col1[i] <- tmp2[id.co]
-            }
-            col2[i] <- as.numeric(tmp[2])
-        }
-        if(is.null(FG)) col1 <- rep('FG', length(col2))
-        out.t <- data.frame(FG = col1, Value = col2)
-        if(any(is.na(out.t[, 1]))){
-            out.t <- out.t[-which(is.na(out.t[, 1])), ]
-        }
-        return(out.t)
-    } else {
-        l.pat <- grep(pattern = pattern, text)
-        nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
-        fg    <- vector()
-        pos   <- 1
-        for( i in 1 : length(nam)){
-            tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-            if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
-            fg[pos] <- tmp[1]
-            if(pos == 1) {
-                #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
-                pos    <- pos + 1
-            } else {
-                #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
-                t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-                pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-                if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
-                pp.mat <- rbind(pp.mat, pp.tmp)
-                pos    <- pos + 1
-            }
-        }
-        if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-        row.names(pp.mat)                  <- fg
-        return(pp.mat)
-    }
-}
+## ##' @title Parameter file reader
+## ##' @param text Biological parametar file for Atlatnis
+## ##' @param pattern Text that you are looking
+## ##' @param FG Name of the functional groups
+## ##' @param Vector Logic argument, if the data is on vectors or not
+## ##' @param pprey Logic argument, if the data is a pprey matrix or not
+## ##' @return A matrix with the values from the .prm file
+## ##' @author Demiurgo
+## text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
+##     if(!isTRUE(Vector)){
+##         text <- text[grep(pattern = pattern, text)]
+##         if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
+##         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
+##         col1 <- col2 <- vector()
+##         for( i in 1 : length(txt)){
+##             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1])) next
+##             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
+##             if(FG[1] == 'look') {
+##                 col1[i] <- tmp2[1]
+##             } else {
+##                 id.co   <- which(tmp2 %in% FG )
+##                 if(sum(id.co) == 0) next
+##                 col1[i] <- tmp2[id.co]
+##             }
+##             col2[i] <- as.numeric(tmp[2])
+##         }
+##         if(is.null(FG)) col1 <- rep('FG', length(col2))
+##         out.t <- data.frame(FG = col1, Value = col2)
+##         if(any(is.na(out.t[, 1]))){
+##             out.t <- out.t[-which(is.na(out.t[, 1])), ]
+##         }
+##         return(out.t)
+##     } else {
+##         l.pat <- grep(pattern = pattern, text)
+##         nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
+##         fg    <- vector()
+##         pos   <- 1
+##         for( i in 1 : length(nam)){
+##             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
+##             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
+##             fg[pos] <- tmp[1]
+##             if(pos == 1) {
+##                 #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
+##                 pos    <- pos + 1
+##             } else {
+##                 #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
+##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
+##                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
+##                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
+##                 pp.mat <- rbind(pp.mat, pp.tmp)
+##                 pos    <- pos + 1
+##             }
+##         }
+##         if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
+##         row.names(pp.mat)                  <- fg
+##         return(pp.mat)
+##     }
+## }

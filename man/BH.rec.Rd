@@ -14,6 +14,8 @@ BH.rec(sp, bha, bhb, bio, ver = "N")
 \item{bhb}{Beta parameter}
 
 \item{bio}{Biomass}
+
+\item{ver}{Calculating in Number or Biomass}
 }
 \value{
 The amout of recruit (Larvaes)
