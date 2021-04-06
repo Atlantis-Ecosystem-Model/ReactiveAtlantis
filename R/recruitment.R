@@ -39,6 +39,7 @@
 ##'     \item \bold{Help}: Shows information about the inputs, parameter values and
 ##' output. It also, provides an overview of the different options for the user.}
 ##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
@@ -172,7 +173,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
     ##    YOY file array       ##
     ##~~~~~~~~~~~~~~~~~~~~~~~~~##
-    pwn.op   <- group.csv$name[which(group.csv$grouptype == 'PWN')]
+    pwn.op   <- group.csv$name[which(group.csv$grouptype %in% c('PWN', 'CEP'))]
     tmp.code <- paste0(group.csv$code[sp.dat], '.0')
     tmp.code <- tmp.code[tmp.code %in% names(yoy)]
     cod.yoy  <- data.frame(Code = tmp.code, Initial = NA)
@@ -219,6 +220,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 name.fg <- paste0(nam.fg[fg], '_N', coh)
                 nums    <- ncdf4::ncvar_get(nc.out, name.fg)[, , time.stp]
                 SSB.tmp <- nums
+                mask    <- ifelse(nums > 1.e-16, 1, 0)
                 spawn   <- nums *  FSPB[pos.fspb, coh]
                 num.sp  <- spawn
             } else {
@@ -433,7 +435,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                             out.pp.list[[i]] <- matrix(rep(pp.list[[i]][box, ], ly.box), nrow = ly.box, byrow = TRUE)
                         }
                     }
-                    out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing ceros from atlatnis
+                    out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing zeros
                     if(input$l.prop == TRUE & input$b.prop == FALSE){
                         out.pp.list[[i]] <- out.pp.list[[i]] / apply(out.pp.list[[i]] , 1, max, na.rm = TRUE)
                     } else if (input$l.prop == FALSE & input$b.prop == TRUE){
@@ -499,9 +501,11 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             output$plot3 <- shiny::renderPlot({
                 ## colors
                 colo  <- c(rep('grey', (length(pp.list) - 2)), colors[c(1, 2)])
-                ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE) +
+                p <- ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE) +
                     ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) +
-                    scale_colour_manual(values = colo)
+                    scale_colour_manual(values = colo, name = 'Variable')
+                p <- update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                p
             })
             output$table <- DT::renderDataTable({
                 table <- with(rec.bio(), data.frame(Time.Larv = time.stp(), TimeYOY = TYOY, Larvaes.Atlantis = Rec, YOY.Atlantis = BYOY, Diff.Prop = P.diff * 100, Est.Larvaes = N.Rec, Est.YOY = N.YOY))
