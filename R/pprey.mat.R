@@ -60,6 +60,7 @@
 ##'     limitation.
 ##'}
 ##' @import stats utils grDevices ggplot2 graphics
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
 feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE){
@@ -77,9 +78,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     txtHelp <- paste(txtHelp, "<p><b>Overlap matrix</b> shows if the predator is able to eat the prey based on the gape limitations.</p>")
     txtHelp <- paste(txtHelp, "<p><b>% of predation pressure</b> Which percentage of each prey corresponds to the total consumed by the predator.</p>")
     txtHelp <- paste(txtHelp, "<p><b>Total biomass prey</b> Total biomass of each functional group on logarithmic scale.</p>")
-    ## Libraries
-    library(ggplot2)
-    library(plotly)
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
