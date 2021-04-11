@@ -106,7 +106,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     nc.out    <- ncdf4::nc_open(out.nc.file)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
-    pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF'))) ## Just primary producer
+    pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF','MICROPHTYBENTHOS'))) ## Just primary producer
     if(length(which(pp.grp %in% is.off)) > 0){
         pp.grp    <- pp.grp[ - which(pp.grp %in% is.off)]
     }
