@@ -4,7 +4,8 @@
 \alias{text2num}
 \title{Parameter file reader}
 \usage{
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
+text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE,
+  lineal = FALSE)
 }
 \arguments{
 \item{text}{Biological parametar file for Atlatnis}
@@ -16,6 +17,8 @@ text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE)
 \item{Vector}{Logic argument, if the data is on vectors or not}
 
 \item{pprey}{Logic argument, if the data is a pprey matrix or not}
+
+\item{lineal}{Logic argument,  if the data is in a vector a lineal}
 }
 \value{
 A matrix with the values from the .prm file

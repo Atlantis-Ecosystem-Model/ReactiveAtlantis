@@ -4,7 +4,7 @@
 \alias{bio.pwn}
 \title{Biomass for age groups}
 \usage{
-bio.pwn(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info)
+bio.pwn(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info, Time)
 }
 \arguments{
 \item{pwn.grp}{Biomass pools with age classes}
@@ -18,6 +18,8 @@ bio.pwn(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info)
 \item{x.cn}{Redfield ratio of C:N 5.7}
 
 \item{box.info}{Information for each box and layer}
+
+\item{Time}{Dates vector}
 }
 \value{
 a dataframe with the biomass for all the functional groups with Biomass pool age classes

@@ -178,8 +178,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         }
         ## space limitation for Phytobentos and seagrass
         if(group.csv$grouptype[pp.grp[fg]] %in% c('PHYTOBEN', 'SEAGRASS', 'TURF')){
-            ratio <- 1 # I used this value just to avoid the calculation of area
-            SPmax   <- text2num(prm, paste0(cod.fg[fg], 'max'), FG = 'look')[, 2]
+            ratio  <- 1 # I used this value just to avoid the calculation of area
+            SPmax  <- text2num(prm, paste0(cod.fg[fg], 'max'), FG = 'look')[, 2]
             ## removing nan and non - finite numbers
             l.space[[fg]] <- (SPmax * ratio)
         } else {
@@ -188,7 +188,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     }
 
     ## Primary producer by boc ## it would be nice to checlk this tool
-    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF") & isturnedon == 1))
+    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF",'MICROPHTYBENTHOS') & isturnedon == 1))
     pp.fg   <- group.csv$name[pp.pos]
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
