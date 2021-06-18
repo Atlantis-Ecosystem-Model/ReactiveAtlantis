@@ -4,7 +4,7 @@
 \alias{bio.pool}
 \title{Biomass for age groups}
 \usage{
-bio.pool(pol.grp, nc.out, ctg, mg2t, x.cn, box.info)
+bio.pool(pol.grp, nc.out, ctg, mg2t, x.cn, box.info, Time)
 }
 \arguments{
 \item{pol.grp}{Biomass pool groups}
@@ -18,6 +18,8 @@ bio.pool(pol.grp, nc.out, ctg, mg2t, x.cn, box.info)
 \item{x.cn}{Ration from nitrogen to carbon}
 
 \item{box.info}{Information by box and layer}
+
+\item{Time}{Date Vector}
 }
 \value{
 a dataframe with the biomass for all the functional groups with age classes

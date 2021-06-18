@@ -94,28 +94,28 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     ## Reading biomass outputs
     ## this approach allows to use only the current output file
     if(nrow(age.grp) > 0){
-        age.cur.bio  <- bio.age(age.grp, nc.cur, 'Current', mg2t, x.cn)
+        age.cur.bio  <- bio.age(age.grp, nc.cur, 'Current', mg2t, x.cn, inf.box, Time)
     } else {
         age.cur.bio <- NULL
         warning('You do not have any Age structure Active in this simulation.\n Check your group.csv file\n')
     }
-    pool.cur.bio <- bio.pool(pol.grp, nc.cur, 'Current', mg2t, x.cn, inf.box)
+    pool.cur.bio <- bio.pool(pol.grp, nc.cur, 'Current', mg2t, x.cn, inf.box, Time)
     old.bio      <- NULL
     if(!is.null(nc.out.old)){
         if(nrow(age.grp) > 0){
-            age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn)
+            age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
         } else {
             age.old.bio  <- NULL
         }
-        pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box)
+        pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
         old.bio      <- rbind(pool.old.bio, age.old.bio)
     }
     pwn.bio      <- NULL
     pwn.old.bio  <- NULL
     if(nrow(pwn.grp) > 0){
-        pwn.cur.bio <- bio.pwn(pwn.grp, nc.cur, 'Current', mg2t, x.cn, inf.box)
+        pwn.cur.bio <- bio.pwn(pwn.grp, nc.cur, 'Current', mg2t, x.cn, inf.box, Time)
         if(!is.null(nc.out.old)){
-            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Previous', mg2t, x.cn, inf.box)
+            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
         }
         pwn.bio <- rbind(pwn.cur.bio, pwn.old.bio)
     }
@@ -131,193 +131,193 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     rel.bio <- do.call(rbind.data.frame, rel.bio)
     ## Start the Shiny application
     shiny::shinyApp(
-        ## Create the different tabs
-        ui <- shiny::navbarPage("Compare outputs",
-                         shiny::tabPanel('Biomass',
-                                  shiny::tabsetPanel(
-                                      shiny::tabPanel('Total Biomass',
-                                               shiny::plotOutput('plot1', height = "auto"),
-                                               shiny::downloadButton("dwn.bio", "Download")
-                                               ),
-                                      shiny::tabPanel('Relative Biomass',
-                                               shiny::plotOutput('plot1B', height = "auto"),
-                                               shiny::downloadButton("dwn.rel", "Download")
-                                               ))),
-                         shiny::tabPanel('Total',
-                                  shiny::fluidRow(
-                                      shiny::column(2,
-                                             shiny::wellPanel(
-                                                 shiny::selectInput('FG2', 'Functional Group :', as.character(grp$code)),
-                                                 shiny::checkboxInput('bpol', label = shiny::strong("By polygon"), value = FALSE),
-                                                 shiny::conditionalPanel(
-                                                     condition = "input.bpol == '1'",
-                                                     shiny::selectInput('poln', 'Polygon', inf.box$info$Boxid)
-                                                 ),
-                                                 shiny::checkboxInput('rn2', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('sn2', label = shiny::strong("Structural Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('num2', label = shiny::strong("Numbers"), value = FALSE),
-                                                 shiny::checkboxInput('bio2', label = shiny::strong("Biomass"), value = TRUE),
-                                                 shiny::checkboxInput('scl2', label = shiny::strong("Scaled"), value = TRUE),
-                                                 shiny::checkboxInput('limit2', label = shiny::strong("limit-axis"), value = TRUE),
-                                                 shiny::selectInput('right2', label = shiny::strong("Legend position"), c('Right', 'Left'))
-                                             ),
-                                             shiny::wellPanel(
-                                                 shiny::checkboxInput('cur2', label = shiny::strong("Compare current output"), value = FALSE),
-                                                 shiny::selectInput('FG2b', 'Functional Group :', as.character(grp$code)),
-                                                 shiny::checkboxInput('rn2b', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('sn2b', label = shiny::strong("Structural Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('num2b', label = shiny::strong("Numbers"), value = FALSE),
-                                                 shiny::checkboxInput('bio2b', label = shiny::strong("Biomass"), value = TRUE),
-                                                 shiny::checkboxInput('scl2b', label = shiny::strong("Scaled"), value = TRUE),
-                                                 shiny::checkboxInput('limit2b', label = shiny::strong("limit-axis"), value = TRUE),
-                                                 shiny::selectInput('right2b', label = shiny::strong("Legend position"), c('Right', 'Left'))
-                                             )                                             ),
-                                      shiny::column(10,
-                                             shiny::plotOutput('plot2a', width = "100%", height = "450px"),
-                                             shiny::plotOutput('plot2b', width = "100%", height = "450px")
-                                             ))),
-                         shiny::tabPanel('By AgeClass',
-                                  shiny::fluidRow(
-                                      shiny::column(2,
-                                             shiny::wellPanel(
-                                                 shiny::selectInput('FG3a', 'Functional Group :', as.character(grp$code[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')])),
-                                                 shiny::checkboxInput('rn3a', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('sn3a', label = shiny::strong("Structural Nitrogen"), value = FALSE),
-                                                 shiny::checkboxInput('num3a', label = shiny::strong("Numbers"), value = FALSE),
-                                                 shiny::checkboxInput('bio3a', label = shiny::strong("Biomass"), value = TRUE),
-                                                 shiny::checkboxInput('scl3a', label = shiny::strong("Scaled"), value = TRUE),
-                                                 shiny::checkboxInput('limit3a', label = shiny::strong("limit-axis"), value = TRUE),
-                                                 shiny::selectInput('right3a', label = shiny::strong("Legend position"), c('Right', 'Left')),
-                                                 shiny::downloadButton("Dwn.age", "Download")
-                                             )),
-                                      shiny::column(10,
-                                             shiny::plotOutput('plot3a', width = "100%", height = "1000px")
-                                             ))),
-                         ## -- Exit --
-                         shiny::tabPanel(
-                             shiny::actionButton("exitButton", "Exit")
-                         )
-                         ),
-        ## Link the input for the different tabs with your original data
-        ## Create the plots
-        function(input, output, session){
-            total <- shiny::reactive({
-                if(isTRUE(input$bpol)){
-                    total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Poly', inf.box, mg2t, x.cn, polnum = (as.numeric(input$poln) + 1))
-                } else {
-                    total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Total', inf.box, mg2t, x.cn)
-                }
-                if(input$scl2 && !isTRUE(input$bpol)){
-                    rmv         <- which(sapply(total, function(x) length(x) == 0 || is.null(x) || is.character(x)))
-                    total.tmp   <- total[-rmv]
-                    total.tmp   <- lapply(total.tmp, function(x) x / x[1])
-                    total[-rmv] <- total.tmp
-                }
-                total
-            })
-            total2 <- shiny::reactive({
-                if(!is.null(nc.out.old) | input$cur2){
-                    if(input$cur2){
-                        total2 <- nitro.weight(nc.cur, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
-                    } else {
-                        total2 <- nitro.weight(nc.old, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
-                    }
-                    if(input$scl2b){
-                        rmv          <- which(sapply(total2, function(x) length(x) == 0 || is.null(x) || is.character(x)))
-                        total2.tmp   <- total2[-rmv]
-                        total2.tmp   <- lapply(total2.tmp, function(x) x / x[1])
-                        total2[-rmv] <- total2.tmp
-                    }
-                } else {
-                    total2 <- NULL
-                }
-                total2
-            })
-            coho <- shiny::reactive({
-                coho <- nitro.weight(nc.cur, grp, FG = input$FG3a, By = 'Cohort', inf.box, mg2t, x.cn)
-                if(input$scl3a){
-                    rmv         <- which(sapply(coho, function(x) length(x) == 0 || is.null(x) || is.character(x)))
-                    coho.tmp   <- coho[-rmv]
-                    coho.tmp   <- lapply(coho.tmp, function(x) lapply(x, function(x) x / x[1]))
-                    coho[-rmv] <- coho.tmp
-                }
-                coho
-            })
-            shiny::observeEvent(input$exitButton, {
-                shiny::stopApp()
-            })
-            output$plot1 <- shiny::renderPlot({
-                plot <- ggplot2::ggplot(data  = t.biomass, aes(x = .data$Time, y = .data$Biomass, colour = .data$Simulation)) +
-                    geom_line() + ggplot2::facet_wrap(~ .data$FG, ncol = 4, scale = 'free_y') + theme_minimal() +
-                    scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
-                plot <- update_labels(plot, list(x = 'Time step', y = 'Biomass (tons)'))
-                plot
-            },
-            height = function() {
-                session$clientData$output_plot1_width
-            })
-            output$plot1B <- shiny::renderPlot({
-                plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$Relative, colour = .data$Simulation))
-                plot <- plot + ggplot2::geom_line() + ggplot2::facet_wrap( ~ .data$FG, ncol = 4) + ylim(0, 2)
-                #plot <- plot + ggplot2::annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
-                #plot <- plot + scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
-                #plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
-                #plot <- plot + geom_hline(yintercept=c(1.5, 0.5), linetype="dashed", color = "red", size=2)
-                plot <- plot + theme_minimal()
-                plot
-            },
-            height = function() {
-                session$clientData$output_plot1_width
-            })
-            output$plot2a <- shiny::renderPlot({
-                plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
-            })
-            output$plot2b <- shiny::renderPlot({
-                shiny::validate(
-                    shiny::need(total2() != '',  'To Display this plot you need to provide an old .nc output file or activate the box compare current (Default = FALSE)')
-                )
-                plot.age.total(total2(), Time = Time, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
-            })
-            output$plot3a <- shiny::renderPlot({
-                n.coh <- grp$numcohorts[grp$code == input$FG3a]
-                graphics::par(mfrow = grDevices::n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
-                for( i in 1 : n.coh){
-                    plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
-                }
-            })
-            output$Dwn.age <- shiny::downloadHandler(
-                filename = function(){
-                    paste0(input$dataset, ".csv")
-                },
-                content = function(file) {
-                    out <- to.save(coho(), input$sn3a, input$rn3a, input$num3a, input$bio3a, Time)
-                    write.csv(out, file, row.names = FALSE)
-                }
-            )
-            output$dwn.bio <- shiny::downloadHandler(
-                filename = function(){
-                    paste0(input$dataset, ".csv")
-                },
-                content = function(file) {
-                    biom.save <- list(Biomass = lapply(split(t.biomass, paste(t.biomass$FG, t.biomass$Simulation, sep = '_')),
-                                                       function(x){x$Biomass}))
-                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
-                    write.csv(out, file, row.names = FALSE)
-                }
-             )
-            output$dwn.rel <- shiny::downloadHandler(
-                filename = function(){
-                    paste0(input$dataset, ".csv")
-                },
-                content = function(file) {
-                    biom.save <- list(Biomass = lapply(split(rel.bio, paste(rel.bio$FG, rel.bio$Simulation, sep = '_')),
-                                                       function(x){x$Relative}))
-                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
-                    write.csv(out, file, row.names = FALSE)
-                }
-             )
-        }
-    )
+               ## Create the different tabs
+               ui <- shiny::navbarPage("Compare outputs",
+                                       shiny::tabPanel('Biomass',
+                                                       shiny::tabsetPanel(
+                                                                  shiny::tabPanel('Total Biomass',
+                                                                                  shiny::plotOutput('plot1', height = "auto"),
+                                                                                  shiny::downloadButton("dwn.bio", "Download")
+                                                                                  ),
+                                                                  shiny::tabPanel('Relative Biomass',
+                                                                                  shiny::plotOutput('plot1B', height = "auto"),
+                                                                                  shiny::downloadButton("dwn.rel", "Download")
+                                                                                  ))),
+                                       shiny::tabPanel('Total',
+                                                       shiny::fluidRow(
+                                                                  shiny::column(2,
+                                                                                shiny::wellPanel(
+                                                                                           shiny::selectInput('FG2', 'Functional Group :', as.character(grp$code)),
+                                                                                           shiny::checkboxInput('bpol', label = shiny::strong("By polygon"), value = FALSE),
+                                                                                           shiny::conditionalPanel(
+                                                                                                      condition = "input.bpol == '1'",
+                                                                                                      shiny::selectInput('poln', 'Polygon', inf.box$info$Boxid)
+                                                                                                  ),
+                                                                                           shiny::checkboxInput('rn2', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('sn2', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('num2', label = shiny::strong("Numbers"), value = FALSE),
+                                                                                           shiny::checkboxInput('bio2', label = shiny::strong("Biomass"), value = TRUE),
+                                                                                           shiny::checkboxInput('scl2', label = shiny::strong("Scaled"), value = TRUE),
+                                                                                           shiny::checkboxInput('limit2', label = shiny::strong("limit-axis"), value = TRUE),
+                                                                                           shiny::selectInput('right2', label = shiny::strong("Legend position"), c('Right', 'Left'))
+                                                                                       ),
+                                                                                shiny::wellPanel(
+                                                                                           shiny::checkboxInput('cur2', label = shiny::strong("Compare current output"), value = FALSE),
+                                                                                           shiny::selectInput('FG2b', 'Functional Group :', as.character(grp$code)),
+                                                                                           shiny::checkboxInput('rn2b', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('sn2b', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('num2b', label = shiny::strong("Numbers"), value = FALSE),
+                                                                                           shiny::checkboxInput('bio2b', label = shiny::strong("Biomass"), value = TRUE),
+                                                                                           shiny::checkboxInput('scl2b', label = shiny::strong("Scaled"), value = TRUE),
+                                                                                           shiny::checkboxInput('limit2b', label = shiny::strong("limit-axis"), value = TRUE),
+                                                                                           shiny::selectInput('right2b', label = shiny::strong("Legend position"), c('Right', 'Left'))
+                                                                                       )                                             ),
+                                                                  shiny::column(10,
+                                                                                shiny::plotOutput('plot2a', width = "100%", height = "450px"),
+                                                                                shiny::plotOutput('plot2b', width = "100%", height = "450px")
+                                                                                ))),
+                                       shiny::tabPanel('By AgeClass',
+                                                       shiny::fluidRow(
+                                                                  shiny::column(2,
+                                                                                shiny::wellPanel(
+                                                                                           shiny::selectInput('FG3a', 'Functional Group :', as.character(grp$code[grp$numcohorts > 1 & !grp$grouptype %in% c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')])),
+                                                                                           shiny::checkboxInput('rn3a', label = shiny::strong("Reserve Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('sn3a', label = shiny::strong("Structural Nitrogen"), value = FALSE),
+                                                                                           shiny::checkboxInput('num3a', label = shiny::strong("Numbers"), value = FALSE),
+                                                                                           shiny::checkboxInput('bio3a', label = shiny::strong("Biomass"), value = TRUE),
+                                                                                           shiny::checkboxInput('scl3a', label = shiny::strong("Scaled"), value = TRUE),
+                                                                                           shiny::checkboxInput('limit3a', label = shiny::strong("limit-axis"), value = TRUE),
+                                                                                           shiny::selectInput('right3a', label = shiny::strong("Legend position"), c('Right', 'Left')),
+                                                                                           shiny::downloadButton("Dwn.age", "Download")
+                                                                                       )),
+                                                                  shiny::column(10,
+                                                                                shiny::plotOutput('plot3a', width = "100%", height = "1000px")
+                                                                                ))),
+                                       ## -- Exit --
+                                       shiny::tabPanel(
+                                                  shiny::actionButton("exitButton", "Exit")
+                                              )
+                                       ),
+               ## Link the input for the different tabs with your original data
+               ## Create the plots
+               function(input, output, session){
+                   total <- shiny::reactive({
+                       if(isTRUE(input$bpol)){
+                           total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Poly', inf.box, mg2t, x.cn, polnum = (as.numeric(input$poln) + 1))
+                       } else {
+                           total <- nitro.weight(nc.cur, grp, input$FG2, By = 'Total', inf.box, mg2t, x.cn)
+                       }
+                       if(input$scl2 && !isTRUE(input$bpol)){
+                           rmv         <- which(sapply(total, function(x) length(x) == 0 || is.null(x) || is.character(x)))
+                           total.tmp   <- total[-rmv]
+                           total.tmp   <- lapply(total.tmp, function(x) x / x[1])
+                           total[-rmv] <- total.tmp
+                       }
+                       total
+                   })
+                   total2 <- shiny::reactive({
+                       if(!is.null(nc.out.old) | input$cur2){
+                           if(input$cur2){
+                               total2 <- nitro.weight(nc.cur, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
+                           } else {
+                               total2 <- nitro.weight(nc.old, grp, input$FG2b, By = 'Total', inf.box, mg2t, x.cn)
+                           }
+                           if(input$scl2b){
+                               rmv          <- which(sapply(total2, function(x) length(x) == 0 || is.null(x) || is.character(x)))
+                               total2.tmp   <- total2[-rmv]
+                               total2.tmp   <- lapply(total2.tmp, function(x) x / x[1])
+                               total2[-rmv] <- total2.tmp
+                           }
+                       } else {
+                           total2 <- NULL
+                       }
+                       total2
+                   })
+                   coho <- shiny::reactive({
+                       coho <- nitro.weight(nc.cur, grp, FG = input$FG3a, By = 'Cohort', inf.box, mg2t, x.cn)
+                       if(input$scl3a){
+                           rmv         <- which(sapply(coho, function(x) length(x) == 0 || is.null(x) || is.character(x)))
+                           coho.tmp   <- coho[-rmv]
+                           coho.tmp   <- lapply(coho.tmp, function(x) lapply(x, function(x) x / x[1]))
+                           coho[-rmv] <- coho.tmp
+                       }
+                       coho
+                   })
+                   shiny::observeEvent(input$exitButton, {
+                       shiny::stopApp()
+                   })
+                   output$plot1 <- shiny::renderPlot({
+                       plot <- ggplot2::ggplot(data  = t.biomass, aes(x = .data$Time, y = .data$Biomass, colour = .data$Simulation)) +
+                           geom_line() + ggplot2::facet_wrap(~ .data$FG, ncol = 4, scale = 'free_y') + theme_minimal() +
+                           scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
+                       plot <- update_labels(plot, list(x = 'Date', y = 'Biomass (tons)'))
+                       plot
+                   },
+                   height = function() {
+                       session$clientData$output_plot1_width
+                   })
+                   output$plot1B <- shiny::renderPlot({
+                       plot <- ggplot2::ggplot(data = rel.bio, aes(x = .data$Time, y = .data$Relative, colour = .data$Simulation))
+                       plot <- plot + ggplot2::geom_line() + ggplot2::facet_wrap( ~ .data$FG, ncol = 4) + ylim(0, 2)
+                                        #plot <- plot + ggplot2::annotate('rect', xmin =  - Inf, xmax = Inf, ymax = 1.5, ymin = 0.5, alpha = .1, colour = 'royalblue', fill = 'royalblue')
+                                        #plot <- plot + scale_color_manual(values = c('firebrick3', 'darkolivegreen'))
+                                        #plot <- update_labels(plot, list(x = 'Time step', y = 'Relative Biomass (Bt/B0)'))
+                                        #plot <- plot + geom_hline(yintercept=c(1.5, 0.5), linetype="dashed", color = "red", size=2)
+                       plot <- plot + theme_minimal()
+                       plot
+                   },
+                   height = function() {
+                       session$clientData$output_plot1_width
+                   })
+                   output$plot2a <- shiny::renderPlot({
+                       plot.age.total(total(), Time = Time, input$rn2, input$sn2, input$num2, input$bio2, input$scl2, input$limit2, input$right2, colors = col.bi)
+                   })
+                   output$plot2b <- shiny::renderPlot({
+                       shiny::validate(
+                                  shiny::need(total2() != '',  'To Display this plot you need to provide an old .nc output file or activate the box compare current (Default = FALSE)')
+                              )
+                       plot.age.total(total2(), Time = Time, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
+                   })
+                   output$plot3a <- shiny::renderPlot({
+                       n.coh <- grp$numcohorts[grp$code == input$FG3a]
+                       graphics::par(mfrow = grDevices::n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
+                       for( i in 1 : n.coh){
+                           plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
+                       }
+                   })
+                   output$Dwn.age <- shiny::downloadHandler(
+                                                filename = function(){
+                                                    paste0(input$dataset, ".csv")
+                                                },
+                                                content = function(file) {
+                                                    out <- to.save(coho(), input$sn3a, input$rn3a, input$num3a, input$bio3a, Time)
+                                                    write.csv(out, file, row.names = FALSE)
+                                                }
+                                            )
+                   output$dwn.bio <- shiny::downloadHandler(
+                                                filename = function(){
+                                                    paste0(input$dataset, ".csv")
+                                                },
+                                                content = function(file) {
+                                                    biom.save <- list(Biomass = lapply(split(t.biomass, paste(t.biomass$FG, t.biomass$Simulation, sep = '_')),
+                                                                                       function(x){x$Biomass}))
+                                                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
+                                                    write.csv(out, file, row.names = FALSE)
+                                                }
+                                            )
+                   output$dwn.rel <- shiny::downloadHandler(
+                                                filename = function(){
+                                                    paste0(input$dataset, ".csv")
+                                                },
+                                                content = function(file) {
+                                                    biom.save <- list(Biomass = lapply(split(rel.bio, paste(rel.bio$FG, rel.bio$Simulation, sep = '_')),
+                                                                                       function(x){x$Relative}))
+                                                    out       <- to.save(list = biom.save, b = TRUE, Time = Time, tot = TRUE)
+                                                    write.csv(out, file, row.names = FALSE)
+                                                }
+                                            )
+               }
+           )
 }
 
 ##' @title Biomass for age groups
@@ -326,9 +326,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
 ##' @param ctg category
 ##' @param mg2t Miligram to tons scalar
 ##' @param x.cn Carbon to Nitrogen transformation (Value/scalar)
+##' @param inf.box Polygons Information
+##' @param Time Time (Date) vector
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
-bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
+bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn, inf.box, Time){
+    bound   <- ifelse(inf.box$info$Depth_Bound > 0, 1, 0)
     grp.bio <- NULL
     for(age in 1 : nrow(age.grp)){
         cohort <- NULL
@@ -337,10 +340,10 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
             b.coh   <- (ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))  +
                         ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN')))  *
                 ncdf4::ncvar_get(nc.out, paste0(name.fg, '_Nums')) * mg2t * x.cn
-            b.coh   <- apply(b.coh, 3, sum, na.rm = TRUE)
+            b.coh   <- colSums(apply(apply(b.coh, 2, colSums, na.rm = TRUE), 1, function(x) x * bound), na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(age.grp$code[age]),
+        grp.bio <- rbind(grp.bio, data.frame(Time = Time, FG = paste0(as.character(age.grp$longname[age]), ' (', as.character(age.grp$code[age]), ')'),
                                              Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
@@ -353,19 +356,20 @@ bio.age <- function(age.grp, nc.out, ctg, mg2t, x.cn){
 ##' @param mg2t Miligrams to tons scalar
 ##' @param x.cn Ration from nitrogen to carbon
 ##' @param box.info Information by box and layer
+##' @param Time Date Vector
 ##' @return a dataframe with the biomass for all the functional groups with age classes
 ##' @author Demiurgo
-bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
+bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info, Time){
     grp.bio <- NULL
     for(pool in 1 : nrow(pol.grp)){
         name.fg <- paste0(pol.grp$name[pool], '_N')
         biom    <- ncdf4::ncvar_get(nc.out, name.fg)
         if(length(dim(biom))== 3){
-           if(pol.grp$grouptype[pool] == 'LG_INF'){
-               biom <- apply(biom, 3, '*', box.info$VolInf)
-           }else{
-               biom <- apply(biom, 3, '*', box.info$Vol)
-           }
+            if(pol.grp$grouptype[pool] == 'LG_INF'){
+                biom <- apply(biom, 3, '*', box.info$VolInf)
+            }else{
+                biom <- apply(biom, 3, '*', box.info$Vol)
+            }
             biom <- apply(biom, 2, sum, na.rm = TRUE)
         } else {
             biom <- apply(biom, 2, function(x) x * box.info$info$Area)
@@ -373,7 +377,7 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
         }
         biom    <- biom * mg2t * x.cn
         biom[1] <- biom[2]
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, length(biom)), FG  = as.character(pol.grp$code[pool]), Biomass  = biom, Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = Time, FG = paste0(as.character(pol.grp$longname[pool]), ' (', as.character(pol.grp$code[pool]), ')'), Biomass  = biom, Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -385,9 +389,10 @@ bio.pool <- function(pol.grp, nc.out, ctg, mg2t, x.cn, box.info){
 ##' @param mg2t mg C converted to wet weight in tonnes == 20 / 1000000000
 ##' @param x.cn Redfield ratio of C:N 5.7
 ##' @param box.info Information for each box and layer
+##' @param Time Dates vector
 ##' @return a dataframe with the biomass for all the functional groups with Biomass pool age classes
 ##' @author Demiurgo
-bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
+bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info, Time){
     grp.bio <- NULL
     for(pwn in 1 : nrow(pwn.grp)){
         cohort <- NULL
@@ -404,7 +409,7 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info){
             b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG  = as.character(pwn.grp$code[pwn]), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG = paste0(as.character(pwn.grp$longname[pwn]), ' (', as.character(pwn.grp$code[pwn]), ')'), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
 }
@@ -422,68 +427,6 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
     return(df)
 }
 
-## ##' @title Parameter file reader
-## ##' @param text Biological parametar file for Atlatnis
-## ##' @param pattern Text that you are looking
-## ##' @param FG Name of the functional groups
-## ##' @param Vector Logic argument, if the data is on vectors or not
-## ##' @param pprey Logic argument, if the data is a pprey matrix or not
-## ##' @return A matrix with the values from the .prm file
-## ##' @author Demiurgo
-## text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
-##     if(!isTRUE(Vector)){
-##         text <- text[grep(pattern = pattern, text)]
-##         if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
-##         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-##         col1 <- col2 <- vector()
-##         for( i in 1 : length(txt)){
-##             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
-##             if(grepl('#', tmp[1])) next
-##             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
-##             if(FG[1] == 'look') {
-##                 col1[i] <- tmp2[1]
-##             } else {
-##                 id.co   <- which(tmp2 %in% FG )
-##                 if(sum(id.co) == 0) next
-##                 col1[i] <- tmp2[id.co]
-##             }
-##             col2[i] <- as.numeric(tmp[2])
-##         }
-##         if(is.null(FG)) col1 <- rep('FG', length(col2))
-##         out.t <- data.frame(FG = col1, Value = col2)
-##         if(any(is.na(out.t[, 1]))){
-##             out.t <- out.t[-which(is.na(out.t[, 1])), ]
-##         }
-##         return(out.t)
-##     } else {
-##         l.pat <- grep(pattern = pattern, text)
-##         nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
-##         fg    <- vector()
-##         pos   <- 1
-##         for( i in 1 : length(nam)){
-##             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-##             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
-##             fg[pos] <- tmp[1]
-##             if(pos == 1) {
-##                 #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
-##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-##                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
-##                 pos    <- pos + 1
-##             } else {
-##                 #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
-##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-##                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-##                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
-##                 pp.mat <- rbind(pp.mat, pp.tmp)
-##                 pos    <- pos + 1
-##             }
-##         }
-##         if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-##         row.names(pp.mat)                  <- fg
-##         return(pp.mat)
-##     }
-## }
-
 ##' @title Box information
 ##' @param bgm.file BGM file,  Atlantis input
 ##' @param depths Cummulative depths (de max depth of each layer)
@@ -491,6 +434,9 @@ relative <- function(df, biomass = TRUE, Vec = NULL){
 ##' @author Demiurgo
 boxes.prop <- function(bgm.file, depths){
     bgm       <- readLines(bgm.file, warn = FALSE)
+    vert      <- text2num(bgm, 'bnd_vert ', Vector = TRUE, lineal = TRUE)
+    centroids <- text2num(bgm, '.inside', Vector = TRUE, lineal = TRUE)
+    dynamic   <- as.numeric(apply(centroids, 1, function(x) .point_in_polygon(vert, x)))
     boxes     <- text2num(bgm, 'nbox', FG = 'look')
     out       <- NULL
     if(all(depths[1 : 2] == 0)){
@@ -501,11 +447,12 @@ boxes.prop <- function(bgm.file, depths){
     max.nlyrs <- length(depths)              ## maximum number of water layers
     vol       <- array(NA, dim = c(boxes$Value, length(depths)))
     for(b in 1 : boxes$Value){
-        area      <- text2num(bgm, paste0('box', b - 1,'.area'), FG = 'look')
-        z         <- text2num(bgm, paste0('box', b - 1,'.botz'), FG = 'look')
-        box.lyrs  <- sum(depths <  - z$Value)
-        box.lyrs  <- pmin(box.lyrs, max.nlyrs) # bound by maximum depth
-        out       <- rbind(out, data.frame(Boxid = b - 1, Area  = area$Value, Volumen = area$Value *  -z$Value,
+        area        <- text2num(bgm, paste0('box', b - 1,'.area'), FG = 'look')
+        area$Value  <- area$Value * dynamic[b] ## removing the non - dynamic boxes
+        z           <- text2num(bgm, paste0('box', b - 1,'.botz'), FG = 'look')
+        box.lyrs    <- sum(depths <  - z$Value)
+        box.lyrs    <- pmin(box.lyrs, max.nlyrs) # bound by maximum depth
+        out         <- rbind(out, data.frame(Boxid = b - 1, Area  = area$Value, Volumen = area$Value *  -z$Value,
                                            Depth =  -z$Value, Layers = box.lyrs))
         vol[b, 1 : box.lyrs] <- area$Value * depths[1 : box.lyrs]
     }
@@ -514,8 +461,11 @@ boxes.prop <- function(bgm.file, depths){
     vol[1, ]           <- 0 # removing area from the boundary box
     vol2               <- vol ## arrange not for infauna
     vol2[nrow(vol2), ] <- 0
-    if(any(out$Area < 1)) warning('\nOne (or more) of the boxes areas is less than 1m2,  Check if the right BGM file in xy coordinates')
-    out[c(1, out$Depth <= 0), 2 : ncol(out)] <- 0
+    ## if(any(out$Area < 1)) warning('\nOne (or more) of the boxes areas is less than 1m2,  Check if the right BGM file in xy coordinates')
+    ## force are in boundary boxes to be zero
+    out[c(1, which(out$Depth <= 0)), 2 : ncol(out)] <- 0
+    out$dynamic      <-  dynamic
+    out$Depth_Bound  <- out$Depth * out$dynamic ## removing boundary boxes
     out <- list(info   = out,
                 Vol    = vol2,
                 VolInf = vol)
@@ -545,12 +495,13 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
             resN    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_ResN'))
             strN    <- ncdf4::ncvar_get(nc.out, paste0(name.fg, '_StructN'))
             ## removing RN and SN from areas without observations
-            resN[which(resN == 0)] <- NA; resN[which(nums == 0, arr.ind = TRUE)] <- NA
-            strN[which(strN == 0)] <- NA; strN[which(nums == 0, arr.ind = TRUE)] <- NA
+            resN[which(resN <= 1e-8, arr.ind = TRUE)] <- NA; resN[which(nums <= 1e-8, arr.ind = TRUE)] <- NA
+            strN[which(strN <= 1e-8, arr.ind = TRUE)] <- NA; strN[which(nums <= 1e-8, arr.ind = TRUE)] <- NA
+            nums[which(nums <= 1e-8, arr.ind = TRUE)] <- NA
             ## Removind information from the land and boundary boxes
-            resN[, which(box.info$info$Depth == 0), ] <- NA
-            strN[, which(box.info$info$Depth == 0), ] <- NA
-            nums[, which(box.info$info$Depth == 0), ] <- NA
+            resN[, which(box.info$info$Depth_Bound == 0), ] <- NA
+            strN[, which(box.info$info$Depth_Bound == 0), ] <- NA
+            nums[, which(box.info$info$Depth_Bound == 0), ] <- NA
             if(By == 'Poly'){
                 ## IM HERE!!!
                 nums    <- colSums(nums[, polnum, ], na.rm = TRUE)
@@ -565,10 +516,10 @@ nitro.weight <- function(nc.out, grp, FG, By = 'Total', box.info, mg2t, x.cn, po
                 strN    <- apply(strN, 3, mean, na.rm = TRUE)
                 resN    <- apply(resN, 3, mean, na.rm = TRUE)
             }
-                RN[[coh]]  <- resN
-                SN[[coh]]  <- strN
-                Bio[[coh]] <- b.coh
-                Num[[coh]] <- nums
+            RN[[coh]]  <- resN
+            SN[[coh]]  <- strN
+            Bio[[coh]] <- b.coh
+            Num[[coh]] <- nums
         }
         if(By %in% c('Total', 'Poly')){
             RN  <- rowSums(matrix(unlist(RN), ncol = n.coh))
@@ -802,4 +753,33 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
     colnames(out) <- c(nam)
     out <- data.frame(Date = Time, out)
     return(data.frame(out))
+}
+
+##' Raycasting Algorithm to find out whether a point is in a given polygon.
+##' Performs the even-odd-rule Algorithm to find out whether a point is in a given polygon.
+##' This runs in O(n) where n is the number of edges of the polygon.
+##' @param polygon an array representation of the polygon where polygon[i,1] is the x Value of the i-th point and polygon[i,2] is the y Value.
+##' @param point   an array representation of the point where point[1] is its x Value and point[2] is its y Value
+##' @return whether the point is in the polygon (not on the edge, just turn < into <= and > into >= for that)
+##' @author Javier Porobic
+.point_in_polygon <- function(polygon, point){
+    ## A point is in a polygon if a line from the point to infinity crosses the polygon an odd number of times
+    odd = FALSE
+    ## For each edge (In this case for each point of the polygon and the previous one)
+    i = 0
+    j = nrow(polygon) - 1
+    while(i < nrow(polygon) - 1){
+        i = i + 1
+        ## If a line from the point into infinity crosses this edge
+        ## One point needs to be above, one below our y coordinate
+        ## ...and the edge doesn't cross our Y corrdinate before our x coordinate (but between our x coordinate and infinity)
+        if (((polygon[i,2] > point[2]) != (polygon[j,2] > point[2]))
+            && (point[1] < ((polygon[j,1] - polygon[i,1]) * (point[2] - polygon[i,2]) / (polygon[j,2] - polygon[i,2])) + polygon[i,1])){
+            ## Invert odd
+            odd = !odd
+        }
+        j = i
+    }
+    ## If the number of crossings was odd, the point is in the polygon
+    return (odd)
 }

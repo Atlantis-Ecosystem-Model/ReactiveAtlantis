@@ -4,7 +4,7 @@
 \alias{bio.age}
 \title{Biomass for age groups}
 \usage{
-bio.age(age.grp, nc.out, ctg, mg2t, x.cn)
+bio.age(age.grp, nc.out, ctg, mg2t, x.cn, inf.box, Time)
 }
 \arguments{
 \item{age.grp}{Age groups}
@@ -16,6 +16,10 @@ bio.age(age.grp, nc.out, ctg, mg2t, x.cn)
 \item{mg2t}{Miligram to tons scalar}
 
 \item{x.cn}{Carbon to Nitrogen transformation (Value/scalar)}
+
+\item{inf.box}{Polygons Information}
+
+\item{Time}{Time (Date) vector}
 }
 \value{
 a dataframe with the biomass for all the functional groups with age classes
