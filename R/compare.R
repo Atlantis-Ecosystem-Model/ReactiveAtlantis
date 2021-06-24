@@ -76,14 +76,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     inf.box <- boxes.prop(bgm.file,  cum.depths)
     nc.cur  <- ncdf4::nc_open(nc.out.current)
     ## Time Vector
-    orign   <- unlist(strsplit(ncdf4::ncatt_get(nc.cur, 't')$units, ' ', fixed = TRUE))
-    if(orign[1] == 'seconds') {
-        Time <- ncdf4::ncvar_get(nc.cur, 't') / 86400
-    } else {
-        Time <- ncdf4::ncvar_get(nc.cur, 't')
+    Time <- time.calc(nc.cur)
+    if(!is.null(nc.out.old)){
+        nc.old <- ncdf4::nc_open(nc.out.old)
+        Time_old <- time.calc(nc.old)
     }
-    Time    <- as.Date(Time, origin = orign[3])
-    if(!is.null(nc.out.old)) nc.old <- ncdf4::nc_open(nc.out.old)
     names(grp) <- tolower(names(grp))
     grp     <- grp[grp$isturnedon == 1, c('code', 'name', 'longname', 'grouptype', 'numcohorts')]
     ## Getting the total biomass
@@ -103,11 +100,11 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     old.bio      <- NULL
     if(!is.null(nc.out.old)){
         if(nrow(age.grp) > 0){
-            age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
+            age.old.bio  <- bio.age(age.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time_old)
         } else {
             age.old.bio  <- NULL
         }
-        pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
+        pool.old.bio <- bio.pool(pol.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time_old)
         old.bio      <- rbind(pool.old.bio, age.old.bio)
     }
     pwn.bio      <- NULL
@@ -115,7 +112,7 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     if(nrow(pwn.grp) > 0){
         pwn.cur.bio <- bio.pwn(pwn.grp, nc.cur, 'Current', mg2t, x.cn, inf.box, Time)
         if(!is.null(nc.out.old)){
-            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time)
+            pwn.old.bio <- bio.pwn(pwn.grp, nc.old, 'Previous', mg2t, x.cn, inf.box, Time_old)
         }
         pwn.bio <- rbind(pwn.cur.bio, pwn.old.bio)
     }
@@ -782,4 +779,20 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
     }
     ## If the number of crossings was odd, the point is in the polygon
     return (odd)
+}
+
+##' @title NCtime calculation
+##' @param ncfile Netcdf file
+##' @return Vector of dates
+##' @author Javier Porobic
+time.calc <- function(ncfile = NULL){
+    ## Time Vector
+    orign   <- unlist(strsplit(ncdf4::ncatt_get(ncfile, 't')$units, ' ', fixed = TRUE))
+    if(orign[1] == 'seconds') {
+        Time <- ncdf4::ncvar_get(ncfile, 't') / 86400
+    } else {
+        Time <- ncdf4::ncvar_get(ncfile, 't')
+    }
+    Time <- as.Date(Time, origin = orign[3])
+    return(Time)
 }
