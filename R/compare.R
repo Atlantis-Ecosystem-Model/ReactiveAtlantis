@@ -273,10 +273,12 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
                        shiny::validate(
                                   shiny::need(total2() != '',  'To Display this plot you need to provide an old .nc output file or activate the box compare current (Default = FALSE)')
                               )
-                       plot.age.total(total2(), Time = Time, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
+                       Time.plot <- Time_old
+                       if(is.null(nc.out.old) | input$cur2) Time.plot <- Time
+                       plot.age.total(total2(), Time = Time.plot, input$rn2b, input$sn2b, input$num2b, input$bio2b, input$scl2b, input$limit2b, input$right2b, colors = col.bi)
                    })
                    output$plot3a <- shiny::renderPlot({
-                       n.coh <- grp$numcohorts[grp$code == input$FG3a]
+                       n.coh     <- grp$numcohorts[grp$code == input$FG3a]
                        graphics::par(mfrow = grDevices::n2mfrow(n.coh), cex = 1.2, oma = c(1, 1, 1, 1))
                        for( i in 1 : n.coh){
                            plot.age.total(coho(), Time, input$rn3a, input$sn3a, input$num3a, input$bio3a, input$scl3a, input$limit3a, input$right3a, colors = col.bi, coh = i, max.coh = n.coh)
