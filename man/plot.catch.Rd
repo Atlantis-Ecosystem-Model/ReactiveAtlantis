@@ -4,8 +4,17 @@
 \alias{plot.catch}
 \title{Plot catch function}
 \usage{
-\method{plot}{catch}(ctch, Time, ylm = NULL, coh = NULL, col.bi,
-  bio.n = NULL, by.year = FALSE, external = NULL, ...)
+\method{plot}{catch}(
+  ctch,
+  Time,
+  ylm = NULL,
+  coh = NULL,
+  col.bi,
+  bio.n = NULL,
+  by.year = FALSE,
+  external = NULL,
+  ...
+)
 }
 \arguments{
 \item{ctch}{Catch data.frame}

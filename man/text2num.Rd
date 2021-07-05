@@ -4,8 +4,14 @@
 \alias{text2num}
 \title{Parameter file reader}
 \usage{
-text2num(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE,
-  lineal = FALSE)
+text2num(
+  text,
+  pattern,
+  FG = NULL,
+  Vector = FALSE,
+  pprey = FALSE,
+  lineal = FALSE
+)
 }
 \arguments{
 \item{text}{Biological parametar file for Atlatnis}

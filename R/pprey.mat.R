@@ -156,7 +156,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## Plot output
     real.feed <- real.feed * Ava.mat
     ## Gape overlap for spatial output
-    ntrans   <- reshape::melt(t.o.mat)
+    ntrans   <- reshape2::melt(t.o.mat, value.name = 'overlap')
     over.tmp <- do.call(rbind.data.frame, apply(ntrans, 1, sepText))
     ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ## Spatial Overlap functions and procedures
@@ -180,8 +180,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     juv.sp.ov <- data.frame (Stage = 'Juvenile', Land = land, juv.sp.ov)
     ad.sp.ov  <- cbind(out.Bio[[3]][, 1 : 2], ad.sp.ov)
     juv.sp.ov <- cbind(out.Bio[[3]][, 1 : 2], juv.sp.ov)
-    sp.ov     <- rbind(reshape::melt(ad.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')),
-                       reshape::melt(juv.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')))
+    sp.ov     <- rbind(reshape2::melt(ad.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')),
+                       reshape2::melt(juv.sp.ov, id = c('Layer', 'Box', 'Stage', 'Land')))
     sediment  <- max(sp.ov$Layer, na.rm = TRUE)
     ## Geting the map from the bgm file
     map <- make.map(bgm.file)
@@ -298,10 +298,10 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 saveData(N.mat$Ava)
             })
             linex <- shiny::reactive( {
-                which(sort(colnames(Ava.mat)) == input$xcol)
+                 which(colnames(Ava.mat) == input$xcol)
             })
             liney <- shiny::reactive({
-                which(sort(row.names(Ava.mat)) == pred.name())
+                which(row.names(Ava.mat) == pred.name())
             })
             rff <- shiny::reactive({
                 rff <- log(real.feed * N.mat$Ava)
@@ -386,9 +386,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             ## ~~~~~~~~~~~~~~~~~~~~~~ ##
             ## Effective Predation
             Eff_pred_out <- shiny::reactive({
-                dat      <- reshape::melt(rff())
+                dat      <- reshape2::melt(rff(),  value.name = 'value')
                 dat[which(dat == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- ggplot2::ggplot(data = dat, ggplot2::aes(x = .data$Var1, y = .data$Var2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
                 p <- p + scale_fill_distiller(palette = "YlGnBu", limits=c(0, max(rff(), na.rm = TRUE)), name = 'Predation \nLn()',  na.value = 'white', direction = 1)
                 #p <- p + scale_fill_distiller()
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1))
@@ -400,8 +400,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             ## Overlap Matrix
             Overlap_out <- shiny::reactive({
                 col.tmp <- RColorBrewer::brewer.pal(11, 'RdBu')[c(6, 11)]
-                dat2 <- reshape::melt(t.o.mat)
-                p <- ggplot2::ggplot(data = dat2, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour= 'grey45', ggplot2::aes( fill = factor(.data$value)))
+                dat2 <- reshape2::melt(t.o.mat, value.name = 'value')
+                p <- ggplot2::ggplot(data = dat2, ggplot2::aes(x = .data$Var1, y = .data$Var2, fill = .data$value)) + geom_tile(colour= 'grey45', ggplot2::aes( fill = factor(.data$value)))
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator')
                 p <- p + scale_x_discrete(position = "top")  + scale_fill_manual(values = col.tmp, name = 'Gape overlap', labels = c('No', 'Yes')) #+ scale_fill_manual(name = 'Gape overlap', labels = c('No', 'Yes'))
                 p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t.o.mat) + 1, alpha = .1, colour = 'darkorange')
@@ -410,9 +410,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             })
             ## Availability matrix
             Avail_out <- shiny::reactive({
-                dat.A <- reshape::melt(t(N.mat$Ava))
+                dat.A <- reshape2::melt(t(N.mat$Ava), value.name = 'value')
                 dat.A[which(dat.A == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat.A, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
+                p <- ggplot2::ggplot(data = dat.A, ggplot2::aes(x = .data$Var1, y = .data$Var2, fill = .data$value)) + geom_tile(colour="grey45",size=0.2)
                 p <- p + scale_fill_distiller(palette = "YlOrRd", limits=c(0, max(N.mat$Ava, na.rm = TRUE)), name = 'Availability', na.value = 'white', direction = 1)
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
                 p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(t(N.mat$Ava)) + 1, alpha = .1, colour = 'royalblue')
@@ -421,9 +421,9 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             })
             ## % of pressure
             Press_out <- shiny::reactive({
-                dat.P <- reshape::melt(rff2())
+                dat.P <- reshape2::melt(rff2(), value.name = 'value')
                 dat.P[which(dat.P == 0,  arr.ind = TRUE)] <- NA
-                p <- ggplot2::ggplot(data = dat.P, ggplot2::aes(x = .data$X1, y = .data$X2, fill = .data$value)) + geom_tile(colour="grey45", size = 0.2)
+                p <- ggplot2::ggplot(data = dat.P, ggplot2::aes(x = .data$Var1, y = .data$Var2, fill = .data$value)) + geom_tile(colour="grey45", size = 0.2)
                 p <- p + scale_fill_distiller(palette = "RdPu",, limits=c(0, 100), name = 'Precentage of pressure', na.value = 'white', direction = 1)
                 p <- p + theme(panel.background = element_blank(), axis.text.x = element_text(angle = 90, hjust = 1)) + labs(x = 'Prey', y = 'Predator') + scale_x_discrete(position = "top")
                 p <- p + annotate("rect", xmin = linex() -.5, xmax = linex() +.5, ymin = 0, ymax = ncol(rff2()) + 1, alpha = .1, colour = 'goldenrod')
@@ -446,8 +446,6 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
             output$Press_plot <- shiny::renderPlot({
                 Press_out()
             })
-
-
             output$plot5 <- shiny::renderPlot({
                 ggplot2::ggplot(data = b.juv, ggplot2::aes(x = .data$FG, y = log(.data$Biomass), fill=.data$FG)) +
                     geom_bar(colour="black", stat="identity") +
@@ -513,7 +511,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
     TY         <- as.character(groups.csv$grouptype)
     Biom.N     <- array(data = NA, dim = c(length(FG), max(groups.csv$numcohorts)))
     Struct     <- Biom.N
-    over.sp    <-reshape::melt(matrix(NA, m.depth, nrow(numlayers)))[,1: 2]
+    over.sp    <-reshape2::melt(matrix(NA, m.depth, nrow(numlayers)), value.name = 'value')[,1: 2]
     names.temp <- c('Layer', 'Box')
     #over.sp <- NULL
     special <- c('PWN', 'PRAWNS', 'PRAWN', 'CEP', 'MOB_EP_OTHER', 'SEAGRASS', 'CORAL', 'MANGROVE', 'MANGROVES', 'SPONGE')
@@ -582,7 +580,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                        new.sp     <- as.vector(reshape2::melt(Numb.tmp, value.name = 'value')[, 3])
                         over.sp    <- cbind(over.sp, new.sp)
                         names.temp <- c(names.temp, paste(FGN[code], coh, sep = '_'))
                     } else if(!(code %in% is.off)){
@@ -595,7 +593,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                                 Numb.tmp[, box] <- Temp.N[arreg, box]
                             }
                         }
-                        new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                        new.sp     <- as.vector(reshape2::melt(Numb.tmp, value.name = 'value')[, 3])
                         over.sp    <- cbind(over.sp, new.sp)
                         names.temp <- c(names.temp, paste(FGN[code], coh, sep = '_'))
                     }
@@ -628,7 +626,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) : (m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                    new.sp     <- as.vector(reshape2::melt(Numb.tmp, value.name = 'value')[, 3])
                     over.sp    <- cbind(over.sp, new.sp)
                     names.temp <- c(names.temp, paste(FGN[code], cohort, sep = '_'))
                 }else if((code %in% active)){
@@ -638,7 +636,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                         arreg <- c(numlayers[box, 3] : 1, m.depth, (numlayers[box, 3]  +  1) :(m.depth - 1))[1 : m.depth]
                         Numb.tmp[, box] <- Numb[arreg, box]
                     }
-                    new.sp     <- as.vector(reshape::melt(Numb.tmp)[, 3])
+                    new.sp     <- as.vector(reshape2::melt(Numb.tmp, value.name = 'value')[, 3])
                     over.sp    <- cbind(over.sp, new.sp)
                     names.temp <- c(names.temp, paste(FGN[code], cohort, sep = '_'))
                 }

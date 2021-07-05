@@ -349,7 +349,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape2::melt(sel.data, id = c('Time', 'FG'))
             })
 
             ## STOP
