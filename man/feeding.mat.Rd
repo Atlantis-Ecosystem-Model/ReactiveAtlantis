@@ -4,8 +4,7 @@
 \alias{feeding.mat}
 \title{Atlantis feeding tool}
 \usage{
-feeding.mat(prm.file, grp.file, nc.file, bgm.file, cum.depths,
-  quiet = TRUE)
+feeding.mat(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet = TRUE)
 }
 \arguments{
 \item{prm.file}{Character string with the path to the biological parameter \emph{*.prm} file (Atlantis input file).}

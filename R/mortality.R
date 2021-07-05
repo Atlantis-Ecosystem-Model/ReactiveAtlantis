@@ -48,7 +48,7 @@ mortality <- function(grp.file, prm.file, SpeMort, PredMort){
             ## input plots
             mortInputPlot <- shiny::reactive({
                 sps  <- grp$code[which(grp$longname %in% input$FG1)]
-                mort <- reshape::melt(mort.sp(), id.var = c('Time', 'Mtype'))
+                mort <- reshape2::melt(mort.sp(), id.var = c('Time', 'Mtype'))
                 getPalette <- colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
                 cols <- getPalette(length(levels(mort$variable)))
                 Title <- paste0('Mortalities for ', as.character(input$FG1))

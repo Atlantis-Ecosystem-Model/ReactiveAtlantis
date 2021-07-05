@@ -110,8 +110,8 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     sub.cur   <- cbind(cur.dat[c('Time', as.character(grp))])
     sp.name   <- c("Time", paste0('Rel', grp),"PelDemRatio", "PiscivPlankRatio")
     sp.name2  <- c("Time", as.character(grp))
-    biom.tot  <- reshape::melt(cur.dat[, sp.name2], id.vars = 'Time')
-    rel.bio   <- reshape::melt(cur.dat[, sp.name], id.vars = 'Time')
+    biom.tot  <- reshape2::melt(cur.dat[, sp.name2], id.vars = 'Time')
+    rel.bio   <- reshape2::melt(cur.dat[, sp.name], id.vars = 'Time')
     names(biom.tot) <- c('Time',  'FG', 'Biomass')
     names(rel.bio) <- c('Time',  'FG', 'RelBiom')
     if(any('Updated' == colnames(diet.data))){
@@ -127,7 +127,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     time              <- unique(diet.data$Time)
     stocks            <- unique(diet.data$Stock)
     sub.cur           <- cbind(Time = sub.cur$Time, sub.cur[, names(sub.cur) %in% predators])
-    new.bio           <- reshape::melt(sub.cur, id = c('Time'))    ## current Biomass of the functional groups
+    new.bio           <- reshape2::melt(sub.cur, id = c('Time'))    ## current Biomass of the functional groups
     colnames(new.bio) <- c('Time', 'Predator', 'Biomass') ## This is the current Biomass
     new.bio$Predator  <- as.character(new.bio$Predator)   ## Removing factors
     ## Thes bit was done by Sieme,  she was trying to look for the impact of each age class on predation
@@ -222,7 +222,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 age.diet <- diet.data[diet.data$Predator ==  input$FG2 & diet.data$Stock == as.numeric(input$Stocks2) & diet.data$Time == as.numeric(input$Time), ]
                 age.diet <- age.diet[,  -which(names(age.diet) %in% c('Predator','Time', 'Stock'))]
                 age.diet <- age.diet[, (colSums(age.diet, na.rm = TRUE) > input$Thr2)]
-                age.diet <- reshape::melt(age.diet, id = 'Cohort') ## Biomass of the predator, so we have an idea of the total pressure
+                age.diet <- reshape2::melt(age.diet, id = 'Cohort') ## Biomass of the predator, so we have an idea of the total pressure
                 age.diet[age.diet$value > input$Thr2, ]
             })
 
@@ -234,14 +234,14 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 age.bio.gr <- shiny::reactive({
                     age.gr          <- age.gr.pred[, col.nam %in% c('Time', input$FG3)]
                     age.gr          <- age.gr[age.gr$Time == input$Time3, ]
-                    age.gr          <- reshape::melt(age.gr, id.vars = c("Time"))
+                    age.gr          <- reshape2::melt(age.gr, id.vars = c("Time"))
                     age.gr$variable <- as.numeric(stringr::str_extract(age.gr$variable, "[0-9]+"))
                     names(age.gr)   <- c('Time', 'Cohort', 'Biomass')
                     ## diet
                     diet <- diet.data[diet.data$Predator == input$FG3 & diet.data$Stock == input$Stock3 & diet.data$Time == input$Time3,  ]
                     diet <- diet[, -which(names(diet) %in% c('Time', 'Predator', 'Stock'))]
                     diet <- diet[, (colSums(diet, na.rm = TRUE) > input$Thr3)]
-                    diet <- reshape::melt(diet, id = 'Cohort')
+                    diet <- reshape2::melt(diet, id = 'Cohort')
                     diet <- diet[diet$value > input$Thr3, ]
                     out  <- dplyr::left_join(age.gr, diet,  by = 'Cohort')
                     out$eff.pred <- out$Biomass * out$value
@@ -264,7 +264,7 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
                 predator        <- predator[,  -which(names(predator) %in% c('Predator', 'Cohort', 'Stock'))]
                 predator        <- predator[, (colSums(predator, na.rm = TRUE) > input$Thr)]
                 predator[which(predator < input$Thr,  arr.ind = TRUE)] <- NA
-                predator        <- reshape::melt(predator, id.vars = "Time", na.rm = TRUE)
+                predator        <- reshape2::melt(predator, id.vars = "Time", na.rm = TRUE)
                 predator        <- dplyr::left_join(predator, new.bio[new.bio$Predator == input$FG, ],  by = 'Time')
                 predator$consum <- with(predator, value * Biomass)
                 if(input$merT) predator$Time <- predator$Time / diff(unique(predator$Time))[1]

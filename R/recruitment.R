@@ -456,7 +456,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot2 ::ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- reshape::melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape2::melt(sel.data, id = c('Time', 'FG'))
             })
             shiny::observeEvent(input$exitButton, {
                 shiny::stopApp()

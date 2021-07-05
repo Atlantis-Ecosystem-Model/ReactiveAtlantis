@@ -4,8 +4,15 @@
 \alias{to.save}
 \title{Function to save data}
 \usage{
-to.save(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE,
-  Time = Time, tot = FALSE)
+to.save(
+  list,
+  sn = FALSE,
+  rn = FALSE,
+  n = FALSE,
+  b = FALSE,
+  Time = Time,
+  tot = FALSE
+)
 }
 \arguments{
 \item{list}{object from the function}

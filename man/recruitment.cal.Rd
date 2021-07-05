@@ -4,8 +4,14 @@
 \alias{recruitment.cal}
 \title{Estimation of Recruitment and primary producer growth}
 \usage{
-recruitment.cal(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,
-  quiet = TRUE)
+recruitment.cal(
+  ini.nc.file,
+  out.nc.file,
+  yoy.file,
+  grp.file,
+  prm.file,
+  quiet = TRUE
+)
 }
 \arguments{
 \item{ini.nc.file}{Character string with the path to the netcdf file to read
