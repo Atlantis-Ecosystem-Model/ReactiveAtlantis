@@ -96,6 +96,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ## if (!require('RColorBrewer', quietly = TRUE)) {
     ##     stop('The package RColorBrewer was not installed')
     ## }
+    general.col    <- c(RColorBrewer::brewer.pal(9, "Reds") [4 : 9], RColorBrewer::brewer.pal(9, "Purples")[4 : 9],  RColorBrewer::brewer.pal(9, "Blues") [4 : 9])
     color    <- RColorBrewer::brewer.pal(9, "BrBG")[2 : 9]
     color2   <- RColorBrewer::brewer.pal(9, "RdBu")
     ## reading information
@@ -104,6 +105,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     colnames(group.csv) <- tolower(colnames(group.csv))
     is.off    <- which(group.csv$isturnedon == 0)
     nc.out    <- ncdf4::nc_open(out.nc.file)
+    time.years <- time_calc(nc.out)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
     pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF','MICROPHTYBENTHOS'))) ## Just primary producer
@@ -117,7 +119,6 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     flagnut   <- text2num(prm, 'flagnut ', FG = 'look')
     flaglight <- text2num(prm, 'flaglight ', FG = 'look')
     flaghabd  <- text2num(prm, 'flaghabdepend ', FG = 'look')
-
     ##Parameters needed
     mum <- matrix(NA, length(pp.grp), max(coh.fg))
     Hdep  <- sp.dep <- KI <- KS <- KN <- NULL
@@ -148,7 +149,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ed.scl   <- text2num(prm, 'eddy_scale', FG = 'look')[, 2]
     options(warn =  0)
     ## nutrient
-    DIN      <- ncdf4::ncvar_get(nc.out, 'NO3')  * ncdf4::ncvar_get(nc.out, 'NH3')
+    DIN      <- ncdf4::ncvar_get(nc.out, 'NO3') + ncdf4::ncvar_get(nc.out, 'NH3')
     Si       <- ncdf4::ncvar_get(nc.out, 'Si')
     l.eddy   <- ncdf4::ncvar_get(nc.out, 'eddy') * ed.scl
     nlayers  <- ncdf4::ncvar_get(nc.out, 'numlayers')[, 1]
@@ -188,7 +189,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     }
 
     ## Primary producer by boc ## it would be nice to checlk this tool
-    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF",'MICROPHTYBENTHOS') & isturnedon == 1))
+    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF",'MICROPHTYBENTHOS', 'LAB_DET', 'REF_DET') & isturnedon == 1))
     pp.fg   <- group.csv$name[pp.pos]
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
@@ -196,6 +197,10 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
         pp.list[[l.pp]]      <- ncdf4::ncvar_get(nc.out, paste0(pp.fg[l.pp], '_N'))
         names(pp.list)[l.pp] <- pp.cod[l.pp]
     }
+    pp.list[['DIN']]   <- ncdf4::ncvar_get(nc.out, 'NO3') + ncdf4::ncvar_get(nc.out, 'NH3')
+    pp.list[['Det_Si']]    <- ncdf4::ncvar_get(nc.out, 'Det_Si')
+    pp.list[['Si']]    <- ncdf4::ncvar_get(nc.out, 'Si')
+    pp.list[['DON']]    <- ncdf4::ncvar_get(nc.out, 'DON')
     pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
     pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
     numlay             <- ncdf4::ncvar_get(nc.out, 'numlayers')
@@ -223,8 +228,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                                       shiny::column(2,
                                              shiny::wellPanel(
                                                  shiny::tags$h3('Functional Group'),
-                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light'))),
-                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', pp.cod))),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light','DIN', 'Det_Si', 'Si', 'DIN', 'DON'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', 'DIN', 'Det_Si', 'Si', 'DIN', 'DON', pp.cod))),
                                                  shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
                                                  shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
                                                  shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
@@ -315,7 +320,9 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                 ly.box      <- numlay[box]
                 out.pp.list <- list()
                 nam.plot    <- paste0('layer ', c(ly.box : 1))
-                nam.plot    <- c('Time', 'FG', paste0(nam.plot[1], ' [Deepest]'), nam.plot[c( - 1,  - ly.box)],
+                #nam.plot    <- c('Time', 'FG', paste0(nam.plot[1], ' [Deepest]'), nam.plot[c( - 1,  - ly.box)],
+                #                 paste0(nam.plot[ly.box], ' [Surface]'))
+                nam.plot    <- c('Time', 'FG', 'alpha', paste0(nam.plot[1], ' [Deepest]'), nam.plot[c( - 1,  - ly.box)],
                                  paste0(nam.plot[ly.box], ' [Surface]'))
                 for( i in 1 : length(pp.list)){
                     if(length(dim(pp.list[[i]])) == 3){
@@ -339,29 +346,27 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                     if(input$log.v == TRUE){
                         out.pp.list[[i]] <- log(out.pp.list[[i]])
                     }
+                    alpha.col = ifelse(names(pp.list)[i] %in% c(input$sp2.pp, input$sp.pp), 1, 0.1)
                     out.pp.list[[i]]           <- t(out.pp.list[[i]])
-                    out.pp.list[[i]]           <- data.frame(1 : nrow(out.pp.list[[i]]), names(pp.list)[i], out.pp.list[[i]])
+                    out.pp.list[[i]]           <- data.frame(time.years, names(pp.list)[i], alpha.col, out.pp.list[[i]])
                     colnames(out.pp.list[[i]]) <- nam.plot
                     names(out.pp.list)[i]      <- names(pp.list)[i]
                 }
-                ## To get the proper plot in the right order
-                ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
-                out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
-                sel.data <- reshape2::melt(sel.data, id = c('Time', 'FG'))
+                sel.data <- reshape2::melt(sel.data, id = c('Time', 'FG', 'alpha'))
             })
 
             ## STOP
             shiny::observeEvent(input$exitButton, {shiny::stopApp()})
             output$plot3 <- shiny::renderPlot({
-                ## colors
-                colo  <- c(rep('grey70', (length(pp.list) - 2)), color2[c(1, 8)])
-                p <- ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG))
-                p <- p + ggplot2::geom_line(na.rm = TRUE, size = 1.5) + ggplot2::facet_wrap(~ .data$variable, ncol = 2)
+                col = grDevices::colorRampPalette(general.col)(length(pp.list))
+                p <- ggplot2::ggplot(data = o.pp(), ggplot2::aes(x = .data$Time, y = .data$value))
+                p <- p + ggplot2::geom_line(na.rm = TRUE, ggplot2::aes(colour = .data$FG, alpha = .data$alpha), size = 1.4) + ggplot2::facet_wrap(~ .data$variable, ncol = 2)
                 p <- p + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE)) + ggplot2::theme_minimal()
-                p <- p + ggplot2::scale_colour_manual(values = colo,  name = 'Variables') + ggplot2::theme(text = ggplot2::element_text(size = 15))
-                p <- ggplot2::update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                p <- p + ggplot2::scale_alpha(guide = 'none')
+                p <- p + ggplot2::scale_colour_manual(values = col,  name = 'Variables') + ggplot2::theme(text = ggplot2::element_text(size = 15))
+                p <- ggplot2::update_labels(p, list(x = 'Date', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion')))
                 p
             })
             output$plot1 <- shiny::renderPlot({

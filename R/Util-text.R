@@ -64,3 +64,21 @@ text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE, li
         return(pp.mat)
     }
 }
+
+
+##' @title NCtime calculation
+##' @param ncfile Netcdf file
+##' @return Vector of dates
+##' @author Javier Porobic
+##' @export
+time_calc <- function(ncfile){
+    ## Time Vector
+    orign   <- unlist(strsplit(ncdf4::ncatt_get(ncfile, 't')$units, ' ', fixed = TRUE))
+    if(orign[1] == 'seconds') {
+        Time <- ncdf4::ncvar_get(ncfile, 't') / 86400
+    } else {
+        Time <- ncdf4::ncvar_get(ncfile, 't')
+    }
+    Time <- as.Date(Time, origin = orign[3])
+    return(Time)
+}

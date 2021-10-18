@@ -9,5 +9,5 @@ License: GPL-3
 Imports: shiny, ncdf4, tidyverse, stringr, data.table, RColorBrewer, Rdpack, reshape2, plotrix, DT, dplyr, ggplot2,  plotly, scales, proj4
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 RdMacros: Rdpack

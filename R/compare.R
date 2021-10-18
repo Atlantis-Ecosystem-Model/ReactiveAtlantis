@@ -76,10 +76,10 @@ compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.de
     inf.box <- boxes.prop(bgm.file,  cum.depths)
     nc.cur  <- ncdf4::nc_open(nc.out.current)
     ## Time Vector
-    Time <- time.calc(nc.cur)
+    Time <- time_calc(nc.cur)
     if(!is.null(nc.out.old)){
         nc.old <- ncdf4::nc_open(nc.out.old)
-        Time_old <- time.calc(nc.old)
+        Time_old <- time_calc(nc.old)
     }
     names(grp) <- tolower(names(grp))
     grp     <- grp[grp$isturnedon == 1, c('code', 'name', 'longname', 'grouptype', 'numcohorts')]
@@ -783,18 +783,18 @@ to.save <- function(list, sn = FALSE, rn = FALSE, n = FALSE, b = FALSE, Time = T
     return (odd)
 }
 
-##' @title NCtime calculation
-##' @param ncfile Netcdf file
-##' @return Vector of dates
-##' @author Javier Porobic
-time.calc <- function(ncfile = NULL){
-    ## Time Vector
-    orign   <- unlist(strsplit(ncdf4::ncatt_get(ncfile, 't')$units, ' ', fixed = TRUE))
-    if(orign[1] == 'seconds') {
-        Time <- ncdf4::ncvar_get(ncfile, 't') / 86400
-    } else {
-        Time <- ncdf4::ncvar_get(ncfile, 't')
-    }
-    Time <- as.Date(Time, origin = orign[3])
-    return(Time)
-}
+## ##' @title NCtime calculation
+## ##' @param ncfile Netcdf file
+## ##' @return Vector of dates
+## ##' @author Javier Porobic
+## time_calc <- function(ncfile = NULL){
+##     ## Time Vector
+##     orign   <- unlist(strsplit(ncdf4::ncatt_get(ncfile, 't')$units, ' ', fixed = TRUE))
+##     if(orign[1] == 'seconds') {
+##         Time <- ncdf4::ncvar_get(ncfile, 't') / 86400
+##     } else {
+##         Time <- ncdf4::ncvar_get(ncfile, 't')
+##     }
+##     Time <- as.Date(Time, origin = orign[3])
+##     return(Time)
+## }
