@@ -64,22 +64,42 @@
 ##'     \eqn{P_{i}} ith of \eqn{n} predictions, and \eqn{\bar{O}} and \eqn{\bar{P}} are the
 ##'     observation and prediction averaged, respectively.
 ##' }
-##' @import stats utils grDevices ggplot2 graphics
+##' @import stats utils grDevices ggplot2 graphics tidyr aes scales dplyr reshape2
+##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export
-catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
-    ## General setting
-    mycol    <- c(RColorBrewer::brewer.pal(8, "Dark2"), c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7"))
-    mycol    <- grDevices::colorRampPalette(mycol)
-    col.bi   <- mycol(15)[c(14, 13, 12, 10)]
+catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.by.fleet = NULL, ext.catch.total = NULL){
+library(dplyr)
+    ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+    ## ~         General Settings     ~ ##
+    ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+    ## For colours i'm using blade 2049 runner custom colour palette
+    br.hotel.col <- c('#241309','#292B15','#7A6F42','#56471E','#562F0E','#BA9B5B','#844D14','#A16F26')
     nc.data  <- ncdf4::nc_open(catch.nc)
     grp      <- utils::read.csv(grp.csv)
-    if(!is.null(ext.catch.f)){
-        ext.f  <- scan(ext.catch.f, nlines = 1, what = character(), sep = ',')
-        ext.c  <- utils::read.table(ext.catch.f, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
+    names(grp) <- tolower(names(grp))
+    grp <- grp[which(grp$isimpacted == 1), ]
+    if(!is.null(ext.catch.by.fleet)){
+        ext.f      <- scan(ext.catch.by.fleet, nlines = 1, what = character(), sep = ',')
+        ext.c      <- utils::read.table(ext.catch.by.fleet, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
+        external_c <- as.data.frame(setNames(ext.c, c('years', tail(paste(ext.f, colnames(ext.c), sep = '_'), n = -1))))
+        external_c <- reshape2::melt(external_c, id.vars = c('years'), variable.name = 'fgroup', value.name = 'catch') %>%
+            tidyr::separate(col = fgroup, into = c('fleet', 'fgroup'), sep = '_') %>% mutate(source = 'observed', .before = fleet)
     }
-    grp      <- grp[grp$IsImpacted == 1, ]
+    if(!is.null(ext.catch.total)){
+        ext.catch.group <- utils::read.csv(ext.catch.total, sep = ',', check.names = FALSE)
+        ext.fgroup.name <- names(ext.catch.group)
+        ## getting names on lower to avoid future issues
+        var.time <- c('year', 'years')
+        names(ext.catch.group) <-  tolower(names(ext.catch.group))
+        var.time        <- var.time[which(var.time %in% names(ext.catch.group))]
+        ext.catch.group <- reshape2::melt(ext.catch.group, id.vars = var.time, variable.name = 'Fuctional_group', value.name = 'Observed')
+        names(ext.catch.group)[which(names(ext.catch.group) == var.time)] <- 'years' ## making sure that the name is years and not something else
+        ext.fgroup.name <- ext.fgroup.name[-which(tolower(ext.fgroup.name) == var.time) ]
+    }
+    grp      <- grp[grp$isimpacted == 1, ]
     fsh      <- utils::read.csv(fish.csv)
+    names(fsh) <- tolower(names(fsh))
     nam.var  <- names(nc.data$var)
     orign    <- unlist(strsplit(ncdf4::ncatt_get(nc.data, 't')$units, ' ', fixed = TRUE))
     if(orign[1] == 'seconds') {
@@ -87,7 +107,8 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
     } else {
         Time <- ncdf4::ncvar_get(nc.data, 't')
     }
-    Time     <- as.Date(Time, origin = orign[3])
+    Time          <- as.Date(Time, origin = orign[3])
+    num_fisheries <- length(fsh$code)
     shiny::shinyApp(
         ## Create the different tabs
         ui <- shiny::navbarPage("Catch",
@@ -95,7 +116,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                   shiny::fluidRow(
                                       shiny::column(2,
                                              shiny::wellPanel(
-                                                 shiny::selectInput('FISHB', 'Fishery :', as.character(fsh$Code)),
+                                                 shiny::selectInput('FISHB', 'Fishery :', as.character(fsh$code)),
                                                  shiny::selectInput('is.CB', label = shiny::strong("Data type"), c('Catch', 'Discard')),
                                                  shiny::checkboxInput('rem.cb', label = shiny::strong("Remove Values"), value = FALSE),
                                                  shiny::numericInput("lag.cb", "Observations:", 1, min = 1, max = 100),
@@ -103,150 +124,263 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                                                  shiny::downloadButton("DL_Biomass", "Download")
                                                  )),
                                       shiny::column(10,
-                                             shiny::plotOutput('plotB', width = "100%", height = "800px")
+                                             shiny::plotOutput('P.biomass', width = "100%", height = "800px")
                                              ))),
                          shiny::tabPanel('Numbers',
                                   shiny::fluidRow(
                                       shiny::column(2,
                                              shiny::wellPanel(
-                                                 shiny::selectInput('FG', 'Functional Group :', as.character(grp$Code)),
+                                                 shiny::selectInput('FG', 'Functional Group :', as.character(grp$code)),
                                                  shiny::selectInput('is.catch', label = shiny::strong("Data type"), c('Catch', 'Discard')),
                                                  shiny::checkboxInput('rem.ab', label = shiny::strong("Remove Values"), value = FALSE),
                                                  shiny::numericInput("lag.ab", "Observations:", 1, min = 1, max = 100),
-                                                 shiny::checkboxInput('gen', label = shiny::strong("limit-axis"), value = TRUE),
+                                                 shiny::checkboxInput('l.axis', label = shiny::strong("limit axis"), value = TRUE),
                                                  shiny::downloadButton("DL_Abun", "Download")
                                              )),
                                       shiny::column(10,
-                                             shiny::plotOutput('plot1', width = "100%", height = "800px")
+                                             shiny::plotOutput('P.numbers', width = "100%", height = "800px")
                                              ))),
-                         shiny::tabPanel('Compare',
-                                  shiny::fluidRow(
-                                      shiny::column(2,
-                                             shiny::wellPanel(
-                                                 shiny::selectInput('FISHC', 'Fishery :', as.character(fsh$Code)),
-                                                 shiny::selectInput('is.CC', label = shiny::strong("Data type"), c('Catch', 'Discard')),
-                                                 shiny::checkboxInput('rem.CC', label = shiny::strong("Remove Values"), value = FALSE),
-                                                 shiny::numericInput("lag.CC", "Observations:", 1, min = 1, max = 100),
-                                                 shiny::downloadButton("DL.cp.dat", "Download")
-                                             )),
-                                      shiny::column(10,
-                                             shiny::plotOutput('plotC', width = "100%", height = "800px"),
-                                             shiny::p(shiny::strong("\nModel skill assessment (quantitative metrics)")),
-                                             DT::dataTableOutput('TabStat'),
-                                             shiny::downloadButton("DL.cp.stat", "Download")
-                                             ))),
+                         shiny::navbarMenu('Skill - Assessment',
+                                           shiny::tabPanel('Catch by Fleet',
+                                                           shiny::fluidRow(
+                                                                      shiny::column(2,
+                                                                                    shiny::wellPanel(
+                                                                                               shiny::selectInput('FISHC', 'Fishery :', as.character(fsh$code)),
+                                                                                               shiny::selectInput('is.CC', label = shiny::strong("Data type"), c('Catch', 'Discard')),
+                                                                                               shiny::checkboxInput('rem.CC', label = shiny::strong("Remove Values"), value = FALSE),
+                                                                                               shiny::numericInput("lag.CC", "Observations:", 1, min = 1, max = 100),
+                                                                                               shiny::downloadButton("DL.cp.dat", "Download")
+                                                                                           )),
+                                                                      shiny::column(10,
+                                                                                    shiny::plotOutput('P.SA.catch_FG', width = "100%", height = "800px"),
+                                                                                    shiny::p(shiny::strong("\nModel skill assessment (quantitative metrics)")),
+                                                                                    DT::dataTableOutput('TabStat'),
+                                                                                    shiny::downloadButton("DL.cp.stat", "Download")
+                                                                                    ))),
+                                           shiny::tabPanel('Total Catch',
+                                                           shiny::fluidRow(
+                                                                      shiny::column(2,
+                                                                                    shiny::wellPanel(
+                                                                                               shiny::selectInput('FG.catch.tot', 'Functional Group:', as.character(ext.fgroup.name)),
+                                                                                               shiny::checkboxInput('rem.CC.tot', label = shiny::strong("Remove Values"), value = FALSE),
+                                                                                               shiny::numericInput("lag.CC.tot", "Observations:", 1, min = 1, max = 100),
+                                                                                               shiny::downloadButton("DL.cp.dat.tot", "Download")
+                                                                                           )),
+                                                                      shiny::column(10,
+                                                                                    shiny::plotOutput('P.SA.total.catch', width = "100%", height = "800px"),
+                                                                                    shiny::p(shiny::strong("\nModel skill assessment (quantitative metrics)")),
+                                                                                    DT::dataTableOutput('TabStat.tot'),
+                                                                                    shiny::downloadButton("DL.cp.stat.tot", "Download")
+                                                                                    )))),
                          ## -- Exit --
                          shiny::tabPanel(
-                             shiny::actionButton("exitButton", "Exit")
-                         )
+                                    shiny::actionButton("exitButton", "Exit")
+                                )
                          ),
         ## Link the input for the different tabs with your original data
         ## Create the plots
         function(input, output, session){
-            num <- shiny::reactive({
-                num <- read.var(input$FG, nc.data, input$is.catch, grp)
+            ## getting the number of catch by age
+            ## this is a way to check is the selectivity is working
+            catch.number <- shiny::reactive({
+                num <- read.var(input$FG, nc.data, input$is.catch, grp, time = Time)
                 if(input$rem.ab){
-                    rep <- rep(1, length(num[[1]]))
-                    rep[c(1 : input$lag.ab)] <- NA
-                    num <- lapply(num, function(x) x * rep)
+                    Time[input$lag.ab]
+                    num <- num %>% filter(years > Time[input$lag.ab])
                 }
-                num
+                return(num)
             })
-            bio <- shiny::reactive({
-                cat.obs <- paste0(grp$Code, '_', input$is.CB, '_FC', which(fsh$Code == input$FISHB))
+            catch.biomass <- shiny::reactive({
+                #browser()
+                cat.obs <- paste0(grp$code, '_', input$is.CB, '_FC', which(fsh$code == input$FISHB))
                 cat.obs <- which(cat.obs %in% nam.var)
                 arry    <- array(NA, dim = c(length(Time), length(cat.obs)))
                 for(da in 1 : length(cat.obs)){
-                    arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHB, nc.data, fsh = fsh, is.C = input$is.CB, grp = grp, by.box = FALSE)
+                    arry[, da] <- var.fish(grp$code[cat.obs[da]], input$FISHB, nc.data, fsh = fsh, is.C = input$is.CB, grp = grp, by.box = FALSE)
                 }
-                colnames(arry) <- grp$Code[cat.obs]
+
+                colnames(arry) <- grp$code[cat.obs]
                 rem <- which(colSums(arry) == 0)
                 if(length(rem) > 0){
                     arry <- arry[, -rem]
-                    }
+                }
+                if(length(arry) == 0){
+                    return(arry = 0)
+                }
                 if(input$rem.cb){
                     arry[c(1 : input$lag.cb), ] <- NA
                 }
+                time.vec <- Time
                 if(input$b.year){
                     arry <- rowsum(arry, format(Time, '%Y'))
+                    time.vec <-as.numeric(unique(format(Time, '%Y')))
                 }
-                arry
+                arry <- reshape2::melt(data.frame(Time = time.vec, arry), id.var = 'Time', variable.name = 'Functional_groups', value.name = 'Catch')
+                return(arry)
             })
             ## External files
             ext <- shiny::reactive({
-                cat.obs <- paste0(grp$Code, '_', input$is.CC, '_FC', which(fsh$Code == input$FISHC))
-                cat.obs <- which(cat.obs %in% nam.var)
-                C.arry  <- array(NA, dim = c(length(Time), length(cat.obs)))
-                for(da in 1 : length(cat.obs)){
-                    C.arry[, da] <- var.fish(grp$Code[cat.obs[da]], input$FISHC, nc.data, fsh = fsh, is.C = 'Catch', grp = grp, by.box = FALSE)
+               # browser()
+                active_fishery <- paste0(grp$code, '_', input$is.CC, '_FC', which(fsh$code == input$FISHC))
+                active_fishery <- which(active_fishery %in% nam.var)
+                atlantis_c     <- array(NA, dim = c(length(Time), length(active_fishery)))
+                for(da in 1 : length(active_fishery)){
+                    atlantis_c[, da] <- var.fish(grp$code[active_fishery[da]], input$FISHC, nc.data, fsh = fsh, is.C = 'Catch', grp = grp, by.box = FALSE)
                 }
-                colnames(C.arry) <- grp$Code[cat.obs]
 
                 if(input$rem.CC){
-                    C.arry[c(1 : input$lag.CC), ] <- NA
+                    atlantis_c[c(1 : input$lag.CC), ] <- NA
                 }
+                library(reshape2)
+                atlantis_c <- rowsum(atlantis_c, format(Time, '%Y'), na.rm = TRUE)
+                #browser()
+                atlantis_c <- setNames(data.frame(unique(format(Time, '%Y')), 'atlantis', atlantis_c), c('years', 'source', grp$code[active_fishery]))
+                atlantis_c <- reshape2::melt(atlantis_c, id_vars = c('years', 'source'),  variable.name = 'fgroup', value.name = 'catch')
+                Selected_fishery <- trimws(input$FISHC, which = c("both"))
+                observed_c <- external_c %>% filter(fleet == Selected_fishery) %>% select(-fleet)
 
-                rem <- which(colSums(C.arry, na.rm = TRUE) == 0)
-                if(length(rem) > 0){
-                    C.arry <- C.arry[, -rem]
-                }
-                C.arry <- rowsum(C.arry, format(Time, '%Y'), na.rm = TRUE)
-                ext    <- ext.c[, c(1, which(ext.f %in% input$FISHC))]
-                ext    <- list(A.catch = C.arry, external.c = ext)
-                ext$Stats <- NULL
-                for(i in  2 : ncol(ext$external.c)){
-                   pos <- which(colnames(ext$A.catch) %in% colnames(ext$external.c)[i])
-                   if(length(pos) == 0) next()
-                   FG <- colnames(ext$external.c)[i]
-                   na.rmv    <- which(!is.na(ext$external.c[, i]))
-                   t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
-                   t.mat.ext <- which(ext$external.c$Time %in% unique(format(Time, '%Y'))[t.match])
-                   if(sum(ext$A.catch[t.match, pos]) == 0 | sum(ext$external.c[t.mat.ext, i]) == 0) next()
-                   ext$Stats <- rbind(ext$Stats, stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]), FG))
-                }
-                ext
+
+                total_catch <- rbind(atlantis_c, observed_c) %>% mutate(fleet = Selected_fishery) %>% mutate(years = as.Date(years, format = '%Y'))
+
+                  #mutate_at(vars(matches("_DT$")),funs(as.Date(as.character(.),format="%Y%m%d")))
+
+##                 total_catch %>% group_by(fgroup) %>%    group_modify( ~ {.x %>% stats(obs = filter(source ==  'observed') %>% pull(catch),
+##                                                                        mod = filter(source ==  'atlantis') %>% pull(catch),
+##                                                                        FG = unique(fgroup))})
+## #> [[1]]
+
+## ,  by = c("years", "source", "fgroup", "catch"))
+##                 ext    <- list(A.catch = atlantis_c, external.c = ext)
+##                 ext$Stats <- NULL
+##                 for(i in  2 : ncol(ext$external.c)){
+##                    pos <- which(colnames(ext$A.catch) %in% colnames(ext$external.c)[i])
+##                    if(length(pos) == 0) next()
+##                    FG <- colnames(ext$external.c)[i]
+##                    na.rmv    <- which(!is.na(ext$external.c[, i]))
+##                    t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
+##                    t.mat.ext <- which(ext$external.c$Time %in% unique(format(Time, '%Y'))[t.match])
+##                    if(sum(ext$A.catch[t.match, pos]) == 0 | sum(ext$external.c[t.mat.ext, i]) == 0) next()
+##                    ext$Stats <- rbind(ext$Stats, stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]), FG))
+##                 }
+                ##                 ext
+                return(total_catch)
             })
+            ## ~~~~~~~~~~~~~~~~~~~~~~ ##
+            ## ~      Total Catch   ~ ##
+            ## ~~~~~~~~~~~~~~~~~~~~~~ ##
+            ext.tot <- shiny::reactive({
+                #browser()
+                library(dplyr)
+                age_class <- grp$numcohorts[which(grp$code %in% input$FG.catch.tot)]
+                catch.obs <- paste0(input$FG.catch.tot, '_', input$is.CC, '_FC', 1 : num_fisheries)
+                ## array Catch by Time and Fleet [Time, Fleet]
+                atlantis_c    <- array(NA, dim = c(length(Time), length(catch.obs)))
+                for(da in 1 : length(catch.obs)){
+                    atlantis_c[, da] <- colSums(ncdf4::ncvar_get(nc.data, catch.obs[da]), na.rm = TRUE)
+                }
+                if(input$rem.CC){
+                    ## in case we want to remove some time steps
+                    atlantis_c[c(1 : input$lag.CC), ] <- NA
+                }
+                atlantis_c <- rowSums(rowsum(atlantis_c, format(Time, '%Y'), na.rm = TRUE), na.rm=TRUE)
+                atlantis_c <- setNames(data.frame(unique(format(Time, '%Y')), atlantis_c), c('years', 'Atlantis'))
+                observed_c <- ext.catch.group %>% filter(Fuctional_group == tolower(input$FG.catch.tot))
+                catches    <- reshape2::melt(merge(atlantis_c, observed_c), id_vars=c('years', 'Fuctional_group'), variable.name = 'Data_origin', value.name = 'Catch')
+                catches$years <- as.numeric(catches$years)
+                if(sum(observed_c$Observed, na.rm = TRUE) == 0 || sum(atlantis_c$Atlantis, na.rm = TRUE) == 0){
+                    stats <- 0
+                } else {
+                    stats <-  stats(obs = catches %>% filter(Data_origin == 'Observed') %>% pull(Catch),
+                                    mod = catches %>% filter(Data_origin == 'Atlantis') %>% pull(Catch),
+                                    FG  = input$FG.catch.tot)
+                }
+                external <- list(catches = catches,
+                                 stats = stats,
+                                 group = grp[which(grp$code %in% input$FG.catch.tot),]$longname)
+               # browser()
+                return(external)
+            })
+
             ## exit
             shiny::observeEvent(input$exitButton, {
                 shiny::stopApp()
             })
-            ## Plots
-            output$plot1 <- shiny::renderPlot({
-                rp           <- length(num())
-                ylm          <- NULL
-                if(input$gen) ylm <- range(sapply(num(), range, na.rm = TRUE))
-                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
-                for( i in 1 : rp){
-                    plot.catch(num()[[i]], Time, ylm, coh = i, col.bi)
-                }
-                mtext("Time (days)", side = 1, outer = TRUE, cex = 2)
-                mtext("Numbers", side = 2, outer = TRUE, line = 2, cex = 2)
+
+            ## ~~~~~~~~~~~~~~~~~~~~ ##
+            ## ~      Call Plots  ~ ##
+            ## ~~~~~~~~~~~~~~~~~~~~ ##
+            output$P.biomass <- shiny::renderPlot({
+                Plot_biomass()
             })
-            output$plotB <- shiny::renderPlot({
-                rp       <- ncol(bio())
-                col.cur  <- col.bi[2]
-                ylm      <- NULL
-                if(input$is.CB == 'Discards'){
-                    col.cur <- col.bi[1]
-                }
-                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
-                for( i in 1 : rp){
-                    plot.catch(bio()[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(bio())[i], by.year = input$b.year)
-                }
-                mtext(2, text = 'Biomass (t)', outer = TRUE, cex = 2)
-                mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
+
+            output$P.numbers <- shiny::renderPlot({
+                Plot_numbers()
+            })
+
+             output$P.SA.total.catch <- shiny::renderPlot({
+                Plot_total_catch()
+            })
+
+            output$P.SA.catch_FG <- shiny::renderPlot({
+               Plot_catch_by_fg()
+            })
+
+            ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+            ## ~        Building Plots    ~ ##
+            ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
+
+            Plot_numbers <- shiny::reactive({
+                #if(inputs$l.axis
+                p <- ggplot2::ggplot(catch.number(), ggplot2::aes(x = years, catch)) + ggplot2::geom_line() + ggplot2::geom_point()
+                p <- p + ggplot2::facet_wrap(.~cohort, scales="free_y")  + theme_atlantis()
+                p
+            })
+
+
+            Plot_biomass <- shiny::reactive({
+                cat.obs <- paste0(grp$code, '_', input$is.CB, '_FC', which(fsh$code == input$FISHB))
+                shiny::validate(
+                           shiny::need(catch.biomass() != 0,  paste0('There is no ', input$is.CB ,' information for ', fsh$name[which(fsh$code == input$FISHB)]))
+                       )
+                title.plot = paste0(input$is.CB ,' information for ', fsh$name[which(fsh$code == input$FISHB)])
+                p <- ggplot2::ggplot(catch.biomass(), ggplot2::aes(x = Time, Catch)) + ggplot2::geom_line() + ggplot2::geom_point()
+                p <- p + ggplot2::facet_wrap(.~Functional_groups, scales="free_y")  + theme_atlantis() + ggplot2::ggtitle(title.plot)
+                p
 
             })
-            output$plotC <- shiny::renderPlot({
-                rp       <- ncol(ext()$A.catch)
-                col.cur  <- col.bi[2]
-                graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
-                for( i in 1 : rp){
-                    plot.catch(ext()$A.catch[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(ext()$A.catch)[i], by.year = TRUE, external = ext()$external.c)
-                }
-                mtext("Biomass", side=2, outer = TRUE, cex = 2)
-                mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
+            ## output$plotC <- shiny::renderPlot({
+
+            ##     rp       <- ncol(ext()$A.catch)
+            ##     col.cur  <- col.bi[2]
+            ##     graphics::par(mfrow = c(t(grDevices::n2mfrow(rp))), cex = 1.2, oma = c(3, 3, 1, 1), cex = 1.1)
+            ##     for( i in 1 : rp){
+            ##         plot.catch(ext()$A.catch[, i], Time, ylm = NULL, coh = NULL, col.cur, bio.n = colnames(ext()$A.catch)[i], by.year = TRUE, external = ext()$external.c)
+            ##     }
+            ##     mtext("Biomass", side=2, outer = TRUE, cex = 2)
+            ##     mtext("Time (days)", side=1, line = 2, outer = TRUE, cex = 2)
+            ## }) :
+
+            Plot_catch_by_fg <- shiny::reactive({
+                #browser()
+                data_plot <- ext()
+                title.plot <- paste0('Total catch for ', unique(ext()$fleet))
+                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = years, y = catch, color = source))
+                p <- p + ggplot2::scale_color_manual(labels = c('Atlantis',  'Observed'), values = br.hotel.col[c(5, 8)])
+                p <- p + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ggtitle(title.plot) + ggplot2::labs(color = "Data Origin")
+                p <- p + ggplot2::facet_wrap(.~fgroup, scales="free_y") + theme_atlantis()
+                p
             })
+
+            Plot_total_catch <- shiny::reactive({
+                data_plot <- ext.tot()$catches
+                title.plot <- paste0('Total catch for ', ext.tot()$group)
+                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = years, y = Catch, color = Data_origin))
+                p <- p + ggplot2::scale_color_manual(labels = c('Atlantis',  'Observed'), values = br.hotel.col[c(5, 8)])
+                p <- p + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ggtitle(title.plot) + ggplot2::labs(color = "Data Origin")
+                p <- p + theme_atlantis()
+                p
+            })
+
             output$TabStat <- DT::renderDataTable(ext()$Stats)
             ## Save data
             output$DL_Biomass <- shiny::downloadHandler(
@@ -257,9 +391,16 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
                     if(input$b.year){
                         Tim <- as.Date(unique(format(Time, '%Y')), format = '%Y')
                     }
-                    write.csv(data.frame(Date = Tim, bio()), file, row.names = FALSE)
+                    write.csv(data.frame(Date = Tim, catch.biomass()), file, row.names = FALSE)
                 }
-            )
+                )
+
+            output$TabStat.tot <- DT::renderDataTable({
+                shiny::validate(
+                    shiny::need(ext.tot()$stats != 0,  'It is impossible to perform a skill assessment with a constant catch of zero.')
+                )
+                ext.tot()$stats})
+
             output$DL_Abun <- shiny::downloadHandler(
                 filename = function(){
                     paste0(input$dataset, ".csv")
@@ -313,9 +454,9 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL){
 ##' @return The information of the catch by biomass for all the FG
 ##' @author Demiurgo
 var.fish <- function(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE){
-    pos     <- which(grp$Code == FG)
-    f.pos   <- which(fsh$Code == FISH)
-    name.fg <- paste0(grp$Code[pos], '_', is.C, '_FC', f.pos)
+    pos     <- which(grp$code == FG)
+    f.pos   <- which(fsh$code == FISH)
+    name.fg <- paste0(grp$code[pos], '_', is.C, '_FC', f.pos)
     B.catch <- ncdf4::ncvar_get(nc.data, name.fg)
     if(!by.box){
         B.catch <- colSums(B.catch, na.rm = TRUE)
@@ -331,26 +472,29 @@ var.fish <- function(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE){
 ##' @param by.box Default FALSE. If the information is needed by box (TRUE) or not (FALSE)
 ##' @return A list witht the information for all the functional groups
 ##' @author Demiurgo
-read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE){
-    pos    <- which(grp$Code == FG)
-    n.coh  <- grp$NumCohorts[pos]
-    Tcatch <-list()
+read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE, time = Time){
+
+    pos    <- which(grp$code == FG)
+    n.coh  <- grp$numcohorts[pos]
+    Tcatch <- NULL
     if(n.coh > 1){
         for(coh in 1 : n.coh){
-            name.fg <- paste0(grp$Name[pos], coh,'_', is.C)
-            tmp    <- ncdf4::ncvar_get(nc.data, name.fg)
+            name.fg  <- paste0(grp$name[pos], coh,'_', is.C)
+            tmp      <- ncdf4::ncvar_get(nc.data, name.fg)
+            name_coh <- ifelse(coh < 10, paste0('Cohort 0',  coh), paste0('Cohort ',  coh))
             if(!by.box){
-                tmp <- colSums(tmp, na.rm=TRUE)
+               #   browser()
+                tmp <- data.frame(years = time, cohort = rep(name_coh, length(time)), catch = colSums(tmp, na.rm=TRUE))
             }
-            Tcatch[[coh]] <- tmp
+            Tcatch <- rbind(Tcatch, tmp)
         }
     } else {
-        name.fg <- paste0(grp$Name[pos], ifelse(is.C, '_Catch', '_Discard'))
+        name.fg <- paste0(grp$name[pos], is.C)
         tmp     <- ncdf4::ncvar_get(nc.data, name.fg)
         if(!by.box){
-            tmp <- colSums(tmp, na.rm=TRUE)
+            tmp <- data.frame(years = time, cohort = rep('Biomass Pool', length (time)), catch = colSums(tmp, na.rm=TRUE))
         }
-        Tcatch[[coh]] <- tmp
+        Tcatch <- rbind(Tcatch, tmp)
     }
     return(Tcatch)
 }
@@ -436,4 +580,70 @@ stats <- function(obs, mod, FG){
                       Results = c(COR$estimate, AE, AAE, RMSE, RI, ME),
                       p.val = c(COR$p.value, NA, NA, NA, NA, NA))
     return(out)
+}
+
+
+
+##     ##' @title Skill assessment of the model
+## ##' @param obs Shiny::Observed values
+## ##' @param mod modeled values
+## ##' @param FG Functional group
+## ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
+## ##' @author Demiurgo
+## stats <- function(obs, mod, FG){
+##     ## Stimation of Correlation
+##     COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs",  exact = FALSE)
+##     ## Average error
+##     AE   <- mean(obs, na.rm = TRUE) - mean(mod, na.rm = TRUE)
+##     ## Average absolute error
+##     diff <- mod - obs
+##     AAE  <- mean(abs(diff), na.rm = TRUE)
+##     ## Mean squared error
+##     RMSE <- sqrt(mean((diff) ^ 2, na.rm = TRUE))
+##     ## Reliability index
+##     ## Avoiding (inf values)
+##     tmp                   <- log(obs / mod) ^ 2
+##     tmp[is.infinite(tmp)] <- NA
+##     RI                    <-  exp(sqrt(mean(tmp, na.rm = TRUE)))
+##     ## Modeling efficiency
+##     ME <- 1 - (RMSE ^ 2) / var(obs, na.rm = TRUE) #option 1
+##     ## ME <- (sum((obs - mean(obs, na.rm = TRUE)) ^ 2, na.rm = TRUE) - sum((mod - obs) ^ 2, na.rm = TRUE)) / sum((obs - mean(obs, na.rm = TRUE)) ^ 2, na.rm = TRUE)
+##     if(COR$p.value == 0) COR$p.value <- '< 2.2e-16'
+##     out <- data.frame( FGroup = c(FG, NA, NA, NA, NA, NA),
+##                       Metrics = c('Correlation (Spearman)', 'Average Error (AE)',
+##                                   'Average Absolute Error (AAE)', 'Mean Squared Error (RMSE)', 'Reliability index',
+##                                   'Model Efficiency (ME)'),
+##                       Results = c(COR$estimate, AE, AAE, RMSE, RI, ME),
+##                       p.val = c(COR$p.value, NA, NA, NA, NA, NA))
+##     return(out)
+## }
+
+##' @title Main Atlatnis Theme
+##' @return The ggplot theme
+##' @author Javier Porobic
+theme_atlantis <- function(){
+    ggplot2::theme(
+                 plot.title = ggplot2::element_text(colour = "#844D14", face = 'bold', family = "Times New Roman", size = ggplot2::rel(2)),
+                 ## add border 1)
+                 panel.border = ggplot2::element_rect(colour = "#562F0E", fill = NA, linetype = 2),
+                 ## color background 2)
+                 panel.background = ggplot2::element_rect(fill = scales::alpha('#fcda96', 0.1)),
+                 ## modify grid 3)
+                 panel.grid.major.x = ggplot2::element_line(colour = "#844D14", linetype = 3, size = 0.5),
+                 panel.grid.minor.x = ggplot2::element_blank(),
+                 panel.grid.major.y =  ggplot2::element_line(colour = "#844D14", linetype = 3, size = 0.5),
+                 panel.grid.minor.y = ggplot2::element_blank(),
+                 ## modify text, axis and colour 4) and 5)
+                 axis.text = ggplot2::element_text(colour = "#292B15", face = "italic", family = "Times New Roman", size = ggplot2::rel(1.2)),
+                 axis.title = ggplot2::element_text(colour = "#292B15", face = 'bold', family = "Times New Roman", size = ggplot2::rel(1.5)),
+                 axis.ticks = ggplot2::element_line(colour = "#292B15", size = ggplot2::rel(1.2)),
+                 ## legend at the bottom 6)
+                 legend.text = ggplot2::element_text(colour = "#7A6F42", face = 'bold', family = "Times New Roman", size = ggplot2::rel(1.5)),
+                 legend.title = ggplot2::element_text(colour = "#292B15", face = 'bold', family = "Times New Roman", size = ggplot2::rel(1.5)),
+                 ## Faceting
+                 strip.background = ggplot2::element_rect(fill = scales::alpha("#7A6F42", 0.7), linetype = 2),
+                 strip.background.x = ggplot2::element_rect(fill = scales::alpha("#7A6F42", 0.7), linetype = 2),
+                 strip.background.y = ggplot2::element_rect(fill = scales::alpha("#7A6F42", 0.7), linetype = 2),
+                 strip.text = ggplot2::element_text(colour = "#241309", face = 'bold', family = "Times New Roman", size = ggplot2::rel(1.5))
+             )
 }
