@@ -102,14 +102,14 @@ recruitment.cal(nc.initial, nc.current, yoy.file, grp.file, prm.file)
 
 ### Harvest outputs and model skill assessment
 ```R
-
-catch.nc    <- 'your_output_CATCH.nc'
-ext.catch   <- 'external_catch_time_serie.csv'
+catch.nc             <- 'your_output_CATCH.nc'
+ext.catch.total      <- 'external_catch_time_serie.csv'
+ext.catch.by.fleet   <- 'external_catch_time_serie_by_fleets.csv'
 cum.depths  <- c(0, 20, 50, 150, 250, 400, 650, 1000, 4300) ## This should be the cummulative depth of your model
 fsh.csv     <- 'your_fisheries_definition_file.csv'
 bgm.file    <- 'your_spatial_configuration_file.bgm'
 grp.csv     <- 'your_groups_definition_file.csv'
-catch(grp.csv, fsh.csv, catch.nc, ext.catch)
+catch(grp.csv, fsh.csv, catch.nc, ext.catch.total, ext.catch.total)
 ```
 ## Authors
 
