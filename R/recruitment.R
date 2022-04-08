@@ -38,8 +38,9 @@
 ##' proportion by layer, or their logarithmic value.
 ##'     \item \bold{Help}: Shows information about the inputs, parameter values and
 ##' output. It also, provides an overview of the different options for the user.}
-##' @import stats utils grDevices ggplot2 graphics
+##' @import utils grDevices ggplot2 graphics
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
+##' @importFrom stats complete.cases
 ##' @author Demiurgo
 ##' @export
 recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.file,  quiet = TRUE){
@@ -68,24 +69,6 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    ## if (!require('shiny', quietly = TRUE)) {
-    ##     stop('The package shiny was not installed')
-    ## }
-    ## if (!require('ncdf4', quietly = TRUE)) {
-    ##     stop('The package ncdf4 was not installed')
-    ## }
-    ## if (!require('reshape', quietly = TRUE)) {
-    ##     stop('The package reshape was not installed')
-    ## }
-    ## if (!require('tidyverse', quietly = TRUE)) {
-    ##     stop('The package tidyverse was not installed')
-    ## }
-    ## if (!require('stringr', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
-    ## if (!require('RColorBrewer', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
     ## general settings
     colors    <- RColorBrewer::brewer.pal(n = 8, name = "Set1")
     if(!quiet) cat('  ...Done!')

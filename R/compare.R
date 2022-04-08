@@ -60,7 +60,7 @@
 ##'     or to set the limit from 0 to 3 for the normalized version.
 ##' }
 ##' }
-##' @import stats utils grDevices ggplot2 graphics
+##' @import utils grDevices ggplot2 graphics
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @author Demiurgo
 ##' @export

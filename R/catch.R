@@ -14,8 +14,12 @@
 ##' @param catch.nc Character string with the path to the catch netcdf output
 ##'     file from Atlantis. Usually this file has the name of \emph{[Your_Model]CATCH.nc},
 ##'     where [Your_Model] is the name of your Atlantis model
-##' @param ext.catch.f (Default = NULL) Character string with the path to the
-##'     external file with the shiny::observed catches and discards by year. This helps to
+##' @param ext.catch.by.fleet (Default = NULL) Character string with the path to the
+##'     external file with the observed catches and discards by year,  fleet and functional group. This helps to
+##'     calibrate the harvest section of Atlantis and it is required to perform the
+##'     skill assessment of the model.
+##' @param ext.catch.total (Default = NULL) Character string with the path to the
+##'     external file with the observed catches and discards by year and functional group. This helps to
 ##'     calibrate the harvest section of Atlantis and it is required to perform the
 ##'     skill assessment of the model.
 ##' @return This function provides 3 different sets of analyzes of the catches in the following tabs:
@@ -64,12 +68,14 @@
 ##'     \eqn{P_{i}} ith of \eqn{n} predictions, and \eqn{\bar{O}} and \eqn{\bar{P}} are the
 ##'     observation and prediction averaged, respectively.
 ##' }
-##' @import stats utils grDevices ggplot2 graphics tidyr aes scales dplyr reshape2
+##' @import utils grDevices ggplot2 graphics tidyr scales dplyr reshape2
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
+##' @importFrom stats cor.test setNames var complete.cases
+##' @importFrom dplyr filter lag
 ##' @author Demiurgo
 ##' @export
 catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.by.fleet = NULL, ext.catch.total = NULL){
-library(dplyr)
+#library(dplyr)
     ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
     ## ~         General Settings     ~ ##
     ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
@@ -84,7 +90,7 @@ library(dplyr)
         ext.c      <- utils::read.table(ext.catch.by.fleet, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
         external_c <- as.data.frame(setNames(ext.c, c('years', tail(paste(ext.f, colnames(ext.c), sep = '_'), n = -1))))
         external_c <- reshape2::melt(external_c, id.vars = c('years'), variable.name = 'fgroup', value.name = 'catch') %>%
-            tidyr::separate(col = fgroup, into = c('fleet', 'fgroup'), sep = '_') %>% mutate(source = 'observed', .before = fleet)
+            tidyr::separate(col = .data$fgroup, into = c('fleet', 'fgroup'), sep = '_') %>% mutate(source = 'observed', .before = .data$fleet)
     }
     if(!is.null(ext.catch.total)){
         ext.catch.group <- utils::read.csv(ext.catch.total, sep = ',', check.names = FALSE)
@@ -93,7 +99,7 @@ library(dplyr)
         var.time <- c('year', 'years')
         names(ext.catch.group) <-  tolower(names(ext.catch.group))
         var.time        <- var.time[which(var.time %in% names(ext.catch.group))]
-        ext.catch.group <- reshape2::melt(ext.catch.group, id.vars = var.time, variable.name = 'Fuctional_group', value.name = 'Observed')
+        ext.catch.group <- reshape2::melt(ext.catch.group, id.vars = var.time, variable.name = 'Functional_group', value.name = 'Observed')
         names(ext.catch.group)[which(names(ext.catch.group) == var.time)] <- 'years' ## making sure that the name is years and not something else
         ext.fgroup.name <- ext.fgroup.name[-which(tolower(ext.fgroup.name) == var.time) ]
     }
@@ -186,7 +192,7 @@ library(dplyr)
                 num <- read.var(input$FG, nc.data, input$is.catch, grp, time = Time)
                 if(input$rem.ab){
                     Time[input$lag.ab]
-                    num <- num %>% filter(years > Time[input$lag.ab])
+                    num <- num %>% filter(.data$years > Time[input$lag.ab])
                 }
                 return(num)
             })
@@ -231,20 +237,20 @@ library(dplyr)
                 if(input$rem.CC){
                     atlantis_c[c(1 : input$lag.CC), ] <- NA
                 }
-                library(reshape2)
+                #library(reshape2)
                 atlantis_c <- rowsum(atlantis_c, format(Time, '%Y'), na.rm = TRUE)
                 #browser()
                 atlantis_c <- setNames(data.frame(unique(format(Time, '%Y')), 'atlantis', atlantis_c), c('years', 'source', grp$code[active_fishery]))
                 atlantis_c <- reshape2::melt(atlantis_c, id_vars = c('years', 'source'),  variable.name = 'fgroup', value.name = 'catch')
                 Selected_fishery <- trimws(input$FISHC, which = c("both"))
-                observed_c <- external_c %>% filter(fleet == Selected_fishery) %>% select(-fleet)
+                observed_c <- external_c %>% filter(.data$fleet == Selected_fishery) %>% select(-.data$fleet)
 
 
-                total_catch <- rbind(atlantis_c, observed_c) %>% mutate(fleet = Selected_fishery) %>% mutate(years = as.Date(years, format = '%Y'))
+                total_catch <- rbind(atlantis_c, observed_c) %>% mutate(fleet = Selected_fishery) %>% mutate(years = as.Date(.data$years, format = '%Y'))
 
                   #mutate_at(vars(matches("_DT$")),funs(as.Date(as.character(.),format="%Y%m%d")))
 
-##                 total_catch %>% group_by(fgroup) %>%    group_modify( ~ {.x %>% stats(obs = filter(source ==  'observed') %>% pull(catch),
+##                 total_catch %>% group_by(fgroup) %>%    group_modify( ~ {.x %>% skill_assessment(obs = filter(source ==  'observed') %>% pull(catch),
 ##                                                                        mod = filter(source ==  'atlantis') %>% pull(catch),
 ##                                                                        FG = unique(fgroup))})
 ## #> [[1]]
@@ -260,7 +266,7 @@ library(dplyr)
 ##                    t.match   <- which(unique(format(Time, '%Y')) %in% ext$external.c$Time[na.rmv])
 ##                    t.mat.ext <- which(ext$external.c$Time %in% unique(format(Time, '%Y'))[t.match])
 ##                    if(sum(ext$A.catch[t.match, pos]) == 0 | sum(ext$external.c[t.mat.ext, i]) == 0) next()
-##                    ext$Stats <- rbind(ext$Stats, stats(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]), FG))
+##                    ext$Stats <- rbind(ext$Stats, skill_assessment(as.vector(ext$A.catch[t.match, pos]), as.vector(ext$external.c[t.mat.ext, i]), FG))
 ##                 }
                 ##                 ext
                 return(total_catch)
@@ -270,7 +276,7 @@ library(dplyr)
             ## ~~~~~~~~~~~~~~~~~~~~~~ ##
             ext.tot <- shiny::reactive({
                 #browser()
-                library(dplyr)
+                #library(dplyr)
                 age_class <- grp$numcohorts[which(grp$code %in% input$FG.catch.tot)]
                 catch.obs <- paste0(input$FG.catch.tot, '_', input$is.CC, '_FC', 1 : num_fisheries)
                 ## array Catch by Time and Fleet [Time, Fleet]
@@ -284,18 +290,18 @@ library(dplyr)
                 }
                 atlantis_c <- rowSums(rowsum(atlantis_c, format(Time, '%Y'), na.rm = TRUE), na.rm=TRUE)
                 atlantis_c <- setNames(data.frame(unique(format(Time, '%Y')), atlantis_c), c('years', 'Atlantis'))
-                observed_c <- ext.catch.group %>% filter(Fuctional_group == tolower(input$FG.catch.tot))
-                catches    <- reshape2::melt(merge(atlantis_c, observed_c), id_vars=c('years', 'Fuctional_group'), variable.name = 'Data_origin', value.name = 'Catch')
+                observed_c <- ext.catch.group %>% filter(.data$Functional_group == tolower(input$FG.catch.tot))
+                catches    <- reshape2::melt(merge(atlantis_c, observed_c), id_vars=c('years', 'Functional_group'), variable.name = 'Data_origin', value.name = 'Catch')
                 catches$years <- as.numeric(catches$years)
                 if(sum(observed_c$Observed, na.rm = TRUE) == 0 || sum(atlantis_c$Atlantis, na.rm = TRUE) == 0){
-                    stats <- 0
+                    skill_assessment <- 0
                 } else {
-                    stats <-  stats(obs = catches %>% filter(Data_origin == 'Observed') %>% pull(Catch),
-                                    mod = catches %>% filter(Data_origin == 'Atlantis') %>% pull(Catch),
+                    skill_assessment <-  skill_assessment(obs = catches %>% filter(.data$Data_origin == 'Observed') %>% pull(.data$Catch),
+                                    mod = catches %>% filter(data$Data_origin == 'Atlantis') %>% pull(.data$Catch),
                                     FG  = input$FG.catch.tot)
                 }
                 external <- list(catches = catches,
-                                 stats = stats,
+                                 skill_assessment = skill_assessment,
                                  group = grp[which(grp$code %in% input$FG.catch.tot),]$longname)
                # browser()
                 return(external)
@@ -331,7 +337,7 @@ library(dplyr)
 
             Plot_numbers <- shiny::reactive({
                 #if(inputs$l.axis
-                p <- ggplot2::ggplot(catch.number(), ggplot2::aes(x = years, catch)) + ggplot2::geom_line() + ggplot2::geom_point()
+                p <- ggplot2::ggplot(catch.number(), ggplot2::aes(x = .data$years, y = .data$catch)) + ggplot2::geom_line() + ggplot2::geom_point()
                 p <- p + ggplot2::facet_wrap(.~cohort, scales="free_y")  + theme_atlantis()
                 p
             })
@@ -343,8 +349,8 @@ library(dplyr)
                            shiny::need(catch.biomass() != 0,  paste0('There is no ', input$is.CB ,' information for ', fsh$name[which(fsh$code == input$FISHB)]))
                        )
                 title.plot = paste0(input$is.CB ,' information for ', fsh$name[which(fsh$code == input$FISHB)])
-                p <- ggplot2::ggplot(catch.biomass(), ggplot2::aes(x = Time, Catch)) + ggplot2::geom_line() + ggplot2::geom_point()
-                p <- p + ggplot2::facet_wrap(.~Functional_groups, scales="free_y")  + theme_atlantis() + ggplot2::ggtitle(title.plot)
+                p <- ggplot2::ggplot(catch.biomass(), ggplot2::aes(x = .data$Time, .data$Catch)) + ggplot2::geom_line() + ggplot2::geom_point()
+                p <- p + ggplot2::facet_wrap(.~.data$Functional_groups, scales="free_y")  + theme_atlantis() + ggplot2::ggtitle(title.plot)
                 p
 
             })
@@ -364,7 +370,7 @@ library(dplyr)
                 #browser()
                 data_plot <- ext()
                 title.plot <- paste0('Total catch for ', unique(ext()$fleet))
-                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = years, y = catch, color = source))
+                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = .data$years, y = .data$catch, color = .data$source))
                 p <- p + ggplot2::scale_color_manual(labels = c('Atlantis',  'Observed'), values = br.hotel.col[c(5, 8)])
                 p <- p + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ggtitle(title.plot) + ggplot2::labs(color = "Data Origin")
                 p <- p + ggplot2::facet_wrap(.~fgroup, scales="free_y") + theme_atlantis()
@@ -374,7 +380,7 @@ library(dplyr)
             Plot_total_catch <- shiny::reactive({
                 data_plot <- ext.tot()$catches
                 title.plot <- paste0('Total catch for ', ext.tot()$group)
-                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = years, y = Catch, color = Data_origin))
+                p <- ggplot2::ggplot(data_plot,  ggplot2::aes(x = .data$years, y = .data$Catch, color = .data$Data_origin))
                 p <- p + ggplot2::scale_color_manual(labels = c('Atlantis',  'Observed'), values = br.hotel.col[c(5, 8)])
                 p <- p + ggplot2::geom_point() + ggplot2::geom_line() + ggplot2::ggtitle(title.plot) + ggplot2::labs(color = "Data Origin")
                 p <- p + theme_atlantis()
@@ -397,9 +403,9 @@ library(dplyr)
 
             output$TabStat.tot <- DT::renderDataTable({
                 shiny::validate(
-                    shiny::need(ext.tot()$stats != 0,  'It is impossible to perform a skill assessment with a constant catch of zero.')
+                    shiny::need(ext.tot()$skill_assessment != 0,  'It is impossible to perform a skill assessment with a constant catch of zero.')
                 )
-                ext.tot()$stats})
+                ext.tot()$skill_assessment})
 
             output$DL_Abun <- shiny::downloadHandler(
                 filename = function(){
@@ -470,10 +476,10 @@ var.fish <- function(FG, FISH, nc.data, fsh, grp, is.C = NULL, by.box = FALSE){
 ##' @param is.C Default TRUE,  if the data needed is Catch (TRUE) or Discard (FALSE)
 ##' @param grp Specific group to get from the csv file
 ##' @param by.box Default FALSE. If the information is needed by box (TRUE) or not (FALSE)
+##' @param time Time vector
 ##' @return A list witht the information for all the functional groups
 ##' @author Demiurgo
-read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE, time = Time){
-
+read.var <- function(FG, nc.data, is.C = NULL, grp, by.box = FALSE, time){
     pos    <- which(grp$code == FG)
     n.coh  <- grp$numcohorts[pos]
     Tcatch <- NULL
@@ -554,7 +560,7 @@ plot.catch <- function(ctch, Time, ylm = NULL, coh = NULL, col.bi, bio.n = NULL,
 ##' @param FG Functional group
 ##' @return metrics  =  AAE; AE; MEF; RMSE; COR
 ##' @author Demiurgo
-stats <- function(obs, mod, FG){
+skill_assessment <- function(obs, mod, FG){
     ## Stimation of Correlation
     COR  <- cor.test(obs, mod, method = 'spearman', use = "pairwise.complete.obs",  exact = FALSE)
     ## Average error
