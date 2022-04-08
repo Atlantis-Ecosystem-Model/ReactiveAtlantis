@@ -6,7 +6,7 @@ Description: This package has tools that help in the calibration of an AEM. Thes
 Depends:
     R (>= 3.2.3)
 License: GPL-3
-Imports: shiny, ncdf4, tidyverse, stringr, data.table, RColorBrewer, Rdpack, reshape2, plotrix, DT, dplyr, ggplot2,  plotly, scales, proj4
+Imports: shiny, ncdf4, tidyverse, stringr, data.table, RColorBrewer, Rdpack, reshape2, plotrix, DT, dplyr, ggplot2,  plotly, scales, proj4, tidyr, stats
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.2

@@ -12,7 +12,7 @@
 ##'     morality file \emph{*SpecificPredMort.txt} (Atlantis output file).
 ##' @return A reactive output with plots to analyse mortality in Atlantis
 ##' @author Javier Porobic
-##' @import stats utils grDevices ggplot2 graphics shiny RColorBrewer
+##' @import utils grDevices ggplot2 graphics shiny RColorBrewer
 ##' @export
 mortality <- function(grp.file, prm.file, SpeMort, PredMort){
     SpeMort    <- read.csv(SpeMort, sep = ' ')

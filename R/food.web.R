@@ -42,7 +42,7 @@
 ##'     and a table with the trophic level of each prey and predator in the food web
 ##' @author Demiurgo
 ##' @importFrom Rdpack reprompt
-##' @import stats utils grDevices ggplot2 graphics
+##' @import utils grDevices ggplot2 graphics
 ##' @export
 food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE){
     txtHelp <- "<h2>Summary</h2>"

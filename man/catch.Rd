@@ -4,7 +4,13 @@
 \alias{catch}
 \title{Analysis of the Harvest in Atlantis}
 \usage{
-catch(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL)
+catch(
+  grp.csv,
+  fish.csv,
+  catch.nc,
+  ext.catch.by.fleet = NULL,
+  ext.catch.total = NULL
+)
 }
 \arguments{
 \item{grp.csv}{Character string with the path to the Groups \emph{*.csv} file (Atlantis input file).}
@@ -15,8 +21,13 @@ catch(grp.csv, fish.csv, catch.nc, ext.catch.f = NULL)
 file from Atlantis. Usually this file has the name of \emph{[Your_Model]CATCH.nc},
 where [Your_Model] is the name of your Atlantis model}
 
-\item{ext.catch.f}{(Default = NULL) Character string with the path to the
-external file with the shiny::observed catches and discards by year. This helps to
+\item{ext.catch.by.fleet}{(Default = NULL) Character string with the path to the
+external file with the observed catches and discards by year,  fleet and functional group. This helps to
+calibrate the harvest section of Atlantis and it is required to perform the
+skill assessment of the model.}
+
+\item{ext.catch.total}{(Default = NULL) Character string with the path to the
+external file with the observed catches and discards by year and functional group. This helps to
 calibrate the harvest section of Atlantis and it is required to perform the
 skill assessment of the model.}
 }

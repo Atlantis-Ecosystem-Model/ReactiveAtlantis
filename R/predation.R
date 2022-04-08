@@ -62,8 +62,9 @@
 ##'     selected time step.
 ##'      }
 ##'}
-##' @import stats utils grDevices ggplot2 graphics
+##' @import utils grDevices ggplot2 graphics
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
+##' @importFrom stats complete.cases
 ##' @author Demiurgo
 ##' @export
 predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
