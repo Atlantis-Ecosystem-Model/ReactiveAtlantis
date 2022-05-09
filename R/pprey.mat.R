@@ -62,6 +62,7 @@
 ##' @import utils grDevices ggplot2 graphics dplyr
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @importFrom dplyr filter lag
+##' @importFrom rlang .data
 ##' @importFrom stats complete.cases
 ##' @author Demiurgo
 ##' @export
@@ -326,13 +327,22 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 }
             })
             spatial <- shiny::reactive({
-                gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
-                gp.pred  <- filter(data = over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
+                ## This piece of code needs to be updated,  there is too many relics and seections prone to error and redundancy
+#               browser()
+#                #gp.pred  <- with(sp.ov, sp.ov[which(Predator == input$pred && Prey == input$prey, arr.ind = TRUE)])
+                gp.pred  <- dplyr::filter(over.tmp, .data$Predator == input$pred, .data$Prey == input$prey)
                 input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
-                pred.ad  <- filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Adult', .data$Layer == input.layer)
-                pred.juv <- filter(data = sp.ov, .data$variable == input$pred, .data$Stage == 'Juvenile', .data$Layer == input.layer)
-                prey.ad  <- filter(data = sp.ov, .data$variable == input$prey, .data$Stage == 'Adult', .data$Layer == input.layer)
-                prey.juv <- filter(data = sp.ov, .data$variable == input$prey, .data$Stage == 'Juvenile', .data$Layer == input.layer)
+                pred.ad  <- dplyr::filter(sp.ov, .data$variable == input$pred, .data$Stage == 'Adult', .data$Layer == input.layer)
+                pred.juv <- dplyr::filter(sp.ov, .data$variable == input$pred, .data$Stage == 'Juvenile', .data$Layer == input.layer)
+                prey.ad  <- dplyr::filter(sp.ov, .data$variable == input$prey, .data$Stage == 'Adult', .data$Layer == input.layer)
+                prey.juv <- dplyr::filter(sp.ov, .data$variable == input$prey, .data$Stage == 'Juvenile', .data$Layer == input.layer)
+
+                ## gp.pred  <- dplyr::filter(over.tmp, Predator == input$pred, Prey == input$prey)
+                ## input.layer <- as.character(ifelse(input$layer == 'Sediment', max(sp.ov$Layer, na.rm = TRUE), input$layer))
+                ## pred.ad  <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Adult', Layer == input.layer)
+                ## pred.juv <- dplyr::filter(sp.ov, variable == input$pred, Stage == 'Juvenile', Layer == input.layer)
+                ## prey.ad  <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Adult', Layer == input.layer)
+                ## prey.juv <- dplyr::filter(sp.ov, variable == input$prey, Stage == 'Juvenile', Layer == input.layer)
                 ## Checking for Juveniles on the biomass pools
                 ## avoiding inf problems
                 if(length(prey.juv[, 6]) == 0){
@@ -346,10 +356,17 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                     juv.prd <- pred.juv[, 6]
                 }
                 ## Checking the gape overlap
-                AoA <- ifelse(length(filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5])))
-                AoJ <- ifelse(length(filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5])))
-                JoA <- ifelse(length(filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5])))
-                JoJ <- ifelse(length(filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5])))
+                AoA <- ifelse(length(dplyr::filter(gp.pred, Stg.predator == 'Adult',Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred,Stg.predator == 'Adult',Stg.prey == 'Adult')[, 5])))
+                AoJ <- ifelse(length(dplyr::filter(gp.pred,Stg.predator == 'Adult',Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred,Stg.predator == 'Adult',Stg.prey == 'Juvenile')[, 5])))
+                JoA <- ifelse(length(dplyr::filter(gp.pred,Stg.predator == 'Juvenile',Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred,Stg.predator == 'Juvenile',Stg.prey == 'Adult')[, 5])))
+
+                JoJ <- ifelse(length(dplyr::filter(gp.pred,Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(gp.pred, Stg.predator == 'Juvenile', Stg.prey == 'Juvenile')[, 5])))
+
+                ##                 ## Checking the gape overlap
+                ## AoA <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Adult')[, 5])))
+                ## AoJ <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Adult', .data$Stg.prey == 'Juvenile')[, 5])))
+                ## JoA <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Adult')[, 5])))
+                ## JoJ <- ifelse(length(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5]) == 0, 0, as.numeric(as.character(dplyr::filter(data = gp.pred, .data$Stg.predator == 'Juvenile', .data$Stg.prey == 'Juvenile')[, 5])))
                 ## Merging
                 ad.on.juv    <- data.frame(Land = prey.ad[, 4], Layer = prey.ad[, 1], Box = prey.ad[, 2], overlap = juv.pry  * pred.ad[, 6], Stage.prey = 'Juvenile - PREY',
                                            Stage.pred = 'Adult - PREDATOR', Gape.Overlap = AoJ)
@@ -371,7 +388,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
                 overlap.pred.prey <- suppressMessages(dplyr::left_join(map, pred.tot))
             })
             dpt <- shiny::reactive({
-                dpt <- rbind(filter(depth.dst, .data$FG == input$pred), filter(depth.dst, .data$FG == input$prey))
+                dpt <- rbind(dplyr::filter(depth.dst, .data$FG == input$pred), dplyr::filter(depth.dst, .data$FG == input$prey))
             })
             title <- shiny::reactive({
                 paste('Realized Spatial overlap between the predator', groups.csv$long.name[which(groups.csv$code %in% input$pred)] ,'and the prey',
