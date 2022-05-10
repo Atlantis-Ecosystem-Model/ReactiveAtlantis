@@ -408,7 +408,7 @@ bio.pwn <- function(pwn.grp, nc.out, ctg, mg2t, x.cn, box.info, Time){
             b.coh   <- apply(b.coh, 2, sum, na.rm = TRUE)
             cohort  <- cbind(cohort, b.coh)
         }
-        grp.bio <- rbind(grp.bio, data.frame(Time = seq(1, nrow(cohort)), FG = paste0(as.character(pwn.grp$longname[pwn]), ' (', as.character(pwn.grp$code[pwn]), ')'), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
+        grp.bio <- rbind(grp.bio, data.frame(Time = Time, FG = paste0(as.character(pwn.grp$longname[pwn]), ' (', as.character(pwn.grp$code[pwn]), ')'), Biomass  = rowSums(cohort, na.rm  = TRUE), Simulation = ctg))
     }
     return(grp.bio)
 }
