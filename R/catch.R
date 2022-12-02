@@ -85,6 +85,7 @@ catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.by.fleet = NULL, ext.ca
     grp      <- utils::read.csv(grp.csv)
     names(grp) <- tolower(names(grp))
     grp <- grp[which(grp$isimpacted == 1), ]
+    ext.fgroup.name <- NULL
     if(!is.null(ext.catch.by.fleet)){
         ext.f      <- scan(ext.catch.by.fleet, nlines = 1, what = character(), sep = ',')
         ext.c      <- utils::read.table(ext.catch.by.fleet, skip = 1, header = TRUE, sep = ',', check.names = FALSE)
