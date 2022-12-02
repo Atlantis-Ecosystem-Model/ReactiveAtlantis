@@ -96,6 +96,7 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
         names(grp.dat)[which(names(grp.dat) == 'InvertType')] <- 'GroupType'
         warning('You should change the name of the column \'InvertType\' for \'GroupType\' on your group csv file')
     }
+    ## add the tolower
     if(any(names(grp.dat) == 'isPredator')){
         names(grp.dat)[which(names(grp.dat) == 'isPredator')] <- 'IsPredator'
         warning('You should change the name of the column \'isPredator\' for \'IsPredator\' on your group csv file')
