@@ -62,7 +62,7 @@
 ##' }
 ##' @import utils grDevices ggplot2 graphics
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
-##' @author Demiurgo
+##' @author Javier Porobic
 ##' @export
 compare <- function(nc.out.current, nc.out.old = NULL, grp.csv, bgm.file, cum.depths){
     ## General configuration

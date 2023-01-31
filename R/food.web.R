@@ -40,7 +40,7 @@
 ##' @param quiet (Default = TRUE) this parameter helps during the process of debugging.
 ##' @return Shiny::Reactive output with the plot of the food web for the specific time step,
 ##'     and a table with the trophic level of each prey and predator in the food web
-##' @author Demiurgo
+##' @author Javier Porobic
 ##' @importFrom Rdpack reprompt
 ##' @import utils grDevices ggplot2 graphics
 ##' @export
@@ -53,30 +53,6 @@ food.web <- function(diet.file, grp.file,  diet.file.bypol = NULL, quiet = TRUE)
     if(!quiet) cat('\n # -     Step 1    -   #')
     if(!quiet) cat('\n # -  -  -  -  -  -  - #')
     if(!quiet) cat('\n\n Loading libraries')
-    ## if (!require('shiny', quietly = TRUE)) {
-    ##     stop('The package shiny was not installed')
-    ## }
-    ## if (!require('ncdf4', quietly = TRUE)) {
-    ##     stop('The package ncdf4 was not installed')
-    ## }
-    ## if (!require('plotrix', quietly = TRUE)) {
-    ##     stop('The package plotrix was not installed')
-    ## }
-    ## if (!require('reshape', quietly = TRUE)) {
-    ##     stop('The package reshape was not installed')
-    ## }
-    ## if (!require('tidyverse', quietly = TRUE)) {
-    ##     stop('The package tidyverse was not installed')
-    ## }
-    ## if (!require('stringr', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
-    ## if (!require('data.table', quietly = TRUE)) {
-    ##     stop('The package data.table was not installed')
-    ## }
-    ## if (!require('RColorBrewer', quietly = TRUE)) {
-    ##     stop('The package RColorBrewer was not installed')
-    ## }
     if(!quiet) cat('  ...Done!')
     color.p <- RColorBrewer::brewer.pal(8, 'RdYlBu')[c(7, 2)]
     ## Reading files

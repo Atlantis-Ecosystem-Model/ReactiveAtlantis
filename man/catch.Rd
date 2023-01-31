@@ -92,5 +92,5 @@ This tool allows for the visualization and analysis of the harvest output from a
     efficiency routines.
 }
 \author{
-Demiurgo
+Javier Porobic
 }

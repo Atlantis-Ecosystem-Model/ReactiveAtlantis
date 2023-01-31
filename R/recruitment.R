@@ -71,6 +71,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     if(!quiet) cat('\n\n Loading libraries')
     ## general settings
     colors    <- RColorBrewer::brewer.pal(n = 8, name = "Set1")
+    #colors    <- c('#241309','#292B15','#7A6F42','#56471E','#562F0E','#BA9B5B','#844D14','#A16F26')
     if(!quiet) cat('  ...Done!')
     ## Reading files
     if(!quiet) cat('\n Reading files')
@@ -109,24 +110,22 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
             rec$Beta[fg.r]      <- text2num(prm, paste0('BHbeta_', sps[fg.r]), FG = 'look')[1, 2]
             rec$KSPA[fg.r]      <- text2num(prm, paste0('KSPA_', sps[fg.r]), FG = 'look')[1, 2]
             rec$FSP[fg.r]       <- text2num(prm, paste0('FSP_', sps[fg.r]), FG = 'look')[1, 2]
-            ## Proportion of mature at age
-            fspb.tmp            <- text2num(prm, paste0('FSPB_', sps[fg.r]), FG = sps[fg.r], Vector = TRUE)
-            fspb.tmp            <- fspb.tmp[!is.na(fspb.tmp)]
-            fspb.tmp            <- c(fspb.tmp, rep(0, (max.gr - length(fspb.tmp))))
-            FSPB                <- rbind(FSPB, fspb.tmp)
-            n.fg                <- cbind(n.fg, as.character(sps[fg.r]))
         } else if(rec$Value[fg.r] == 1 || rec$Value[fg.r] == 12){ ## constant recruitment
             rec$Alpha[fg.r]     <- text2num(prm, paste0('\\bKDENR_', sps[fg.r], '\\b'), FG = 'look', Vector = TRUE)[1]
-            fspb.tmp            <- text2num(prm, paste0('\\bFSPB_', sps[fg.r], '\\b'), FG = sps[fg.r], Vector = TRUE)
-            fspb.tmp            <- fspb.tmp[!is.na(fspb.tmp)]
-            fspb.tmp            <- c(fspb.tmp, rep(0, (max.gr - length(fspb.tmp))))
-            FSPB                <- rbind(FSPB, fspb.tmp)
-            n.fg                <- cbind(n.fg, as.character(sps[fg.r]))
-        } else if(rec$Value[fg.r] == 10){
-            n.fg                <- cbind(n.fg, as.character(sps[fg.r]))
+        } else if(rec$Value[fg.r] == 10){# Beverton-Holt recruitment based only on species biomass
             rec$Alpha[fg.r]     <- text2num(prm, paste0('BHalpha_', sps[fg.r]), FG = 'look')[1, 2]
             rec$Beta[fg.r]      <- text2num(prm, paste0('BHbeta_', sps[fg.r]), FG = 'look')[1, 2]
+        } else if(rec$Value[fg.r] == 17){
+            rec$Alpha[fg.r]     <- text2num(prm, paste0('Ralpha_', sps[fg.r]), FG = 'look')[1, 2]
+            rec$Beta[fg.r]      <- text2num(prm, paste0('Rbeta_', sps[fg.r]), FG = 'look')[1, 2]
         }
+        ## Proportion of the population spawning
+        fspb.tmp            <- text2num(prm, paste0('FSPB_', sps[fg.r]), FG = sps[fg.r], Vector = TRUE)
+        fspb.tmp            <- fspb.tmp[!is.na(fspb.tmp)]
+        fspb.tmp            <- c(fspb.tmp, rep(0, (max.gr - length(fspb.tmp))))
+        FSPB                <- rbind(FSPB, fspb.tmp)
+        n.fg                <- cbind(n.fg, as.character(sps[fg.r]))
+
         rec$Time.sp[fg.r]   <- text2num(prm, paste0(sps[fg.r], '_Time_Spawn'), FG = 'look')[1, 2]
         rec$Period.sp[fg.r] <- text2num(prm, paste0(sps[fg.r], '_spawn_period'), FG = 'look')[1, 2]
         rec$Time.rec[fg.r]  <- text2num(prm, paste0(sps[fg.r], '_Recruit_Time'), FG = 'look')[1, 2]
@@ -174,6 +173,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
     coh.fg  <- group.csv$numcohorts[sp.dat]
     cod.fg  <- group.csv$code[sp.dat]
     time    <- ncdf4::ncvar_get(nc.out, 't') / 86400  ## to have the time step in days
+    time.end <- c(tail(time, 1))
     spw     <- NULL
     nam     <- NULL
     SSB.tot <- NULL
@@ -193,8 +193,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
         SSB.fg   <- NULL
         num.fg   <- NULL
         ## time of spawning
-        time.stp <- seq(from = 0, by = 365, to = tail(time, 1))  + rec$Time.sp[fg.row]
-        time.stp <- time.stp[time.stp < tail(time, 1)]
+        time.stp <- seq(from = 0, by = 365, to = time.end)  + rec$Time.sp[fg.row]
+        time.stp <- time.stp[which(time.stp < time.end)]
         time.stp <- sapply(time.stp, function(x) which.min(abs(x - time)))
         spw.coh  <- list()
         ssb.coh  <- list()
@@ -336,8 +336,8 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                          ),
         function(input, output, session) {
             time.stp <- shiny::reactive({
-                time.stp <- seq(from = 0, by = 365, to = tail(time, 1))  + rec$Time.sp[rec$FG == input$sp]
-                time.stp <- time.stp[time.stp < tail(time, 1)]
+                time.stp <- seq(from = 0, by = 365, to = time.end)  + rec$Time.sp[rec$FG == input$sp]
+                time.stp <- time.stp[which(time.stp < time.end)]
             })
             ## recruitment model
             output$Rec.mod <- shiny::renderText({
@@ -347,12 +347,14 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                          ifelse(mod == 3, 'Beverton-Holt',
                          ifelse(mod == 4, 'Random Lognormal',
                          ifelse(mod == 10, 'Beverton-Holt Biomass',
-                         ifelse(mod == 12, 'Fixed offspring', 'Other'))))))
+                         ifelse(mod == 17, 'Ricker - Baltic Sea',
+                         ifelse(mod == 12, 'Fixed offspring', 'Other')))))))
             })
             ## Original Recruitment
             rec.bio <- shiny::reactive({
+                #browser()
                 mod      <- rec$Value[rec$FG == input$sp]
-                if(mod != 10){
+                if(any(mod != c(10, 17))){ ## Option that only use Biomass
                     spawn.fg <- spw[input$sp, ]
                     num.fg   <- num.tot[input$sp, ]
                 }
@@ -370,6 +372,9 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 } else if(mod == 10){
                     recruit <- unlist(BH.rec(spawn.fg, rec$Alpha[rec$FG == input$sp], rec$Beta[rec$FG == input$sp], biom.fg, ver = 'B'))
                     new.rec <- unlist(BH.rec(spawn.fg, input$new.alpha, input$new.beta, biom.fg, ver = 'B'))
+                }else if(mod == 17){
+                    recruit <- unlist(Ricker.rec(rec$Alpha[rec$FG == input$sp], rec$Beta[rec$FG == input$sp], biom.fg, std = TRUE))
+                    new.rec <- unlist(Ricker.rec(input$new.alpha, input$new.beta, biom.fg, std = TRUE))
                 }
                 ## Avoiding NaNs
                 if(mod != 10){
@@ -407,6 +412,9 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 nam.plot    <- paste0('layer ', c(ly.box : 1))
                 nam.plot    <- c('Time', 'FG', paste0(nam.plot[1], ' [Deepest]'), nam.plot[c( - 1,  - ly.box)],
                                  paste0(nam.plot[ly.box], ' [Surface]'))
+                if(ly.box == 1){
+                    nam.plot <- nam.plot[-4]
+                }
                 for( i in 1 : length(pp.list)){
                     if(length(dim(pp.list[[i]])) == 3){
                         nr               <- nrow(pp.list[[i]])
@@ -420,6 +428,10 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                     }
                     out.pp.list[[i]][out.pp.list[[i]] <= 1e-8] <- 0 ## removing zeros
                     if(input$l.prop == TRUE & input$b.prop == FALSE){
+                        #browser()
+                        if(is.null(dim(out.pp.list[[i]]))){
+                            out.pp.list[[i]] <- matrix(out.pp.list[[i]], nrow = 1)
+                        }
                         out.pp.list[[i]] <- out.pp.list[[i]] / apply(out.pp.list[[i]] , 1, max, na.rm = TRUE)
                     } else if (input$l.prop == FALSE & input$b.prop == TRUE){
                         out.pp.list[[i]] <- out.pp.list[[i]] / max(out.pp.list[[i]] , na.rm = TRUE)
@@ -435,8 +447,9 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                     names(out.pp.list)[i]      <- names(pp.list)[i]
                 }
                 ## To get the proper plot in the right order
-                ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
-                out.pp.list <- out.pp.list[ordn]
+                #browser()
+                #ordn        <- c(names(pp.list)[names(pp.list) != input$sp.pp & names(pp.list) != input$sp2.pp], input$sp.pp, input$sp2.pp)
+                #out.pp.list <- out.pp.list[ordn]
                 ## getting ready for ggplot2 ::ggplot
                 sel.data <- do.call(rbind.data.frame, out.pp.list)
                 sel.data <- reshape2::melt(sel.data, id = c('Time', 'FG'))
@@ -463,6 +476,7 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 ratio
             })
             output$plot1 <- shiny::renderPlot({
+                #browser()
                 graphics::par(mar=c(5.1, 4.1, 4.1, 8.1), xpd = TRUE)
                 plot(rec.bio()$TYOY, rec.bio()$BYOY , xlab = 'Time (days)', ylab = ifelse(rec.bio()$Model[1] %in% c(1, 12), 'Numbers', 'Biomass [Tonnes]'), las = 1, bty = 'n', pch = 20,type = 'b',
                      col = 'royalblue', ylim = c(0, max(rec.bio()$Rec, rec.bio()$BYOY, rec.bio()$N.Rec)),
@@ -482,12 +496,14 @@ recruitment.cal <- function(ini.nc.file, out.nc.file, yoy.file, grp.file, prm.fi
                 legend('topright', inset=c(-0.1, 0), legend = c('YOY prop', 'New prop'), lty = 2, col=c('olivedrab4', 'yellow3' ), pch = c(19, 19), bty = 'n', lwd = 2)
             })
             output$plot3 <- shiny::renderPlot({
-                ## colors
-                colo  <- c(rep('grey70', (length(pp.list) - 2)), colors[c(1, 2)])
-                p <- ggplot2::ggplot(o.pp(), aes(x = .data$Time, y = .data$value, colour = .data$FG)) + geom_line(na.rm = TRUE)
-                p <- p + ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE))
-                p <- p + scale_colour_manual(values = colo, name = 'Variable') + ggplot2::theme_minimal() + ggplot2::theme(text = ggplot2::element_text(size = 15))
-                p <- update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable'))
+                #browser()
+                groups <- which(levels(as.factor(o.pp()$FG)) %in% c(input$sp.pp, input$sp2.pp))
+                colo  <- rep('grey70', length(pp.list))
+                colo[groups] <- colors[1 : 2]
+                p <- ggplot2::ggplot(o.pp(), ggplot2::aes(x = .data$Time, y = .data$value, colour = .data$FG)) + ggplot2::geom_line(na.rm = TRUE, size = 1.5)
+                p <- p + ggplot2::facet_wrap(~ .data$variable, ncol = 2) + ggplot2::ylim(ifelse(input$log.v == TRUE, NA, 0), max(o.pp()$value, na.rm = TRUE))
+                p <- p + ggplot2::scale_colour_manual(values = colo, name = 'Variable')
+                p <- ggplot2::update_labels(p, list(x = 'Time step', y = ifelse(input$log.v == TRUE, 'Log', 'Proportion'), colour = 'Variable')) + theme_atlantis()
                 p
             })
             output$table <- DT::renderDataTable({
@@ -520,64 +536,21 @@ BH.rec <- function(sp, bha, bhb, bio, ver= 'N'){
     return(recruit)
 }
 
-## ##' @title Parameter file reader
-## ##' @param text Biological parametar file for Atlatnis
-## ##' @param pattern Text that you are looking
-## ##' @param FG Name of the functional groups
-## ##' @param Vector Logic argument, if the data is on vectors or not
-## ##' @param pprey Logic argument, if the data is a pprey matrix or not
-## ##' @return A matrix with the values from the .prm file
-## ##' @author Demiurgo
-## text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE){
-##     if(!isTRUE(Vector)){
-##         text <- text[grep(pattern = pattern, text)]
-##         if(length(text) == 0) warning(paste0('\n\nThere is no ', pattern, ' parameter in your file.'))
-##         txt  <- gsub(pattern = '[[:space:]]+' ,  '|',  text)
-##         col1 <- col2 <- vector()
-##         for( i in 1 : length(txt)){
-##             tmp     <- unlist(strsplit(txt[i], split = '|', fixed = TRUE))
-##             if(grepl('#', tmp[1])) next
-##             tmp2    <- unlist(strsplit(tmp[1], split = '_'))
-##             if(FG[1] == 'look') {
-##                 col1[i] <- tmp2[1]
-##             } else {
-##                 id.co   <- which(tmp2 %in% FG )
-##                 if(sum(id.co) == 0) next
-##                 col1[i] <- tmp2[id.co]
-##             }
-##             col2[i] <- as.numeric(tmp[2])
-##         }
-##         if(is.null(FG)) col1 <- rep('FG', length(col2))
-##         out.t <- data.frame(FG = col1, Value = col2)
-##         if(any(is.na(out.t[, 1]))){
-##             out.t <- out.t[-which(is.na(out.t[, 1])), ]
-##         }
-##         return(out.t)
-##     } else {
-##         l.pat <- grep(pattern = pattern, text)
-##         nam   <- gsub(pattern = '[[:space:]]+' ,  '|',  text[l.pat])
-##         fg    <- vector()
-##         pos   <- 1
-##         for( i in 1 : length(nam)){
-##             tmp     <- unlist(strsplit(nam[i], split = '|', fixed = TRUE))
-##             if(grepl('#', tmp[1]) || (!grepl('^pPREY', tmp[1]) && pprey  == TRUE)) next
-##             fg[pos] <- tmp[1]
-##             if(pos == 1) {
-##                 #t.text  <- gsub('"[[:space:]]"', ' ',  text[l.pat[i] + 1])
-##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-##                 pp.mat <- matrix(as.numeric(unlist(strsplit(t.text, split = ' +', fixed = FALSE))), nrow = 1)
-##                 pos    <- pos + 1
-##             } else {
-##                 #t.text <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", text[l.pat[i] + 1], perl=TRUE)
-##                 t.text <- gsub('+[[:space:]]+', ' ',  text[l.pat[i] + 1])
-##                 pp.tmp <- matrix(as.numeric(unlist(strsplit(t.text, split = ' ', fixed = TRUE))), nrow = 1)
-##                 if(ncol(pp.mat) != ncol(pp.tmp)) stop('\nError: The pPrey vector for ', tmp[1], ' has ', ncol(pp.tmp), ' columns and should have ', ncol(pp.mat))
-##                 pp.mat <- rbind(pp.mat, pp.tmp)
-##                 pos    <- pos + 1
-##             }
-##         }
-##         if(all(is.na(pp.mat[, 1]))) pp.mat <- pp.mat[, - 1]
-##         row.names(pp.mat)                  <- fg
-##         return(pp.mat)
-##     }
-## }
+##' @title Ricker recruitment equation
+##' @param ralpha alpha parameter from the ricker recruitment equation
+##' @param rbeta beta parameter from the ricker recruitment equation
+##' @param biomass Stock biomass
+##' @param std (bolean) if TRUE ricker equation or FALSE Baltic sea version
+##' @return The recuitment prooduced
+##' @author Javier Porobic
+Ricker.rec <- function(ralpha, rbeta, biomass, std = TRUE){
+    x_cn = 5.7 # Redfield ratio of C:N
+    mg_2_tonne = 0.00000002    # mg C converted to wet weight in tonnes == 20/1000000000
+    biomass_ww <- biomass * x_cn * mg_2_tonne
+    if(std) {
+        recruit = biomass * exp(ralpha * (1 - (biomass / rbeta)))
+    } else {
+        recruit = 1000 * biomass_ww * ralpha * exp(-rbeta * biomass_ww)
+    }
+    return(recruit)
+}

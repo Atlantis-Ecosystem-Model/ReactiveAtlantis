@@ -72,10 +72,9 @@
 ##' @importFrom ggplot2 ggplot aes geom_bar coord_flip scale_color_manual geom_line facet_wrap theme_minimal update_labels geom_hline
 ##' @importFrom stats cor.test setNames var complete.cases
 ##' @importFrom dplyr filter lag
-##' @author Demiurgo
+##' @author Javier Porobic
 ##' @export
 catch <- function(grp.csv, fish.csv, catch.nc, ext.catch.by.fleet = NULL, ext.catch.total = NULL){
-#library(dplyr)
     ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
     ## ~         General Settings     ~ ##
     ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##

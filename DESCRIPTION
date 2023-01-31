@@ -1,6 +1,6 @@
 Package: ReactiveAtlantis
 Title: Multiple Reactive HTML tools to help in the calibration of the Atlantis ecosystem model (AEM)
-Version: 0.0.2.0
+Version: 0.0.2.1
 Authors@R: person("Javier", "Porobic", email = "jporobicg@gmail.com", role = c("aut", "cre"))
 Description: This package has tools that help in the calibration of an AEM. These tools are reactive HTML pages that help you analyze AEM data outputs and inputs during the calibration process.
 Depends:

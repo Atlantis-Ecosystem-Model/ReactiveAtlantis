@@ -78,30 +78,6 @@ predation <- function(biom.file, groups.csv, diet.file, age.biomass = NULL ){
     txtHelp <- paste(txtHelp, "<p>The option scale (default <b>scale = TRUE</b>) allows you to integrate predation values between 0 and 1 for each time step. Otherwise, predation values are weighed by the predator's biomass. This allows to evaluate the impact of the predator on each prey at each time step.</p>")
     txtHelp <- paste(txtHelp, "<p><b>2) Predation by Age group</b> This panel visualize the predation by age group. The first sub-panel (<b>Total Biomass</b>) shows the proportion of each prey in the diet of the selected predator at a given time step (lower plot section)</p>")
     txtHelp <- paste(txtHelp, "<p>The upper plot is the variation of the total biomass of the functional group during the Atlantis simulation. The second sub-panel (<b>Biomass by Age</b>) shows the biomass of each prey consumed by each age class. This allows visualizing the impact (in biomass) of the predator in each of the prey. The upper panel shows the biomass of the prey throughout the simulation, indicating the selected time step.</p>")
-    ## ##Libraries
-    ## if (!require('shiny', quietly = TRUE)) {
-    ##     stop('The package shiny was not installed')
-    ## }
-    ## if (!require('ncdf4', quietly = TRUE)) {
-    ##     stop('The package ncdf4 was not installed')
-    ## }
-    ## if (!require('reshape', quietly = TRUE)) {
-    ##     stop('The package reshape was not installed')
-    ## }
-    ## if (!require('tidyverse', quietly = TRUE)) {
-    ##     stop('The package tidyverse was not installed')
-    ## }
-    ## if (!require('stringr', quietly = TRUE)) {
-    ##     stop('The package stringr was not installed')
-    ## }
-    ## if (!require('data.table', quietly = TRUE)) {
-    ##     stop('The package data.table was not installed')
-    ## }
-    ## if (!require('RColorBrewer', quietly = TRUE)) {
-    ##     stop('The package RColorBrewer was not installed')
-    ##}
-
-
     ## Reading Data
     cur.dat   <- data.frame(data.table::fread(biom.file, header = TRUE, sep = ' ', showProgress = FALSE))
     diet.data <- data.frame(data.table::fread(diet.file, header=TRUE, sep = ' ', showProgress = FALSE))
