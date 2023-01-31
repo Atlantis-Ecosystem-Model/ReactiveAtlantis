@@ -57,5 +57,5 @@ Table 1 : Initial trophic position Assigned for each functional groups.
     d) \bold{time step} which sets the time step for the calculation of the food-web.
 }
 \author{
-Demiurgo
+Javier Porobic
 }

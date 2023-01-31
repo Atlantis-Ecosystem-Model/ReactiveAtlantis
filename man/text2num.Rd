@@ -33,5 +33,5 @@ A matrix with the values from the .prm file
 Parameter file reader
 }
 \author{
-Demiurgo
+Javier Porobic
 }

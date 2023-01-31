@@ -6,7 +6,7 @@
 ##' @param pprey Logic argument, if the data is a pprey matrix or not
 ##' @param lineal Logic argument,  if the data is in a vector a lineal
 ##' @return A matrix with the values from the .prm file
-##' @author Demiurgo
+##' @author Javier Porobic
 ##' @export
 text2num <- function(text, pattern, FG = NULL, Vector = FALSE, pprey = FALSE, lineal = FALSE){
     if(!isTRUE(Vector)){

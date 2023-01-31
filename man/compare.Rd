@@ -78,5 +78,5 @@ This function allows visualization of either the output from a simulation or
     age for the different functional groups.
 }
 \author{
-Demiurgo
+Javier Porobic
 }
