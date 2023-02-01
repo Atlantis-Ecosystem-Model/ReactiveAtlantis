@@ -90,8 +90,8 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     if(!quiet) cat('\n Reading files')
     groups.csv        <- utils::read.csv(grp.file)
     names(groups.csv) <- tolower(names(groups.csv))
-    if(any(grepl('invertype', names(groups.csv)))){
-        names(groups.csv)[which(grepl('invertype', names(groups.csv)))] <- 'grouptype'
+    if(any(names(groups.csv) %in% c('invertype','inverttype'))){
+        names(groups.csv)[which(names(groups.csv) %in% c('invertype','inverttype'))] <- 'grouptype'
     }
     prm        <- readLines(prm.file, warn = FALSE)
     numlayers  <- find.z(bgm.file, cum.depths)
