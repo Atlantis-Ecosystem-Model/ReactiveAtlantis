@@ -87,7 +87,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     time.years <- time_calc(nc.out)
     prm       <- readLines(prm.file, warn = FALSE)
     ## Selecting primary producers
-    pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF','MICROPHTYBENTHOS'))) ## Just primary producer
+    pp.grp    <- with(group.csv, which(grouptype %in% c('PHYTOBEN', 'SM_PHY', 'LG_PHY', 'SEAGRASS', 'DINOFLAG', 'TURF','MICROPHTYBENTHOS','ICE_DIATOMS', 'ICE_MIXOTROPHS'))) ## Just primary producer
     if(length(which(pp.grp %in% is.off)) > 0){
         pp.grp    <- pp.grp[ - which(pp.grp %in% is.off)]
     }
