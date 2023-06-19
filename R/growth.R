@@ -168,7 +168,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     }
 
     ## Primary producer by boc ## it would be nice to checlk this tool
-    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF",'MICROPHTYBENTHOS', 'LAB_DET', 'REF_DET') & isturnedon == 1))
+    pp.pos  <- with(group.csv, which(grouptype %in% c('MED_ZOO', 'LG_ZOO', 'LG_PHY', 'SM_PHY', 'PHYTOBEN', 'DINOFLAG', "TURF",'MICROPHTYBENTHOS', 'LAB_DET', 'REF_DET', 'ICE_DIATOMS', 'ICE_MIXOTROPHS') & isturnedon == 1))
     pp.fg   <- group.csv$name[pp.pos]
     pp.cod  <- as.character(group.csv$code[pp.pos])
     pp.list <- list()
