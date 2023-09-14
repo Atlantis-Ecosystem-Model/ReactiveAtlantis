@@ -551,6 +551,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         if(groups.csv$numcohorts[code] == 1 || TY[code] %in% special){
+            browser()
             for(coh in 1 : groups.csv$numcohorts[code]){
                 if(grepl("ice", FG[code])) {
                     # If group name contains "Ice", the nc file will only contain one value per polygon, instead of values for all depths in the water column.
