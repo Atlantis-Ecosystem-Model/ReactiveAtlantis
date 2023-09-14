@@ -101,6 +101,7 @@ feeding.mat <- function(prm.file, grp.file, nc.file, bgm.file, cum.depths, quiet
     ## availability matrix
     Ava.mat            <- text2num(prm, 'pPREY', Vector=TRUE, pprey = TRUE)
     colnames(Ava.mat)  <- c(as.character(groups.csv$code), 'DLsed', 'DRsed', 'DCsed')
+    browser()
     if(!quiet) cat('          ...Done!')
     ## Biomass,  age and Gape size
     if(!quiet) cat('\n\n # -  -  -  -  -  -  - #')
