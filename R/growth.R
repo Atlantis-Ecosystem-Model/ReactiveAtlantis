@@ -130,6 +130,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     ## nutrient
     DIN      <- ncdf4::ncvar_get(nc.out, 'NO3') + ncdf4::ncvar_get(nc.out, 'NH3')
     Si       <- ncdf4::ncvar_get(nc.out, 'Si')
+    MicroNut <- ncdf4::ncvar_get(nc.out, 'MicroNut')
     l.eddy   <- ncdf4::ncvar_get(nc.out, 'eddy') * ed.scl
     nlayers  <- ncdf4::ncvar_get(nc.out, 'numlayers')[, 1]
     IRR      <- ncdf4::ncvar_get(nc.out, 'Light')
@@ -179,6 +180,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     pp.list[['DIN']]   <- ncdf4::ncvar_get(nc.out, 'NO3') + ncdf4::ncvar_get(nc.out, 'NH3')
     pp.list[['Det_Si']]    <- ncdf4::ncvar_get(nc.out, 'Det_Si')
     pp.list[['Si']]    <- ncdf4::ncvar_get(nc.out, 'Si')
+    pp.list[['MicroNut']]    <- ncdf4::ncvar_get(nc.out, 'MicroNut')
     pp.list[['DON']]    <- ncdf4::ncvar_get(nc.out, 'DON')
     pp.list[['Light']] <- ncdf4::ncvar_get(nc.out, 'Light')
     pp.list[['Eddy']]  <- ncdf4::ncvar_get(nc.out, 'eddy')
@@ -207,8 +209,8 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
                                       shiny::column(2,
                                              shiny::wellPanel(
                                                  shiny::tags$h3('Functional Group'),
-                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light','DIN', 'Det_Si', 'Si', 'DIN', 'DON'))),
-                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', 'DIN', 'Det_Si', 'Si', 'DIN', 'DON', pp.cod))),
+                                                 shiny::selectInput('sp.pp', 'Functional Group 1', as.character(c(pp.cod, 'Eddy', 'Light','DIN', 'Det_Si', 'Si', 'DIN', 'DON', 'MicroNut'))),
+                                                 shiny::selectInput('sp2.pp', 'Functional Group 2', as.character(c('Light', 'Eddy', 'DIN', 'Det_Si', 'Si', 'DIN', 'DON', 'MicroNut', pp.cod))),
                                                  shiny::selectInput('s.box', 'Box', 0 : (n.box - 1)),
                                                  shiny::checkboxInput('l.prop', 'Layer-Proportion', TRUE),
                                                  shiny::checkboxInput('b.prop', 'Box-Proportion', FALSE),
