@@ -111,6 +111,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
             mum[i, 1 : coh.fg[i]]    <- text2num(prm, paste0('mum_', cod.fg[i]), FG = cod.fg[i] , Vector=TRUE)
         }
         KS     <- rbind(KS, text2num(prm, paste0('KS_', cod.fg[i]), FG = cod.fg[i]))
+        KF     <- rbind(KF, text2num(prm, paste0('KF_', cod.fg[i]), FG = cod.fg[i]))
         KI     <- rbind(KI, text2num(prm, paste0('KI_', cod.fg[i]), FG = cod.fg[i]))
         if(flaghabd$Value == 1){
             Hdep   <- rbind(Hdep, text2num(prm, paste0(cod.fg[i], '_habdepend'), FG = cod.fg[i]))
