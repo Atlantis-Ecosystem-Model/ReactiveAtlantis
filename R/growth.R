@@ -140,7 +140,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     for(fg in 1 : length(nam.fg)){
         ## nutrients
         if(flagnut$Value == 0){
-            l.nut[[fg]] <- pmin((DIN / (KN$Value[fg] + DIN)) ,  (Si /(KS$Value[fg] + Si)), (MicroNut / KF$Value[fg] + KF) na.rm = TRUE)
+            l.nut[[fg]] <- pmin((DIN / (KN$Value[fg] + DIN)) ,  (Si /(KS$Value[fg] + Si)), (MicroNut / KF$Value[fg] + MicroNut), na.rm = TRUE)
         } else if(flagnut$Value == 1){
             l.nut[[fg]] <- sqrt((DIN / (KN$Value[fg] + DIN)) * (Si /(KS$Value[fg] + Si)))
         } else if(flagnut$Value == 2){
