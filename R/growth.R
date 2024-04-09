@@ -100,7 +100,7 @@ growth.pp <- function(ini.nc.file, grp.file, prm.file, out.nc.file){
     flaghabd  <- text2num(prm, 'flaghabdepend ', FG = 'look')
     ##Parameters needed
     mum <- matrix(NA, length(pp.grp), max(coh.fg))
-    Hdep  <- sp.dep <- KI <- KS <- KN <- NULL
+    Hdep  <- sp.dep <- KI <- KS <- KN <- KF <- NULL
     Kiop.min <- Kiop.shift <- Ki.avail <- K.depth <- NULL
 
     for(i in 1: length(pp.grp)) {
