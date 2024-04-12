@@ -659,7 +659,7 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
                     over.sp    <- cbind(over.sp, new.sp)
                     names.temp <- c(names.temp, paste(FGN[code], cohort, sep = '_'))
                 }
-                Biom.N[code, cohort] <- sum(StructN + ReservN * Numb, na.rm = TRUE)
+                Biom.N[code, cohort] <- sum((StructN + ReservN) * Numb, na.rm = TRUE)
                 Struct[code, cohort] <- max(StructN, na.rm = TRUE)
             }
         }
