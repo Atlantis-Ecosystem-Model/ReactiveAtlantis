@@ -550,8 +550,24 @@ Bio.func <- function(nc.file, groups.csv, numlayers){
         ## ~                       Age structured biomass pools and biomass pool                    ~ ##
         ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ##
         if(groups.csv$numcohorts[code] == 1 || TY[code] %in% special){
+            browser()
             for(coh in 1 : groups.csv$numcohorts[code]){
-                if(TY[code] %in% special && groups.csv$numcohorts[code] > 1){
+                if(grepl("ice", FG[code])) {
+                    # If group name contains "Ice", the nc file will only contain one value per polygon, instead of values for all depths in the water column.
+                    # Turn N.tot into a matrix of 0s, with each row starting with the value in the .nc initial conditions file, so that following calculations work. 
+                    # Fetch the initial value from the .nc file
+                    initial_val <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
+                    # Determine the number of depths you have. 
+                    num_depths <- ncdf4::ncvar_get(nc.out, 'volume')
+                    num_depths[is.na(num_depths)] <- 0
+                    # Create a matrix where each row starts with the initial value followed by zeros.
+                    N.tot <- matrix(0, nrow=nrow(num_depths), ncol=ncol(num_depths))
+                    for (i in 1:nrow(num_depths)) {
+                        N.tot[i, 1] <- initial_val[i]
+                    }
+                    N.tot[is.na(N.tot.1)] <- 0
+            
+                } else if(TY[code] %in% special && groups.csv$numcohorts[code] > 1){
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", coh, sep = ""))
                 } else {
                     N.tot <- ncdf4::ncvar_get(nc.out, paste(FG[code], "_N", sep = ""))
